@@ -13,13 +13,15 @@ BUILD = build
 APP= ggm
 
 .PHONY: all
-all:
-	-rm -rf $(BUILD)
-	ZEPHYR_BASE=$(ZEPHYR_BASE) \
-	ZEPHYR_TOOLCHAIN_VARIANT=$(ZEPHYR_TOOLCHAIN_VARIANT) \
-	CROSS_COMPILE=$(CROSS_COMPILE) \
-	cmake -GNinja -DBOARD=$(BOARD) -S $(APP) -B $(BUILD)
+all: .stamp_cmake build
+
+.PHONY: build
+build: .stamp_cmake
 	ninja -C $(BUILD)
+
+.PHONY: config
+config: .stamp_cmake
+	ninja -C $(BUILD) menuconfig
 
 .PHONY: flash
 flash:
@@ -34,6 +36,7 @@ flash_st:
 .PHONY: clean
 clean:
 	-rm -rf $(BUILD)
+	-rm -rf .stamp*
 
 .PHONY: update
 update:
@@ -43,3 +46,11 @@ update:
 .PHONY: init
 init:
 	west init $(TOP)/zephyr
+
+.stamp_cmake:
+	-rm -rf $(BUILD)
+	ZEPHYR_BASE=$(ZEPHYR_BASE) \
+	ZEPHYR_TOOLCHAIN_VARIANT=$(ZEPHYR_TOOLCHAIN_VARIANT) \
+	CROSS_COMPILE=$(CROSS_COMPILE) \
+	cmake -GNinja -DBOARD=$(BOARD) -S $(APP) -B $(BUILD)
+	touch $@
