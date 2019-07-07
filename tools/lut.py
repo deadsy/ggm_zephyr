@@ -3,7 +3,6 @@
 """
 
 Generate lookup tables.
-The table has 32 bit floats in hex representation.
 
 """
 

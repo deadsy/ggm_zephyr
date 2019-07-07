@@ -7,6 +7,7 @@
 #include <zephyr.h>
 #include <sys/printk.h>
 
+#include "math.h"
 #include "lut.h"
 #include "utils.h"
 
@@ -15,5 +16,7 @@
 void main(void)
 {
 	printk("GooGooMuck %s (%s)\n", GGM_VERSION, CONFIG_BOARD);
-	printk("sin 30 = 0x%08x\n", float2hex(sin_eval(d2r(30.f))));
+	printk("sin(30) = 0x%08x\n", float2uint(sinf(d2r(30.f))));
+	printk("pow2(0.5) = 0x%08x\n", float2uint(pow2(0.5f)));
+	printk("powe(3.0) = 0x%08x\n", float2uint(powe(3.f)));
 }

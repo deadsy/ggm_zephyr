@@ -25,12 +25,15 @@ static inline float r2d(float r)
 	return r * (180.f / Pi);
 }
 
-/* float2hex converts a 32-bit float to its uint32_t representation */
-static inline uint32_t float2hex(float f)
+/* float2uint converts a 32-bit float to its uint32_t representation */
+static inline uint32_t float2uint(float x)
 {
-	void *ptr = &f;
-
-	return *(uint32_t *)ptr;
+	union {
+		uint32_t ui;
+		float f;
+	} val;
+	val.f = x;
+	return val.ui;
 }
 
 #endif /* GGM_SRC_UTILS_H */

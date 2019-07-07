@@ -4,15 +4,19 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef GGM_SRC_LUT_H
-#define GGM_SRC_LUT_H
+#ifndef GGM_SRC_MATH_H
+#define GGM_SRC_MATH_H
 
 /******************************************************************************
  * Prototypes
  */
 
-float cos_lookup(uint32_t x);
-float pow2(float x);
+float truncf(float x);
+float fabsf(float x);
+float cosf(float x);
+float sinf(float x);
+float tanf(float x);
+float powe(float x);
 
-#endif /* GGM_SRC_LUT_H */
+#endif /* GGM_SRC_MATH_H */
 
