@@ -4,11 +4,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <inttypes.h>
+#include <string.h>
 
-#include "math.h"
-#include "const.h"
-#include "lut.h"
+#include "ggm.h"
 
 /******************************************************************************
  * 32-bit float helper macros
@@ -35,6 +33,9 @@ typedef union {
 		sf_u.word = (i);	    \
 		(d) = sf_u.value;	    \
 	} while (0)
+
+#define FLT_UWORD_IS_NAN(x) ((x) > 0x7f800000L)
+#define FLT_UWORD_IS_INFINITE(x) ((x) == 0x7f800000L)
 
 /******************************************************************************
  * 32-bit float truncation.
@@ -87,7 +88,34 @@ float fabsf(float x)
 }
 
 /******************************************************************************
+ * is not-a-number
+ */
+
+int isnanf(float x)
+{
+	int32_t ix;
+
+	GET_FLOAT_WORD(ix, x);
+	ix &= 0x7fffffff;
+	return FLT_UWORD_IS_NAN(ix);
+}
+
+/******************************************************************************
+ * is infinite
+ */
+
+int isinff(float x)
+{
+	int32_t ix;
+
+	GET_FLOAT_WORD(ix, x);
+	ix &= 0x7fffffff;
+	return FLT_UWORD_IS_INFINITE(ix);
+}
+
+/******************************************************************************
  * 32-bit float trigonometry functions
+ * These are LUT based and are less accurate but faster than typical libm functions.
  */
 
 float cosf(float x)
@@ -119,4 +147,73 @@ float tanf(float x)
 float powe(float x)
 {
 	return pow2(LOG_E2 * x);
+}
+
+/******************************************************************************
+ * float to string conversion
+ * https://blog.benoitblanchon.fr/lightweight-float-to-string/
+ */
+
+static void split_float(float val, uint32_t *whole, uint32_t *frac, int16_t *exp)
+{
+	*whole = 0;
+	*frac = 0;
+	*exp = 0;
+}
+
+static int str2str(char *str, char *buf)
+{
+	return 0;
+}
+
+static int int2str(uint32_t val, char *buf)
+{
+	return 0;
+}
+
+static int frac2str(uint32_t val, char *buf)
+{
+	return 0;
+}
+
+char *float2str(float val, char *buf)
+{
+	int i = 0;
+
+	if (isnanf(val)) {
+		i += str2str("nan", &buf[i]);
+		return buf;
+	}
+
+	if (val < 0.f) {
+		i += str2str("-", &buf[i]);
+		val = -val;
+	}
+
+	if (isinff(val)) {
+		i += str2str("inf", &buf[i]);
+		return buf;
+	}
+
+	uint32_t whole, frac;
+	int16_t exp;
+	split_float(val, &whole, &frac, &exp);
+
+	i += int2str(whole, &buf[i]);
+
+	if (frac) {
+		i += frac2str(frac, &buf[i]);
+	}
+
+	if (exp < 0) {
+		i += str2str("e-", &buf[i]);
+		i += int2str(-exp, &buf[i]);
+	}
+
+	if (exp > 0) {
+		i += str2str("e", &buf[i]);
+		i += int2str(exp, &buf[i]);
+	}
+
+	return buf;
 }

@@ -7,9 +7,7 @@
 #include <zephyr.h>
 #include <sys/printk.h>
 
-#include "math.h"
-#include "lut.h"
-#include "utils.h"
+#include "ggm.h"
 
 #define GGM_VERSION "0.1"
 
