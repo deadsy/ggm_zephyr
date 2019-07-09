@@ -154,11 +154,98 @@ float powe(float x)
  * https://blog.benoitblanchon.fr/lightweight-float-to-string/
  */
 
-static void split_float(float val, uint32_t *whole, uint32_t *frac, int16_t *exp)
+#define POS_EXP_THOLD 1e7f
+#define NEG_EXP_THOLD 1e-5f
+
+static int normalize_float(float *val)
 {
-	*whole = 0;
-	*frac = 0;
-	*exp = 0;
+	int e = 0;
+	float x = *val;
+
+	if (x >= POS_EXP_THOLD) {
+		if (x >= 1e32f) {
+			x /= 1e32f;
+			e += 32;
+		}
+		if (x >= 1e16f) {
+			x /= 1e16f;
+			e += 16;
+		}
+		if (x >= 1e8f) {
+			x /= 1e8f;
+			e += 8;
+		}
+		if (x >= 1e4f) {
+			x /= 1e4f;
+			e += 4;
+		}
+		if (x >= 1e2f) {
+			x /= 1e2f;
+			e += 2;
+		}
+		if (x >= 1e1f) {
+			x /= 1e1f;
+			e += 1;
+		}
+	}
+
+	if (x > 0 && x <= NEG_EXP_THOLD) {
+		if (x < 1e-31f) {
+			x *= 1e32f;
+			e -= 32;
+		}
+		if (x < 1e-15f) {
+			x *= 1e16f;
+			e -= 16;
+		}
+		if (x < 1e-7f) {
+			x *= 1e8f;
+			e -= 8;
+		}
+		if (x < 1e-3f) {
+			x *= 1e4f;
+			e -= 4;
+		}
+		if (x < 1e-1f) {
+			x *= 1e2f;
+			e -= 2;
+		}
+		if (x < 1e0f) {
+			x *= 1e1f;
+			e -= 1;
+		}
+	}
+
+	*val = x;
+	return e;
+}
+
+static void split_float(float val, uint32_t *ival, uint32_t *fval, int *eval)
+{
+	int e = normalize_float(&val);
+	uint32_t i = (uint32_t)val;
+	float rem = val - i;
+
+	rem *= 1e9;
+	uint32_t f = (uint32_t)rem;
+
+	/* rounding */
+	rem -= f;
+	if (rem >= 0.5) {
+		f++;
+		if (f >= 1000000000) {
+			f = 0;
+			i++;
+			if (e != 0 && i >= 10) {
+				e++;
+				i = 1;
+			}
+		}
+	}
+
+	*ival = i;
+	*fval = f;
+	*eval = e;
 }
 
 /* str2str copies a string into a buffer */
@@ -170,7 +257,8 @@ static int str2str(char *str, char *buf)
 		buf[i] = str[i];
 		i++;
 	}
-	return i - 1;
+	buf[i] = 0;
+	return i;
 }
 
 /* int2str creates a decimal number string in a buffer */
@@ -178,7 +266,7 @@ static int int2str(uint32_t val, char *buf)
 {
 	int i = 0;
 
-	/*work out the decimal string*/
+	/* work out the decimal string */
 	do {
 		buf[i++] = (val % 10) + '0';
 		val /= 10;
@@ -186,7 +274,7 @@ static int int2str(uint32_t val, char *buf)
 	buf[i] = 0;
 	int n = i;
 	i -= 1;
-	/*reverse the string*/
+	/* reverse the string */
 	for (int j = 0; j < i; j++, i--) {
 		char tmp = buf[j];
 		buf[j] = buf[i];
@@ -195,18 +283,28 @@ static int int2str(uint32_t val, char *buf)
 	return n;
 }
 
+/* frac2str creates a fractional decimal string in a buffer */
 static int frac2str(uint32_t val, char *buf)
 {
-	return 0;
+	int i = 0;
+
+	/* remove trailing zeroes */
+	while (val && val % 10 == 0) {
+		val /= 10;
+	}
+	i += str2str(".", &buf[i]);
+	i += int2str(val, &buf[i]);
+	return i;
 }
 
-char *float2str(float val, char *buf)
+/*float2str formats a floating point number as a string*/
+int float2str(float val, char *buf)
 {
 	int i = 0;
 
 	if (isnanf(val)) {
 		i += str2str("nan", &buf[i]);
-		return buf;
+		return i;
 	}
 
 	if (val < 0.f) {
@@ -216,11 +314,11 @@ char *float2str(float val, char *buf)
 
 	if (isinff(val)) {
 		i += str2str("inf", &buf[i]);
-		return buf;
+		return i;
 	}
 
 	uint32_t whole, frac;
-	int16_t exp;
+	int exp;
 	split_float(val, &whole, &frac, &exp);
 
 	i += int2str(whole, &buf[i]);
@@ -239,5 +337,22 @@ char *float2str(float val, char *buf)
 		i += int2str(exp, &buf[i]);
 	}
 
-	return buf;
+	return i;
+}
+
+/******************************************************************************
+ * test
+ */
+
+#include <sys/printk.h>
+
+void foo(void)
+{
+	char tmp[128];
+
+	printk("%d %s\n", float2str(5.0f, tmp), tmp);
+	printk("%d %s\n", float2str(0.5f, tmp), tmp);
+	printk("%d %s\n", float2str(0.05f, tmp), tmp);
+	printk("%d %s\n", float2str(0.005f, tmp), tmp);
+	printk("%d %s\n", float2str(0.0005f, tmp), tmp);
 }
