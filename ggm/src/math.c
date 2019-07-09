@@ -161,14 +161,38 @@ static void split_float(float val, uint32_t *whole, uint32_t *frac, int16_t *exp
 	*exp = 0;
 }
 
+/* str2str copies a string into a buffer */
 static int str2str(char *str, char *buf)
 {
-	return 0;
+	int i = 0;
+
+	while (str[i] != 0) {
+		buf[i] = str[i];
+		i++;
+	}
+	return i - 1;
 }
 
+/* int2str creates a decimal number string in a buffer */
 static int int2str(uint32_t val, char *buf)
 {
-	return 0;
+	int i = 0;
+
+	/*work out the decimal string*/
+	do {
+		buf[i++] = (val % 10) + '0';
+		val /= 10;
+	} while (val);
+	buf[i] = 0;
+	int n = i;
+	i -= 1;
+	/*reverse the string*/
+	for (int j = 0; j < i; j++, i--) {
+		char tmp = buf[j];
+		buf[j] = buf[i];
+		buf[i] = tmp;
+	}
+	return n;
 }
 
 static int frac2str(uint32_t val, char *buf)
