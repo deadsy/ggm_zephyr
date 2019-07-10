@@ -54,15 +54,27 @@ float cos_lookup(uint32_t x);
 float pow2(float x);
 
 /******************************************************************************
- * Math functions (32-bit float).
+ * 32-bit float math functions.
  */
 
 float truncf(float x);
 float fabsf(float x);
+
+int isinff(float x);
+int isnanf(float x);
+
 float cosf(float x);
 float sinf(float x);
 float tanf(float x);
+
 float powe(float x);
+
+/******************************************************************************
+ * 32-bit float to string conversion
+ */
+
+char *ftoa(float val, char *buf);
+int float2str(float val, char *buf);
 
 /******************************************************************************
  * Utility Functions
