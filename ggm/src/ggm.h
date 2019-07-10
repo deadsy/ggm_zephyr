@@ -7,6 +7,7 @@
 #ifndef GGM_SRC_GGM_H
 #define GGM_SRC_GGM_H
 
+#include <stddef.h>
 #include <inttypes.h>
 
 /******************************************************************************
@@ -77,30 +78,20 @@ char *ftoa(float val, char *buf);
 int float2str(float val, char *buf);
 
 /******************************************************************************
- * Utility Functions
+ * block operations
  */
 
-/* d2r converts degrees to radians */
-static inline float d2r(float d)
-{
-	return d * (Pi / 180.f);
-}
+void block_mul(float *out, float *buf, size_t n);
+void block_mul_k(float *out, float k, size_t n);
+void block_add(float *out, float *buf, size_t n);
+void block_add_k(float *out, float k, size_t n);
+void block_copy(float *dst, const float *src, size_t n);
+void block_copy_mul_k(float *dst, const float *src, float k, size_t n);
 
-/* r2d converts radians to degrees */
-static inline float r2d(float r)
-{
-	return r * (180.f / Pi);
-}
+/******************************************************************************
+ * sub-includes
+ */
 
-/* float2uint converts a 32-bit float to its uint32_t representation */
-static inline uint32_t float2uint(float x)
-{
-	union {
-		uint32_t ui;
-		float f;
-	} val;
-	val.f = x;
-	return val.ui;
-}
+#include "utils.h"
 
 #endif /* GGM_SRC_GGM_H */

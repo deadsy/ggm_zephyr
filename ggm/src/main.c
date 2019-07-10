@@ -16,9 +16,12 @@ void foo(void);
 void main(void)
 {
 	char tmp[128];
+	uint32_t state;
 
 	printk("GooGooMuck %s (%s)\n", GGM_VERSION, CONFIG_BOARD);
-	printk("sin(30) = %s\n", ftoa(sinf(d2r(30.f)), tmp));
-	printk("pow2(0.5) = %s\n", ftoa(pow2(0.5f), tmp));
-	printk("powe(3.0) = %s\n", ftoa(powe(3.f), tmp));
+	rand_init(1234, &state);
+	for (int i = 0; i < 100; i++) {
+		float x = randf(&state);
+		printk("%s %08x\n", ftoa(x, tmp), float2uint(x));
+	}
 }
