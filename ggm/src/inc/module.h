@@ -17,14 +17,17 @@
  * module
  */
 
-struct module_info {
+struct module {
+};
 
+struct module_info {
 	char *name;             /* module name */
 	struct port_info *in;   /* input ports */
 	struct port_info *out;  /* output ports */
-};
-
-struct module {
+	void (*init)(struct module *m);
+	void (*stop)(struct module *m);
+	void (*child)(struct module *m);
+	void (*process)(struct module *m);
 };
 
 /******************************************************************************
@@ -44,7 +47,7 @@ enum port_type {
 
 /* PortInfo contains the information describing a port. */
 struct port_info {
-  char *name; /* port name */
+	char *name;                                             /* port name */
 	uint32_t id;                                            /* port name hash */
 	enum port_type type;                                    /* port type */
 	void (*func)(struct module *m, struct event *e);        /* port event function */
