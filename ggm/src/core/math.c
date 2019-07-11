@@ -4,7 +4,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "ggm.h"
+#include <inttypes.h>
+
+#include "const.h"
+#include "proto.h"
 
 /******************************************************************************
  * 32-bit float helper macros

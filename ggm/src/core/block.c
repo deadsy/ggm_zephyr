@@ -6,8 +6,6 @@
 
 #include <stddef.h>
 
-#include "ggm.h"
-
 /******************************************************************************
  * Block Operations
  * Note: Unrolling these loops and breaking up the operations tends to speed them
