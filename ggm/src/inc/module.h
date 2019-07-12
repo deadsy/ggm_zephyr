@@ -8,6 +8,7 @@
 #define GGM_SRC_INC_MODULE_H
 
 #include <stddef.h>
+#include <stdbool.h>
 #include <inttypes.h>
 
 #include "util.h"
@@ -18,17 +19,22 @@
  */
 
 struct module {
+	struct ggm *top;                /* top level synth */
+	struct module_info *info;       /* module info */
+	void *priv;                     /* pointer to private module data */
 };
 
 struct module_info {
 	char *name;             /* module name */
 	struct port_info *in;   /* input ports */
 	struct port_info *out;  /* output ports */
-	void (*init)(struct module *m);
-	void (*stop)(struct module *m);
-	void (*child)(struct module *m);
-	void (*process)(struct module *m);
+	int (*init)(struct module *m);
+	int (*stop)(struct module *m);
+	size_t (*child)(struct module *m, struct module **list);
+	bool (*process)(struct module *m, float *buf[]);
 };
+
+#define MODULE_REGISTER(x)
 
 /******************************************************************************
  * module ports
