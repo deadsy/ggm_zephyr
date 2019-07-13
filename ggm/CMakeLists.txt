@@ -14,5 +14,6 @@ target_sources(app
 		src/core/ftoa.c
 		src/core/math.c
 		src/core/lut.c
+		src/core/module.c
 		src/module/osc/sine.c
 )

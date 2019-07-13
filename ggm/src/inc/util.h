@@ -8,7 +8,8 @@
 #define GGM_SRC_INC_UTIL_H
 
 #include <inttypes.h>
-#include "const.h"
+
+#include "ggm.h"
 
 /******************************************************************************
  * radian/degree conversion

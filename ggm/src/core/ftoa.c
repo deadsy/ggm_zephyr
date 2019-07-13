@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "proto.h"
+#include "ggm.h"
 
 /******************************************************************************
  * float to string conversion

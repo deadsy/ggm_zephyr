@@ -6,8 +6,7 @@
 
 #include <inttypes.h>
 
-#include "const.h"
-#include "proto.h"
+#include "ggm.h"
 
 /******************************************************************************
  * 32-bit float helper macros

@@ -11,6 +11,9 @@
 #include <stdbool.h>
 #include <inttypes.h>
 
+#include <zephyr.h>
+
+#include "ggm.h"
 #include "util.h"
 #include "event.h"
 
@@ -19,7 +22,8 @@
  */
 
 struct module {
-	struct ggm *top;                /* top level synth */
+	uint32_t id;                    /* module identifier */
+	struct synth *top;              /* top level synth */
 	struct module_info *info;       /* module info */
 	void *priv;                     /* pointer to private module data */
 };
@@ -29,8 +33,8 @@ struct module_info {
 	struct port_info *in;   /* input ports */
 	struct port_info *out;  /* output ports */
 	int (*init)(struct module *m);
-	int (*stop)(struct module *m);
-	size_t (*child)(struct module *m, struct module **list);
+	void (*stop)(struct module *m);
+	struct module ** (*child)(struct module *m);
 	bool (*process)(struct module *m, float *buf[]);
 };
 
@@ -56,7 +60,15 @@ struct port_info {
 	char *name;                                             /* port name */
 	uint32_t id;                                            /* port name hash */
 	enum port_type type;                                    /* port type */
-	void (*func)(struct module *m, struct event *e);        /* port event function */
+	void (*func)(struct module *m, struct event e);         /* port event function */
 };
+
+/******************************************************************************
+ * function prototypes
+ */
+
+struct module *module_new(struct synth *top, char *name);
+void module_free(struct module *m);
+char *module_str(struct module *m, char *buf);
 
 #endif /* GGM_SRC_INC_MODULE_H */
