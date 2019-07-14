@@ -103,6 +103,13 @@ char *ftoa(float val, char *buf);
 int float2str(float val, char *buf);
 
 /******************************************************************************
+ * MIDI
+ */
+
+float midi_to_frequency(float note);
+float midi_pitch_bend(uint16_t val);
+
+/******************************************************************************
  * block operations
  */
 

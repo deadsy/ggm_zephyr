@@ -74,8 +74,7 @@ def get_files(dlist, fo_flist, fo_dlist):
 src_dirs = (
 	('ggm/src/core', fmt_zephyr),
 	('ggm/src/inc', fmt_zephyr),
-	('ggm/src/module/osc', fmt_zephyr),
-	('ggm/src/module/env', fmt_zephyr),
+	('ggm/src/module', fmt_zephyr),
 )
 
 # don't format directories in this list

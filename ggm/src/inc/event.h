@@ -38,7 +38,7 @@ struct event {
  * float events
  */
 
-static inline float event_get_float(struct event *e)
+static inline float event_get_float(const struct event *e)
 {
 	return e->u.fval;
 }
@@ -53,7 +53,7 @@ static inline void event_set_float(struct event *e, float x)
  * integer events
  */
 
-static inline int event_get_int(struct event *e)
+static inline int event_get_int(const struct event *e)
 {
 	return e->u.ival;
 }
@@ -62,7 +62,7 @@ static inline int event_get_int(struct event *e)
  * boolean events
  */
 
-static inline bool event_get_bool(struct event *e)
+static inline bool event_get_bool(const struct event *e)
 {
 	return e->u.bval;
 }

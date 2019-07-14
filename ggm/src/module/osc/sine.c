@@ -20,7 +20,7 @@ struct sine_osc {
  * module port functions
  */
 
-static void sine_port_frequency(struct module *m, struct event *e)
+static void sine_port_frequency(struct module *m, const struct event *e)
 {
 	float frequency = clampf_lo(event_get_float(e), 0);
 	char tmp[64];
@@ -78,10 +78,12 @@ static bool sine_process(struct module *m, float *buf[])
 
 const static struct port_info in_ports[] = {
 	{ .name = "frequency", .type = PORT_TYPE_FLOAT, .func = sine_port_frequency },
+	PORT_EOL,
 };
 
 static const struct port_info out_ports[] = {
 	{ .name = "out", .type = PORT_TYPE_AUDIO, },
+	PORT_EOL,
 };
 
 const struct module_info sine_module = {

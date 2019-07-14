@@ -15,11 +15,13 @@
 
 extern struct module_info sine_module;
 extern struct module_info adsr_module;
+extern struct module_info osc_voice_module;
 
 /* module_list is a list off all the system modules */
 static const struct module_info *module_list[] = {
 	&sine_module,
 	&adsr_module,
+	&osc_voice_module,
 	NULL,
 };
 
@@ -92,6 +94,10 @@ struct module *module_new(struct synth *top, char *name)
 /* module_free stops and frees the resources of a module instance. */
 void module_free(struct module *m)
 {
+	if (m == NULL) {
+		return;
+	}
+
 	/* free the children of this module */
 	struct module **mlist = m->info->child(m);
 

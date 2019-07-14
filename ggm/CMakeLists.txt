@@ -10,11 +10,15 @@ target_include_directories(app
 
 target_sources(app
 	PRIVATE
-		src/core/main.c
+		src/core/event.c
 		src/core/ftoa.c
-		src/core/math.c
 		src/core/lut.c
+		src/core/main.c
+		src/core/math.c
+		src/core/midi.c
 		src/core/module.c
+		src/module/template.c
 		src/module/env/adsr.c
 		src/module/osc/sine.c
+		src/module/voice/osc.c
 )

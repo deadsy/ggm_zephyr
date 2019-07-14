@@ -53,13 +53,16 @@ enum port_type {
 	PORT_TYPE_MIDI,                 /* event with MIDI data */
 };
 
+typedef void (*port_func)(struct module *m, const struct event *e);
+
 /* port_info contains the information describing a port. */
 struct port_info {
-	char *name;                                             /* port name */
-	uint32_t id;                                            /* port name hash */
-	enum port_type type;                                    /* port type */
-	void (*func)(struct module *m, struct event *e);        /* port event function */
+	char *name;             /* port name */
+	enum port_type type;    /* port type */
+	port_func func;         /* port event function */
 };
+
+#define PORT_EOL { NULL, PORT_TYPE_NULL, NULL }
 
 /******************************************************************************
  * function prototypes
@@ -68,6 +71,9 @@ struct port_info {
 struct module *module_new(struct synth *top, char *name);
 void module_free(struct module *m);
 char *module_str(struct module *m, char *buf);
+
+void event_in(struct module *m, const char *name, const struct event *e, port_func *hdl);
+void event_in_float(struct module *m, const char *name, float val, port_func *hdl);
 
 /*****************************************************************************/
 
