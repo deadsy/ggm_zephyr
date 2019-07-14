@@ -1,4 +1,4 @@
-/*
+/******************************************************************************
  * Copyright (c) 2019 Jason T. Harris. (sirmanlypowers@gmail.com)
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -14,17 +14,19 @@
  */
 
 extern struct module_info sine_module;
+extern struct module_info adsr_module;
 
 /* module_list is a list off all the system modules */
-static struct module_info *module_list[] = {
+static const struct module_info *module_list[] = {
 	&sine_module,
+	&adsr_module,
 	NULL,
 };
 
 /* module_find finds a module by name */
-static struct module_info *module_find(char *name)
+static const struct module_info *module_find(char *name)
 {
-	struct module_info *mi;
+	const struct module_info *mi;
 	int i = 0;
 
 	while ((mi = module_list[i]) != NULL) {
@@ -56,15 +58,15 @@ static uint32_t get_module_id(void)
 /* module_new returns a new instance of a module. */
 struct module *module_new(struct synth *top, char *name)
 {
-	/*find the module*/
-	struct module_info *mi = module_find(name);
+	/* find the module */
+	const struct module_info *mi = module_find(name);
 
 	if (mi == NULL) {
 		LOG_ERR("could not find module \"%s\"", name);
 		return NULL;
 	}
 
-	/*allocate the module*/
+	/* allocate the module */
 	struct module *m = k_calloc(1, sizeof(struct module));
 	if (m == NULL) {
 		LOG_ERR("could not allocate module");
@@ -113,3 +115,5 @@ char *module_str(struct module *m, char *buf)
 	sprintf(buf, "%s_%08x", m->info->name, m->id);
 	return buf;
 }
+
+/*****************************************************************************/

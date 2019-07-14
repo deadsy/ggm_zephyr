@@ -1,4 +1,4 @@
-/*
+/******************************************************************************
  * Copyright (c) 2019 Jason T. Harris. (sirmanlypowers@gmail.com)
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -11,10 +11,19 @@
  * events
  */
 
+enum event_type {
+	EVENT_TYPE_NULL = 0,
+	EVENT_TYPE_FLOAT,       /* float value event */
+	EVENT_TYPE_INT,         /* integer value event */
+	EVENT_TYPE_BOOL,        /* boolean value event */
+	EVENT_TYPE_MIDI,        /* MIDI event */
+};
+
 struct event {
+	enum event_type type;
 	union {
 		float fval;
-		int32_t ival;
+		int ival;
 		bool bval;
 		struct {
 			uint8_t type;
@@ -29,35 +38,37 @@ struct event {
  * float events
  */
 
-static inline float event_get_float(struct event e)
+static inline float event_get_float(struct event *e)
 {
-	return e.u.fval;
+	return e->u.fval;
 }
 
-static inline struct event event_set_float(float x)
+static inline void event_set_float(struct event *e, float x)
 {
-	struct event e;
-
-	e.u.fval = x;
-	return e;
+	e->type = EVENT_TYPE_FLOAT;
+	e->u.fval = x;
 }
 
 /******************************************************************************
  * integer events
  */
 
-static inline float event_get_int(struct event e)
+static inline int event_get_int(struct event *e)
 {
-	return e.u.ival;
+	return e->u.ival;
 }
 
 /******************************************************************************
  * boolean events
  */
 
-static inline float event_get_bool(struct event e)
+static inline bool event_get_bool(struct event *e)
 {
-	return e.u.bval;
+	return e->u.bval;
 }
 
+/*****************************************************************************/
+
 #endif /* GGM_SRC_INC_EVENT_H */
+
+/*****************************************************************************/

@@ -1,4 +1,4 @@
-/*
+/******************************************************************************
  * Copyright (c) 2019 Jason T. Harris. (sirmanlypowers@gmail.com)
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -20,7 +20,7 @@ struct sine_osc {
  * module port functions
  */
 
-static void sine_port_frequency(struct module *m, struct event e)
+static void sine_port_frequency(struct module *m, struct event *e)
 {
 	float frequency = clampf_lo(event_get_float(e), 0);
 	char tmp[64];
@@ -46,7 +46,6 @@ static int sine_init(struct module *m)
 	}
 
 	m->priv = (void *)osc;
-	sine_port_frequency(m, event_set_float(440.f));
 	return 0;
 }
 
@@ -77,15 +76,15 @@ static bool sine_process(struct module *m, float *buf[])
  * module information
  */
 
-static struct port_info in_ports[] = {
+const static struct port_info in_ports[] = {
 	{ .name = "frequency", .type = PORT_TYPE_FLOAT, .func = sine_port_frequency },
 };
 
-static struct port_info out_ports[] = {
+static const struct port_info out_ports[] = {
 	{ .name = "out", .type = PORT_TYPE_AUDIO, },
 };
 
-struct module_info sine_module = {
+const struct module_info sine_module = {
 	.name = "sine",
 	.in = in_ports,
 	.out = out_ports,
@@ -96,3 +95,5 @@ struct module_info sine_module = {
 };
 
 MODULE_REGISTER(sine_module);
+
+/*****************************************************************************/

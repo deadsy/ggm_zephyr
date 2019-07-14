@@ -1,4 +1,4 @@
-/*
+/******************************************************************************
  * Copyright (c) 2019 Jason T. Harris. (sirmanlypowers@gmail.com)
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -233,3 +233,5 @@ char *ftoa(float val, char *buf)
 	float2str(val, buf);
 	return buf;
 }
+
+/*****************************************************************************/

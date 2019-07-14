@@ -1,4 +1,4 @@
-/*
+/******************************************************************************
  * Copyright (c) 2019 Jason T. Harris. (sirmanlypowers@gmail.com)
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -113,4 +113,8 @@ void block_add_k(float *out, float k, size_t n);
 void block_copy(float *dst, const float *src, size_t n);
 void block_copy_mul_k(float *dst, const float *src, float k, size_t n);
 
+/*****************************************************************************/
+
 #endif /* GGM_SRC_INC_GGM_H */
+
+/*****************************************************************************/

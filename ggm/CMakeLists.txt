@@ -15,5 +15,6 @@ target_sources(app
 		src/core/math.c
 		src/core/lut.c
 		src/core/module.c
+		src/module/env/adsr.c
 		src/module/osc/sine.c
 )

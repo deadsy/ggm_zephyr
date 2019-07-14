@@ -75,6 +75,7 @@ src_dirs = (
 	('ggm/src/core', fmt_zephyr),
 	('ggm/src/inc', fmt_zephyr),
 	('ggm/src/module/osc', fmt_zephyr),
+	('ggm/src/module/env', fmt_zephyr),
 )
 
 # don't format directories in this list
