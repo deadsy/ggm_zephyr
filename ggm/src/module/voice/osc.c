@@ -45,7 +45,7 @@ static void osc_voice_note(struct module *m, const struct event *e)
  * module functions
  */
 
-static int osc_voice_init(struct module *m)
+static int osc_voice_init(struct module *m, va_list vargs)
 {
 	struct module *osc = NULL;
 	struct module *adsr = NULL;

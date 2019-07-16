@@ -32,7 +32,7 @@ struct module_info {
 	char *name;                                             /* module name */
 	const struct port_info *in;                             /* input ports */
 	const struct port_info *out;                            /* output ports */
-	int (*init)(struct module *m);                          /* initialise the module */
+	int (*init)(struct module *m, va_list vargs);           /* initialise the module */
 	void (*stop)(struct module *m);                         /* stop and deallocate the module */
 	struct module ** (*child)(struct module *m);            /* return a list of child modules */
 	bool (*process)(struct module *m, float *buf[]);        /* process buffers for this module */
@@ -68,9 +68,8 @@ struct port_info {
  * function prototypes
  */
 
-struct module *module_new(struct synth *top, char *name);
+struct module *module_new(struct synth *top, const char *name, ...);
 void module_free(struct module *m);
-char *module_str(struct module *m, char *buf);
 
 void event_in(struct module *m, const char *name, const struct event *e, port_func *hdl);
 void event_in_float(struct module *m, const char *name, float val, port_func *hdl);

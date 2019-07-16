@@ -35,7 +35,7 @@ static void sine_port_frequency(struct module *m, const struct event *e)
  * module functions
  */
 
-static int sine_init(struct module *m)
+static int sine_init(struct module *m, va_list vargs)
 {
 	/* allocate the private data */
 	struct sine_osc *osc = k_calloc(1, sizeof(struct sine_osc));

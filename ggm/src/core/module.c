@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+#include <stdarg.h>
 #include <stdio.h>
 
 #include "ggm.h"
@@ -26,7 +27,7 @@ static const struct module_info *module_list[] = {
 };
 
 /* module_find finds a module by name */
-static const struct module_info *module_find(char *name)
+static const struct module_info *module_find(const char *name)
 {
 	const struct module_info *mi;
 	int i = 0;
@@ -58,8 +59,10 @@ static uint32_t get_module_id(void)
 }
 
 /* module_new returns a new instance of a module. */
-struct module *module_new(struct synth *top, char *name)
+struct module *module_new(struct synth *top, const char *name, ...)
 {
+	va_list vargs;
+
 	/* find the module */
 	const struct module_info *mi = module_find(name);
 
@@ -81,7 +84,9 @@ struct module *module_new(struct synth *top, char *name)
 	m->info = mi;
 
 	/* initialise the module private data */
-	int err = mi->init(m);
+	va_start(vargs, name);
+	int err = mi->init(m, vargs);
+	va_end(vargs);
 	if (err != 0) {
 		LOG_ERR("could not initialise module");
 		k_free(m);
@@ -109,17 +114,6 @@ void module_free(struct module *m)
 	/* stop and free the module */
 	m->info->stop(m);
 	k_free(m);
-}
-
-/******************************************************************************
- * module descriptive strings
- */
-
-/* module_str returns a descriptive string for the module */
-char *module_str(struct module *m, char *buf)
-{
-	sprintf(buf, "%s_%08x", m->info->name, m->id);
-	return buf;
 }
 
 /*****************************************************************************/

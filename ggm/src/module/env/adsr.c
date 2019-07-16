@@ -128,7 +128,7 @@ static void adsr_port_release(struct module *m, const struct event *e)
  * module functions
  */
 
-static int adsr_init(struct module *m)
+static int adsr_init(struct module *m, va_list vargs)
 {
 	/* allocate the private data */
 	struct adsr_env *env = k_calloc(1, sizeof(struct adsr_env));

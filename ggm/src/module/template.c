@@ -25,7 +25,7 @@ static void xmod_port_name(struct module *m, const struct event *e)
  * module functions
  */
 
-static int xmod_init(struct module *m)
+static int xmod_init(struct module *m, va_list vargs)
 {
 	/* allocate the private data */
 	struct xmod *x = k_calloc(1, sizeof(struct xmod));
