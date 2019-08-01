@@ -1,6 +1,6 @@
 TOP = $(PWD)
 
-ZEPHYR_BASE = $(TOP)/zephyr/zephyr
+ZEPHYR_BASE = $(TOP)/zephyr
 ZEPHYR_TOOLCHAIN_VARIANT = cross-compile
 CROSS_COMPILE = /opt/gcc-arm-none-eabi-8-2018-q4-major/bin/arm-none-eabi-
 
@@ -38,14 +38,10 @@ clean:
 	-rm -rf $(BUILD)
 	-rm -rf .stamp*
 
-.PHONY: update
-update:
-	ZEPHYR_BASE=$(ZEPHYR_BASE) \
-	west update
-
 .PHONY: init
 init:
-	west init $(TOP)/zephyr
+	git clone git@github.com:deadsy/zephyr.git
+	git -C zephyr remote add upstream git@github.com:zephyrproject-rtos/zephyr.git
 
 .stamp_cmake:
 	-rm -rf $(BUILD)
