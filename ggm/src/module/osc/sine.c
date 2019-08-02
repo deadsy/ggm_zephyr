@@ -35,39 +35,33 @@ static void sine_port_frequency(struct module *m, const struct event *e)
  * module functions
  */
 
-static int sine_init(struct module *m, va_list vargs)
+static int sine_alloc(struct module *m, va_list vargs)
 {
 	/* allocate the private data */
-	struct sine_osc *osc = k_calloc(1, sizeof(struct sine_osc));
+	struct sine_osc *this = k_calloc(1, sizeof(struct sine_osc));
 
-	if (osc == NULL) {
+	if (this == NULL) {
 		LOG_ERR("could not allocate private data");
 		return -1;
 	}
 
-	m->priv = (void *)osc;
+	m->priv = (void *)this;
 	return 0;
 }
 
-static void sine_stop(struct module *m)
+static void sine_free(struct module *m)
 {
 	k_free(m->priv);
 }
 
-static struct module **sine_child(struct module *m)
-{
-	/* no children */
-	return NULL;
-}
-
 static bool sine_process(struct module *m, float *buf[])
 {
-	struct sine_osc *osc = (struct sine_osc *)m->priv;
+	struct sine_osc *this = (struct sine_osc *)m->priv;
 	float *out = buf[0];
 
 	for (int i = 0; i < AudioBufferSize; i++) {
-		out[i] = cos_lookup(osc->x);
-		osc->x += osc->xstep;
+		out[i] = cos_lookup(this->x);
+		this->x += this->xstep;
 	}
 	return true;
 }
@@ -90,9 +84,8 @@ const struct module_info sine_module = {
 	.name = "sine",
 	.in = in_ports,
 	.out = out_ports,
-	.init = sine_init,
-	.stop = sine_stop,
-	.child = sine_child,
+	.alloc = sine_alloc,
+	.free = sine_free,
 	.process = sine_process,
 };
 

@@ -45,7 +45,9 @@ static void osc_voice_note(struct module *m, const struct event *e)
  * module functions
  */
 
-static int osc_voice_init(struct module *m, va_list vargs)
+typedef struct module * (*osc_func)(struct synth *s);
+
+static int osc_voice_alloc(struct module *m, va_list vargs)
 {
 	struct module *osc = NULL;
 	struct module *adsr = NULL;
@@ -60,9 +62,10 @@ static int osc_voice_init(struct module *m, va_list vargs)
 	m->priv = (void *)this;
 
 	/* oscillator */
-	osc = module_new(m->top, "sine");
+	osc_func new_osc = va_arg(vargs, osc_func);
+	osc = new_osc(m->top);
 	if (osc == NULL) {
-		LOG_ERR("could not create sine module");
+		LOG_ERR("could not create oscillator module");
 		goto error;
 	}
 	event_in_float(osc, "duty", 0.1f, NULL);
@@ -85,29 +88,27 @@ static int osc_voice_init(struct module *m, va_list vargs)
 	return 0;
 
 error:
-	module_free(osc);
-	module_free(adsr);
+	module_del(osc);
+	module_del(adsr);
 	k_free(m->priv);
 	return -1;
 }
 
-static void osc_voice_stop(struct module *m)
+static void osc_voice_free(struct module *m)
 {
-	k_free(m->priv);
-}
+	struct osc_voice *this = (struct osc_voice *)m->priv;
 
-static struct module **osc_voice_child(struct module *m)
-{
-	/* no children */
-	return NULL;
+	module_del(this->osc);
+	module_del(this->adsr);
+	k_free(m->priv);
 }
 
 static bool osc_voice_process(struct module *m, float *buf[])
 {
-	struct xmod_data *x = (struct xmod_data *)m->priv;
+	struct osc_voice *this = (struct osc_voice *)m->priv;
 	float *out = buf[0];
 
-	(void)x;
+	(void)this;
 	(void)out;
 
 	return true;
@@ -132,9 +133,8 @@ const struct module_info osc_voice_module = {
 	.name = "osc_voice",
 	.in = in_ports,
 	.out = out_ports,
-	.init = osc_voice_init,
-	.stop = osc_voice_stop,
-	.child = osc_voice_child,
+	.alloc = osc_voice_alloc,
+	.free = osc_voice_free,
 	.process = osc_voice_process,
 };
 

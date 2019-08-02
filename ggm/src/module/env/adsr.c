@@ -128,7 +128,7 @@ static void adsr_port_release(struct module *m, const struct event *e)
  * module functions
  */
 
-static int adsr_init(struct module *m, va_list vargs)
+static int adsr_alloc(struct module *m, va_list vargs)
 {
 	/* allocate the private data */
 	struct adsr_env *env = k_calloc(1, sizeof(struct adsr_env));
@@ -142,15 +142,9 @@ static int adsr_init(struct module *m, va_list vargs)
 	return 0;
 }
 
-static void adsr_stop(struct module *m)
+static void adsr_free(struct module *m)
 {
 	k_free(m->priv);
-}
-
-static struct module **adsr_child(struct module *m)
-{
-	/* no children */
-	return NULL;
 }
 
 static bool adsr_process(struct module *m, float *buf[])
@@ -238,9 +232,8 @@ const struct module_info adsr_module = {
 	.name = "adsr",
 	.in = in_ports,
 	.out = out_ports,
-	.init = adsr_init,
-	.stop = adsr_stop,
-	.child = adsr_child,
+	.alloc = adsr_alloc,
+	.free = adsr_free,
 	.process = adsr_process,
 };
 

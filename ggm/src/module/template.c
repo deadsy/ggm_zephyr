@@ -25,7 +25,7 @@ static void xmod_port_name(struct module *m, const struct event *e)
  * module functions
  */
 
-static int xmod_init(struct module *m, va_list vargs)
+static int xmod_alloc(struct module *m, va_list vargs)
 {
 	/* allocate the private data */
 	struct xmod *x = k_calloc(1, sizeof(struct xmod));
@@ -39,15 +39,9 @@ static int xmod_init(struct module *m, va_list vargs)
 	return 0;
 }
 
-static void xmod_stop(struct module *m)
+static void xmod_free(struct module *m)
 {
 	k_free(m->priv);
-}
-
-static struct module **xmod_child(struct module *m)
-{
-	/* no children */
-	return NULL;
 }
 
 static bool xmod_process(struct module *m, float *buf[])
@@ -77,9 +71,8 @@ const struct module_info xmod_module = {
 	.name = "xmod",
 	.in = in_ports,
 	.out = out_ports,
-	.init = xmod_init,
-	.stop = xmod_stop,
-	.child = xmod_child,
+	.alloc = xmod_alloc,
+	.free = xmod_free,
 	.process = xmod_process,
 };
 

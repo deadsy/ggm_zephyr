@@ -52,7 +52,7 @@ def exec_cmd(cmd):
 
 def fmt_zephyr(fname):
   print("fmt_zephyr on %s" % fname)
-  exec_cmd('%s -c ./tools/uncrustify.cfg -q --no-backup %s' % (uncrustify_exec, fname))
+  exec_cmd('%s -c ./tools/uncrustify.cfg -q --no-backup -f %s -o %s' % (uncrustify_exec, fname, fname))
 
 #------------------------------------------------------------------------------
 

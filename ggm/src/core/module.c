@@ -83,9 +83,9 @@ struct module *module_new(struct synth *top, const char *name, ...)
 	m->top = top;
 	m->info = mi;
 
-	/* initialise the module private data */
+	/* allocate and initialise the module private data */
 	va_start(vargs, name);
-	int err = mi->init(m, vargs);
+	int err = mi->alloc(m, vargs);
 	va_end(vargs);
 	if (err != 0) {
 		LOG_ERR("could not initialise module");
@@ -96,23 +96,12 @@ struct module *module_new(struct synth *top, const char *name, ...)
 	return m;
 }
 
-/* module_free stops and frees the resources of a module instance. */
-void module_free(struct module *m)
+void module_del(struct module *m)
 {
 	if (m == NULL) {
 		return;
 	}
-
-	/* free the children of this module */
-	struct module **mlist = m->info->child(m);
-
-	if (mlist) {
-		for (int i = 0; mlist[i]; i++) {
-			module_free(mlist[i]);
-		}
-	}
-	/* stop and free the module */
-	m->info->stop(m);
+	m->info->free(m);
 	k_free(m);
 }
 
