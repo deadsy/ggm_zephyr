@@ -37,6 +37,8 @@ struct module_info {
 	bool (*process)(struct module *m, float *buf[]);        /* process buffers for this module */
 };
 
+typedef struct module * (*module_func)(struct synth *s);
+
 #define MODULE_REGISTER(x)
 
 /******************************************************************************
@@ -56,7 +58,7 @@ typedef void (*port_func)(struct module *m, const struct event *e);
 
 /* port_info contains the information describing a port. */
 struct port_info {
-	char *name;             /* port name */
+	const char *name;       /* port name */
 	enum port_type type;    /* port type */
 	port_func func;         /* port event function */
 };
@@ -72,6 +74,11 @@ void module_del(struct module *m);
 
 void event_in(struct module *m, const char *name, const struct event *e, port_func *hdl);
 void event_in_float(struct module *m, const char *name, float val, port_func *hdl);
+
+void event_out(struct module *m, const char *name, const struct event *e);
+void event_push(struct module *m, const char *name, const struct event *e);
+
+int port_num_by_name(const struct port_info port[], const char *name);
 
 /*****************************************************************************/
 

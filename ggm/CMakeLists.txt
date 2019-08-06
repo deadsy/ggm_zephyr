@@ -17,6 +17,7 @@ target_sources(app
 		src/core/math.c
 		src/core/midi.c
 		src/core/module.c
+		src/core/port.c
 		src/module/template.c
 		src/module/env/adsr.c
 		src/module/osc/sine.c

@@ -45,8 +45,6 @@ static void osc_voice_note(struct module *m, const struct event *e)
  * module functions
  */
 
-typedef struct module * (*osc_func)(struct synth *s);
-
 static int osc_voice_alloc(struct module *m, va_list vargs)
 {
 	struct module *osc = NULL;
@@ -62,7 +60,7 @@ static int osc_voice_alloc(struct module *m, va_list vargs)
 	m->priv = (void *)this;
 
 	/* oscillator */
-	osc_func new_osc = va_arg(vargs, osc_func);
+	module_func new_osc = va_arg(vargs, module_func);
 	osc = new_osc(m->top);
 	if (osc == NULL) {
 		LOG_ERR("could not create oscillator module");
