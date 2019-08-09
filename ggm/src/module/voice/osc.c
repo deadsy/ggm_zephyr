@@ -94,6 +94,8 @@ error:
 
 static void osc_voice_free(struct module *m)
 {
+	LOG_MOD_NAME(m);
+
 	struct osc_voice *this = (struct osc_voice *)m->priv;
 
 	module_del(this->osc);

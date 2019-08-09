@@ -39,6 +39,8 @@ struct module_info {
 
 typedef struct module * (*module_func)(struct synth *s);
 
+#define LOG_MOD_NAME(m) LOG_INF("%s_%08x", (m)->info->name, (m)->id)
+
 #define MODULE_REGISTER(x)
 
 /******************************************************************************
@@ -79,6 +81,10 @@ void event_out(struct module *m, const char *name, const struct event *e);
 void event_push(struct module *m, const char *name, const struct event *e);
 
 int port_num_by_name(const struct port_info port[], const char *name);
+
+struct synth *synth_new(void);
+void synth_set_root(struct synth *s, struct module *m);
+void synth_del(struct synth *s);
 
 /*****************************************************************************/
 

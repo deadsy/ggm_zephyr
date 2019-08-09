@@ -1,16 +1,19 @@
 TOP = $(PWD)
 
+BUILD = build
+APP= ggm
+
+BOARD = mimxrt1020_evk
+#BOARD = stm32f4_disco
+
 ZEPHYR_BASE = $(TOP)/zephyr
 ZEPHYR_TOOLCHAIN_VARIANT = cross-compile
 CROSS_COMPILE = /opt/gcc-arm-none-eabi-8-2018-q4-major/bin/arm-none-eabi-
 
 BINFILE = $(BUILD)/zephyr/zephyr.bin
 
-BOARD = mimxrt1020_evk
-#BOARD = stm32f4_disco
-
-BUILD = build
-APP= ggm
+JLINK = /opt/SEGGER/JLink/JLinkExe
+JLINK_CMD = cmd.jlink
 
 .PHONY: all
 all: .stamp_cmake build
@@ -23,10 +26,11 @@ build: .stamp_cmake
 config: .stamp_cmake
 	ninja -C $(BUILD) menuconfig
 
-.PHONY: flash
-flash:
-	ZEPHYR_BASE=$(ZEPHYR_BASE) \
-	ninja -C $(BUILD) flash
+.PHONY: flash_nxp
+flash_nxp:
+	echo "r\nloadfile $(BINFILE) 0x60000000\nq" > $(JLINK_CMD)
+	$(JLINK) -if swd -speed auto -device MIMXRT1021xxx5A -CommanderScript $(JLINK_CMD)
+	rm $(JLINK_CMD)
 
 .PHONY: flash_st
 flash_st:

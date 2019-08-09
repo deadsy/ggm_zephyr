@@ -41,6 +41,7 @@ static int xmod_alloc(struct module *m, va_list vargs)
 
 static void xmod_free(struct module *m)
 {
+	LOG_MOD_NAME(m);
 	k_free(m->priv);
 }
 

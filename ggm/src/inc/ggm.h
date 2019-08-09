@@ -70,6 +70,7 @@ LOG_MODULE_DECLARE(LOG_MODULE_NAME);
  */
 
 struct synth {
+	struct module *root; /* root patch */
 };
 
 /******************************************************************************
