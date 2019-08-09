@@ -47,10 +47,10 @@ static void xmod_free(struct module *m)
 
 static bool xmod_process(struct module *m, float *buf[])
 {
-	struct xmod_data *x = (struct xmod_data *)m->priv;
+	struct xmod *this = (struct xmod *)m->priv;
 	float *out = buf[0];
 
-	(void)x;
+	(void)this;
 	(void)out;
 
 	return true;
@@ -62,10 +62,12 @@ static bool xmod_process(struct module *m, float *buf[])
 
 const static struct port_info in_ports[] = {
 	{ .name = "name", .type = PORT_TYPE_FLOAT, .func = xmod_port_name },
+	PORT_EOL,
 };
 
 static const struct port_info out_ports[] = {
 	{ .name = "out", .type = PORT_TYPE_AUDIO, },
+	PORT_EOL,
 };
 
 const struct module_info xmod_module = {

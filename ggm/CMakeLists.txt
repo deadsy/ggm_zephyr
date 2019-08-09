@@ -22,5 +22,6 @@ target_sources(app
 		src/module/template.c
 		src/module/env/adsr.c
 		src/module/osc/sine.c
+		src/module/seq/basic.c
 		src/module/voice/osc.c
 )
