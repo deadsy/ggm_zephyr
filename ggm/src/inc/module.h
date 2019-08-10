@@ -15,7 +15,7 @@
 
 #include "ggm.h"
 #include "util.h"
-#include "event.h"
+#include "seq.h"
 
 /******************************************************************************
  * module
@@ -56,7 +56,7 @@ enum port_type {
 	PORT_TYPE_MIDI,                 /* event with MIDI data */
 };
 
-typedef void (*port_func)(struct module *m, const struct event *e);
+#include "event.h"
 
 /* port_info contains the information describing a port. */
 struct port_info {
@@ -74,13 +74,8 @@ struct port_info {
 struct module *module_new(struct synth *top, const char *name, ...);
 void module_del(struct module *m);
 
-void event_in(struct module *m, const char *name, const struct event *e, port_func *hdl);
-void event_in_float(struct module *m, const char *name, float val, port_func *hdl);
-
-void event_out(struct module *m, const char *name, const struct event *e);
-void event_push(struct module *m, const char *name, const struct event *e);
-
 int port_num_by_name(const struct port_info port[], const char *name);
+void port_connect(struct module *s, const char *sname, struct module *d, const char *dname);
 
 struct synth *synth_new(void);
 void synth_set_root(struct synth *s, struct module *m);

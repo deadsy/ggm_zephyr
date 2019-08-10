@@ -10,10 +10,10 @@ target_include_directories(app
 
 target_sources(app
 	PRIVATE
+		src/app/metro/main.c
 		src/core/event.c
 		src/core/ftoa.c
 		src/core/lut.c
-		src/core/main.c
 		src/core/math.c
 		src/core/midi.c
 		src/core/module.c
@@ -23,5 +23,6 @@ target_sources(app
 		src/module/env/adsr.c
 		src/module/osc/sine.c
 		src/module/seq/basic.c
+		src/module/seq/metro.c
 		src/module/voice/osc.c
 )

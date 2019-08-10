@@ -13,6 +13,12 @@
 #include <logging/log.h>
 
 /******************************************************************************
+ * version
+ */
+
+#define GGM_VERSION "0.1"
+
+/******************************************************************************
  * logging
  */
 
@@ -64,6 +70,15 @@ LOG_MODULE_DECLARE(LOG_MODULE_NAME);
 
 /* PhaseScale scales a phase value to a uint32_t phase step value */
 #define PhaseScale ((float)FullCycle / Tau)
+
+/* SecsPerMin (seconds per minute) */
+#define SecsPerMin (60.0f)
+
+/* MinBeatsPerMin for sequencer */
+#define MinBeatsPerMin (10.0f)
+
+/* MaxBeatsPerMin for sequencer */
+#define MaxBeatsPerMin (300.0f)
 
 /******************************************************************************
  * top-level synth structure

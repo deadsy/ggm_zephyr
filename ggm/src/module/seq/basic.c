@@ -20,16 +20,8 @@ enum {
 	OP_STATE_WAIT,
 };
 
-enum {
-	OP_NOP,
-	OP_LOOP,
-	OP_REST,
-	OP_NOTE,
-	OP_END,
-};
-
 struct seq_state_machine {
-	uint32_t *prog;         /* program operations */
+	uint8_t *prog;          /* program operations */
 	int pc;                 /* program counter */
 	int seq_state;          /* sequencer state */
 	int op_state;           /* operation state */
@@ -47,48 +39,107 @@ struct basic_seq {
  * state machine operations
  */
 
-static int prog_len(uint32_t *p)
-{
-	int i = 0;
+struct note_args {
+	uint8_t op;
+	uint8_t chan;
+	uint8_t note;
+	uint8_t vel;
+	uint8_t dur;
+};
 
-	while (p[i] != OP_END) {
-		i += 1;
-	}
-	return i;
+struct rest_args {
+	uint8_t op;
+	uint8_t dur;
+};
+
+/* op_nop is a no operation (op) */
+static int op_nop(struct module *m)
+{
+	return 1;
 }
 
-static void tick(struct basic_seq *s, struct seq_state_machine *sm)
+/* op_loop returns to the beginning of the program (op) */
+static int op_loop(struct module *m)
 {
+	struct basic_seq *this = (struct basic_seq *)m->priv;
+	struct seq_state_machine *sm = this->sm;
+
+	sm->pc = -1;
+	return 1;
+}
+
+/* op_note generates note on/off events (op, channel, note, velocity, duration) */
+static int op_note(struct module *m)
+{
+	struct basic_seq *this = (struct basic_seq *)m->priv;
+	struct seq_state_machine *sm = this->sm;
+	struct note_args *args = (struct note_args *)&sm->prog[sm->pc];
+
+	if (sm->op_state == OP_STATE_INIT) {
+		/* init */
+		sm->duration = args->dur;
+		sm->op_state = OP_STATE_WAIT;
+		LOG_INF("note on %d (%d)", args->note, this->ticks);
+		struct event e;
+		event_set_midi(&e, MIDI_STATUS_NOTEON, args->chan, args->note, args->vel);
+		event_push(m, "midi", &e);
+	}
+	sm->duration -= 1;
+	if (sm->duration == 0) {
+		/* done */
+		sm->op_state = OP_STATE_INIT;
+		LOG_INF("note off (%d)", this->ticks);
+		struct event e;
+		event_set_midi(&e, MIDI_STATUS_NOTEOFF, args->chan, args->note, 0);
+		event_push(m, "midi", &e);
+		return sizeof(struct note_args);
+	}
+	/* waiting... */
+	return 0;
+}
+
+/* op_rest rests for a duration (op, duration) */
+static int op_rest(struct module *m)
+{
+	struct basic_seq *this = (struct basic_seq *)m->priv;
+	struct seq_state_machine *sm = this->sm;
+	struct rest_args *args = (struct rest_args *)&sm->prog[sm->pc];
+
+	if (sm->op_state == OP_STATE_INIT) {
+		/* init */
+		sm->duration = args->dur;
+		sm->op_state = OP_STATE_WAIT;
+	}
+	sm->duration -= 1;
+	if (sm->duration == 0) {
+		/* done */
+		sm->op_state = OP_STATE_INIT;
+		return sizeof(struct rest_args);
+	}
+	/* waiting... */
+	return 0;
+}
+
+static int (*op_table[SEQ_OP_NUM]) (struct module *m) = {
+	op_nop,                 /* SEQ_OP_NOP */
+	op_loop,                /* SEQ_OP_LOOP */
+	op_note,                /* SEQ_OP_NOTE */
+	op_rest,                /* SEQ_OP_REST */
+};
+
+static void basic_seq_tick(struct module *m)
+{
+	struct basic_seq *this = (struct basic_seq *)m->priv;
+	struct seq_state_machine *sm = this->sm;
+
 	/* auto stop zero length programs */
-	if (sm->prog == NULL || prog_len(sm->prog) == 0) {
+	if (sm->prog == NULL) {
 		sm->seq_state = SEQ_STATE_STOP;
 	}
 	/* run the program */
 	if (sm->seq_state == SEQ_STATE_RUN) {
-
-		int op = sm->prog[sm->pc];
-		int n = 0;
-
-		switch (op) {
-
-		case OP_NOP:
-			/* do nothing */
-			n = 1;
-			break;
-
-		case OP_LOOP:
-			/* loop back to the start of the program */
-			sm->pc = -1;
-			n = 1;
-			break;
-
-		default:
-			LOG_ERR("unknown operation");
-			n = 1;
-			break;
-		}
-
-		sm->pc += n;
+		int (*op) (struct module *m) = op_table[sm->prog[sm->pc]];
+		sm->pc += op(m);
 	}
 }
 
@@ -96,12 +147,43 @@ static void tick(struct basic_seq *s, struct seq_state_machine *sm)
  * module port functions
  */
 
+#define TICKS_PER_BEAT (16.0f)
+
 static void basic_seq_port_bpm(struct module *m, const struct event *e)
 {
+	struct basic_seq *this = (struct basic_seq *)m->priv;
+	float bpm = clampf(event_get_float(e), MinBeatsPerMin, MaxBeatsPerMin);
+	char tmp[64];
+
+	LOG_INF("%s_%08x set bpm %s", m->info->name, m->id, log_strdup(ftoa(bpm, tmp)));
+	this->secs_per_tick = SecsPerMin / (bpm * TICKS_PER_BEAT);
 }
 
 static void basic_seq_port_ctrl(struct module *m, const struct event *e)
 {
+	struct basic_seq *this = (struct basic_seq *)m->priv;
+	struct seq_state_machine *sm = (struct seq_state_machine *)this->sm;
+	int ctrl = event_get_int(e);
+
+	switch (ctrl) {
+	case SEQ_CTRL_STOP: /* stop the sequencer */
+		LOG_INF("ctrl stop");
+		sm->seq_state = SEQ_STATE_STOP;
+		break;
+	case SEQ_CTRL_START: /* start the sequencer */
+		LOG_INF("ctrl start");
+		sm->seq_state = SEQ_STATE_RUN;
+		break;
+	case SEQ_CTRL_RESET: /* reset the sequencer */
+		LOG_INF("ctrl reset");
+		sm->seq_state = SEQ_STATE_STOP;
+		sm->op_state = OP_STATE_INIT;
+		sm->pc = 0;
+		break;
+	default:
+		LOG_INF("unknown control value %d", ctrl);
+		break;
+	}
 }
 
 /******************************************************************************
@@ -111,14 +193,14 @@ static void basic_seq_port_ctrl(struct module *m, const struct event *e)
 static int basic_seq_alloc(struct module *m, va_list vargs)
 {
 	/* allocate the private data */
-	struct basic_seq *x = k_calloc(1, sizeof(struct basic_seq));
+	struct basic_seq *this = k_calloc(1, sizeof(struct basic_seq));
 
-	if (x == NULL) {
+	if (this == NULL) {
 		LOG_ERR("could not allocate private data");
 		return -1;
 	}
 
-	m->priv = (void *)x;
+	m->priv = (void *)this;
 	return 0;
 }
 
@@ -144,7 +226,7 @@ static bool basic_seq_process(struct module *m, float *buf[])
 		this->tick_error -= this->secs_per_tick;
 		this->ticks++;
 		/* tick the state machine */
-		tick(this, this->sm);
+		basic_seq_tick(m);
 	}
 	return false;
 }
