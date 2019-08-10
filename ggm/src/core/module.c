@@ -4,11 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <stdarg.h>
-#include <stdio.h>
-
 #include "ggm.h"
-#include "module.h"
 
 /******************************************************************************
  * the set of all registered modules

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "module.h"
+#include "ggm.h"
 
 /******************************************************************************
  * event_in sends an event to a named port on a module.

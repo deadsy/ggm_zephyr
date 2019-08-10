@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "module.h"
+#include "ggm.h"
 
 /******************************************************************************
  * port_num_by_name returns the number of ports within a set matching a name.

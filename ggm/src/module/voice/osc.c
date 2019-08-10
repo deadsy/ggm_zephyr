@@ -2,14 +2,12 @@
  * Copyright (c) 2019 Jason T. Harris. (sirmanlypowers@gmail.com)
  *
  * SPDX-License-Identifier: Apache-2.0
- */
-
-/******************************************************************************
+ *
  * Oscillator Voice
  * This voice is a generic oscillator with an ADSR envelope applied to it.
  */
 
-#include "module.h"
+#include "ggm.h"
 
 /******************************************************************************
  * private state

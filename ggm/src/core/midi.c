@@ -6,7 +6,7 @@
 
 #include <stdio.h>
 
-#include "module.h"
+#include "ggm.h"
 
 /******************************************************************************
  * midi_to_frequency converts a MIDI note to a frequency value (Hz).

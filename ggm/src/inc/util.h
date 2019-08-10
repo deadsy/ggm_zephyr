@@ -7,10 +7,6 @@
 #ifndef GGM_SRC_INC_UTIL_H
 #define GGM_SRC_INC_UTIL_H
 
-#include <inttypes.h>
-
-#include "ggm.h"
-
 /******************************************************************************
  * radian/degree conversion
  */

@@ -5,7 +5,13 @@
  */
 
 #include "ggm.h"
-#include "module.h"
+
+/******************************************************************************
+ * event queue - events are dispatched to modules between calls to process
+ * audio buffers. Events generated during buffer processing are queued and then
+ * dispatched after the buffer processing is completed.
+ */
+
 
 /******************************************************************************
  * synth_new allocates a new synth.

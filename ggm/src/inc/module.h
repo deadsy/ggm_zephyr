@@ -7,16 +7,6 @@
 #ifndef GGM_SRC_INC_MODULE_H
 #define GGM_SRC_INC_MODULE_H
 
-#include <stddef.h>
-#include <stdbool.h>
-#include <inttypes.h>
-
-#include <zephyr.h>
-
-#include "ggm.h"
-#include "util.h"
-#include "seq.h"
-
 /******************************************************************************
  * module
  */
@@ -44,43 +34,11 @@ typedef struct module * (*module_func)(struct synth *s);
 #define MODULE_REGISTER(x)
 
 /******************************************************************************
- * module ports
- */
-
-enum port_type {
-	PORT_TYPE_NULL = 0,
-	PORT_TYPE_AUDIO,                /* audio buffers */
-	PORT_TYPE_FLOAT,                /* event with float values */
-	PORT_TYPE_INT,                  /* event with integer values */
-	PORT_TYPE_BOOL,                 /* event with boolean values */
-	PORT_TYPE_MIDI,                 /* event with MIDI data */
-};
-
-#include "event.h"
-
-/* port_info contains the information describing a port. */
-struct port_info {
-	const char *name;       /* port name */
-	enum port_type type;    /* port type */
-	port_func func;         /* port event function */
-};
-
-#define PORT_EOL { NULL, PORT_TYPE_NULL, NULL }
-
-/******************************************************************************
  * function prototypes
  */
 
 struct module *module_new(struct synth *top, const char *name, ...);
 void module_del(struct module *m);
-
-int port_num_by_name(const struct port_info port[], const char *name);
-void port_connect(struct module *s, const char *sname, struct module *d, const char *dname);
-
-struct synth *synth_new(void);
-void synth_del(struct synth *s);
-void synth_set_root(struct synth *s, struct module *m);
-void synth_process(struct synth *s);
 
 /*****************************************************************************/
 

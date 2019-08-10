@@ -6,6 +6,7 @@ project(NONE)
 target_include_directories(app
 	PRIVATE
 		src/inc
+		src/module
 )
 
 target_sources(app

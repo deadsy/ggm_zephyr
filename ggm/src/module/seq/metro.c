@@ -4,7 +4,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "module.h"
+#include "ggm.h"
+#include "seq/seq.h"
 
 /******************************************************************************
  * patterns

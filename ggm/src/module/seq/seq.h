@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef GGM_SRC_INC_SEQ_H
-#define GGM_SRC_INC_SEQ_H
+#ifndef GGM_SRC_MODULE_SEQ_SEQ_H
+#define GGM_SRC_MODULE_SEQ_SEQ_H
 
 /******************************************************************************
  * sequencer op codes
@@ -31,6 +31,6 @@ enum {
 
 /*****************************************************************************/
 
-#endif /* GGM_SRC_INC_SEQ_H */
+#endif /* GGM_SRC_MODULE_SEQ_SEQ_H */
 
 /*****************************************************************************/

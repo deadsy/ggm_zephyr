@@ -34,18 +34,18 @@ struct event {
 	} u;
 };
 
-typedef void (*port_func)(struct module *m, const struct event *e);
-
 /******************************************************************************
  * function prototypes
  */
+
+typedef void (*port_func)(struct module *m, const struct event *e);
 
 void event_in(struct module *m, const char *name, const struct event *e, port_func *hdl);
 void event_out(struct module *m, const char *name, const struct event *e);
 void event_push(struct module *m, const char *name, const struct event *e);
 
 /******************************************************************************
- * midi events
+ * MIDI events
  */
 
 /* Channel Messages */
