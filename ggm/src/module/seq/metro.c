@@ -73,7 +73,7 @@ static int metro_alloc(struct module *m, va_list vargs)
 	this->seq = seq;
 
 	/* midi monitor */
-	mon = module_new(m->top, "midimon", MIDI_CHANNEL);
+	mon = module_new(m->top, "midi_mon", MIDI_CHANNEL);
 	if (mon == NULL) {
 		LOG_ERR("could not create MIDI monitor");
 		goto error;
@@ -96,18 +96,17 @@ static void metro_free(struct module *m)
 
 	LOG_MOD_NAME(m);
 	module_del(this->seq);
+	module_del(this->mon);
 	k_free(this);
 }
 
 static bool metro_process(struct module *m, float *buf[])
 {
 	struct metro *this = (struct metro *)m->priv;
-	float *out = buf[0];
+	struct module *seq = this->seq;
 
-	(void)this;
-	(void)out;
-
-	return true;
+	seq->info->process(seq, NULL);
+	return false;
 }
 
 /******************************************************************************

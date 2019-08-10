@@ -78,8 +78,9 @@ int port_num_by_name(const struct port_info port[], const char *name);
 void port_connect(struct module *s, const char *sname, struct module *d, const char *dname);
 
 struct synth *synth_new(void);
-void synth_set_root(struct synth *s, struct module *m);
 void synth_del(struct synth *s);
+void synth_set_root(struct synth *s, struct module *m);
+void synth_process(struct synth *s);
 
 /*****************************************************************************/
 

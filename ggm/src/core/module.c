@@ -17,16 +17,18 @@
 extern struct module_info sine_module;
 extern struct module_info adsr_module;
 extern struct module_info osc_voice_module;
-extern struct module_info basic_seq_module;
+extern struct module_info seq_module;
 extern struct module_info metro_module;
+extern struct module_info midi_mon_module;
 
 /* module_list is a list off all the system modules */
 static const struct module_info *module_list[] = {
 	&sine_module,
 	&adsr_module,
 	&osc_voice_module,
-	&basic_seq_module,
+	&seq_module,
 	&metro_module,
+	&midi_mon_module,
 	NULL,
 };
 

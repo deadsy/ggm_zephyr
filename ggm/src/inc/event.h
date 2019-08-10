@@ -77,7 +77,17 @@ void event_push(struct module *m, const char *name, const struct event *e);
 #define MIDI_STATUS_COMMON  0Xf0
 #define MIDI_STATUS_REALTIME  0Xf8
 
-static inline void event_set_midi(struct event *e, uint8_t msg, uint8_t channel, uint8_t note, uint8_t velocity)
+/* MIDI event types */
+#define MIDI_EVENT_NULL 0
+#define MIDI_EVENT_NOTE_ON (MIDI_STATUS_NOTEON)
+#define MIDI_EVENT_NOTE_OFF (MIDI_STATUS_NOTEOFF)
+#define MIDI_EVENT_CONTROL_CHANGE (MIDI_STATUS_CONTROLCHANGE)
+#define MIDI_EVENT_PITCH_WHEEL (MIDI_STATUS_PITCHWHEEL)
+#define MIDI_EVENT_POLYPHONIC_AFTERTOUCH (MIDI_STATUS_POLYPHONICAFTERTOUCH)
+#define MIDI_EVENT_PROGRAM_CHANGE (MIDI_STATUS_PROGRAMCHANGE)
+#define MIDI_EVENT_CHANNEL_AFTERTOUCH (MIDI_STATUS_CHANNELAFTERTOUCH)
+
+static inline void event_set_midi(struct event *e, uint8_t msg, uint8_t chan, uint8_t note, uint8_t velocity)
 {
 	e->type = EVENT_TYPE_MIDI;
 	e->u.midi.type = 0;
@@ -86,19 +96,39 @@ static inline void event_set_midi(struct event *e, uint8_t msg, uint8_t channel,
 	e->u.midi.arg1 = 0;
 }
 
+/* event_get_midi_channel returns the MIDI channel number */
+static uint8_t event_get_midi_channel(const struct event *e)
+{
+	return e->u.midi.status & 0xf;
+}
+
+static inline const struct event *event_filter_midi_channel(const struct event *e, uint8_t chan)
+{
+	if (e->type != EVENT_TYPE_MIDI) {
+		return NULL;
+	}
+	if (event_get_midi_channel(e) != chan) {
+		return NULL;
+	}
+	/* it's a MIDI event on the channel */
+	return e;
+}
+
+char *midi_str(const struct event *e, char *s, size_t n);
+
 /******************************************************************************
  * float events
  */
-
-static inline float event_get_float(const struct event *e)
-{
-	return e->u.fval;
-}
 
 static inline void event_set_float(struct event *e, float x)
 {
 	e->type = EVENT_TYPE_FLOAT;
 	e->u.fval = x;
+}
+
+static inline float event_get_float(const struct event *e)
+{
+	return e->u.fval;
 }
 
 static inline void event_in_float(struct module *m, const char *name, float val, port_func *hdl)
@@ -113,15 +143,15 @@ static inline void event_in_float(struct module *m, const char *name, float val,
  * integer events
  */
 
-static inline int event_get_int(const struct event *e)
-{
-	return e->u.ival;
-}
-
 static inline void event_set_int(struct event *e, int x)
 {
 	e->type = EVENT_TYPE_INT;
 	e->u.ival = x;
+}
+
+static inline int event_get_int(const struct event *e)
+{
+	return e->u.ival;
 }
 
 static inline void event_in_int(struct module *m, const char *name, int val, port_func *hdl)

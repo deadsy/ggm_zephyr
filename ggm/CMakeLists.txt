@@ -21,8 +21,9 @@ target_sources(app
 		src/core/synth.c
 		src/module/template.c
 		src/module/env/adsr.c
+		src/module/midi/mon.c
 		src/module/osc/sine.c
-		src/module/seq/basic.c
+		src/module/seq/seq.c
 		src/module/seq/metro.c
 		src/module/voice/osc.c
 )

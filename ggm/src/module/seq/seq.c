@@ -20,7 +20,7 @@ enum {
 	OP_STATE_WAIT,
 };
 
-struct seq_state_machine {
+struct seq_sm {
 	uint8_t *prog;          /* program operations */
 	int pc;                 /* program counter */
 	int seq_state;          /* sequencer state */
@@ -28,11 +28,11 @@ struct seq_state_machine {
 	int duration;           /* operation duration */
 };
 
-struct basic_seq {
-	float secs_per_tick;            /* seconds per tick */
-	float tick_error;               /* current tick error*/
-	uint32_t ticks;                 /* full ticks*/
-	struct seq_state_machine *sm;   /* state machine */
+struct seq {
+	float secs_per_tick;    /* seconds per tick */
+	float tick_error;       /* current tick error*/
+	uint32_t ticks;         /* full ticks*/
+	struct seq_sm sm;       /* state machine */
 };
 
 /******************************************************************************
@@ -61,8 +61,8 @@ static int op_nop(struct module *m)
 /* op_loop returns to the beginning of the program (op) */
 static int op_loop(struct module *m)
 {
-	struct basic_seq *this = (struct basic_seq *)m->priv;
-	struct seq_state_machine *sm = this->sm;
+	struct seq *this = (struct seq *)m->priv;
+	struct seq_sm *sm = &this->sm;
 
 	sm->pc = -1;
 	return 1;
@@ -71,8 +71,8 @@ static int op_loop(struct module *m)
 /* op_note generates note on/off events (op, channel, note, velocity, duration) */
 static int op_note(struct module *m)
 {
-	struct basic_seq *this = (struct basic_seq *)m->priv;
-	struct seq_state_machine *sm = this->sm;
+	struct seq *this = (struct seq *)m->priv;
+	struct seq_sm *sm = &this->sm;
 	struct note_args *args = (struct note_args *)&sm->prog[sm->pc];
 
 	if (sm->op_state == OP_STATE_INIT) {
@@ -101,8 +101,8 @@ static int op_note(struct module *m)
 /* op_rest rests for a duration (op, duration) */
 static int op_rest(struct module *m)
 {
-	struct basic_seq *this = (struct basic_seq *)m->priv;
-	struct seq_state_machine *sm = this->sm;
+	struct seq *this = (struct seq *)m->priv;
+	struct seq_sm *sm = &this->sm;
 	struct rest_args *args = (struct rest_args *)&sm->prog[sm->pc];
 
 	if (sm->op_state == OP_STATE_INIT) {
@@ -127,10 +127,10 @@ static int (*op_table[SEQ_OP_NUM]) (struct module *m) = {
 	op_rest,                /* SEQ_OP_REST */
 };
 
-static void basic_seq_tick(struct module *m)
+static void seq_tick(struct module *m)
 {
-	struct basic_seq *this = (struct basic_seq *)m->priv;
-	struct seq_state_machine *sm = this->sm;
+	struct seq *this = (struct seq *)m->priv;
+	struct seq_sm *sm = &this->sm;
 
 	/* auto stop zero length programs */
 	if (sm->prog == NULL) {
@@ -149,9 +149,9 @@ static void basic_seq_tick(struct module *m)
 
 #define TICKS_PER_BEAT (16.0f)
 
-static void basic_seq_port_bpm(struct module *m, const struct event *e)
+static void seq_port_bpm(struct module *m, const struct event *e)
 {
-	struct basic_seq *this = (struct basic_seq *)m->priv;
+	struct seq *this = (struct seq *)m->priv;
 	float bpm = clampf(event_get_float(e), MinBeatsPerMin, MaxBeatsPerMin);
 	char tmp[64];
 
@@ -159,10 +159,10 @@ static void basic_seq_port_bpm(struct module *m, const struct event *e)
 	this->secs_per_tick = SecsPerMin / (bpm * TICKS_PER_BEAT);
 }
 
-static void basic_seq_port_ctrl(struct module *m, const struct event *e)
+static void seq_port_ctrl(struct module *m, const struct event *e)
 {
-	struct basic_seq *this = (struct basic_seq *)m->priv;
-	struct seq_state_machine *sm = (struct seq_state_machine *)this->sm;
+	struct seq *this = (struct seq *)m->priv;
+	struct seq_sm *sm = &this->sm;
 	int ctrl = event_get_int(e);
 
 	switch (ctrl) {
@@ -190,29 +190,32 @@ static void basic_seq_port_ctrl(struct module *m, const struct event *e)
  * module functions
  */
 
-static int basic_seq_alloc(struct module *m, va_list vargs)
+static int seq_alloc(struct module *m, va_list vargs)
 {
 	/* allocate the private data */
-	struct basic_seq *this = k_calloc(1, sizeof(struct basic_seq));
+	struct seq *this = k_calloc(1, sizeof(struct seq));
 
 	if (this == NULL) {
 		LOG_ERR("could not allocate private data");
 		return -1;
 	}
-
 	m->priv = (void *)this;
+
+	/* setup the sequencer program */
+	this->sm.prog = va_arg(vargs, uint8_t *);
+
 	return 0;
 }
 
-static void basic_seq_free(struct module *m)
+static void seq_free(struct module *m)
 {
 	LOG_MOD_NAME(m);
 	k_free(m->priv);
 }
 
-static bool basic_seq_process(struct module *m, float *buf[])
+static bool seq_process(struct module *m, float *buf[])
 {
-	struct basic_seq *this = (struct basic_seq *)m->priv;
+	struct seq *this = (struct seq *)m->priv;
 
 	/* This routine is being used as a periodic call for timed event generation.
 	 * The sequencer does not process audio buffers.
@@ -226,7 +229,7 @@ static bool basic_seq_process(struct module *m, float *buf[])
 		this->tick_error -= this->secs_per_tick;
 		this->ticks++;
 		/* tick the state machine */
-		basic_seq_tick(m);
+		seq_tick(m);
 	}
 	return false;
 }
@@ -236,8 +239,8 @@ static bool basic_seq_process(struct module *m, float *buf[])
  */
 
 const static struct port_info in_ports[] = {
-	{ .name = "bpm", .type = PORT_TYPE_FLOAT, .func = basic_seq_port_bpm },
-	{ .name = "ctrl", .type = PORT_TYPE_INT, .func = basic_seq_port_ctrl },
+	{ .name = "bpm", .type = PORT_TYPE_FLOAT, .func = seq_port_bpm },
+	{ .name = "ctrl", .type = PORT_TYPE_INT, .func = seq_port_ctrl },
 	PORT_EOL,
 };
 
@@ -246,15 +249,15 @@ static const struct port_info out_ports[] = {
 	PORT_EOL,
 };
 
-const struct module_info basic_seq_module = {
-	.name = "basic_seq",
+const struct module_info seq_module = {
+	.name = "seq",
 	.in = in_ports,
 	.out = out_ports,
-	.alloc = basic_seq_alloc,
-	.free = basic_seq_free,
-	.process = basic_seq_process,
+	.alloc = seq_alloc,
+	.free = seq_free,
+	.process = seq_process,
 };
 
-MODULE_REGISTER(basic_seq_module);
+MODULE_REGISTER(seq_module);
 
 /*****************************************************************************/

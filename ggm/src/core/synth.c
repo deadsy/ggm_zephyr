@@ -40,7 +40,22 @@ void synth_del(struct synth *s)
 
 void synth_set_root(struct synth *s, struct module *m)
 {
+	LOG_MOD_NAME(m);
+
 	s->root = m;
+}
+
+/******************************************************************************
+ * synth_process runs the process function of the root patch.
+ */
+
+void synth_process(struct synth *s)
+{
+	struct module *m = s->root;
+
+	if (m != NULL) {
+		m->info->process(m, NULL);
+	}
 }
 
 /*****************************************************************************/

@@ -24,6 +24,11 @@ void main(void)
 	struct module *m = module_new(s, "metro");
 	synth_set_root(s, m);
 
+  for(int i = 0; i < 2000; i ++) {
+    synth_process(s);
+    k_sleep(3);
+  }
+
 	synth_del(s);
 }
 
