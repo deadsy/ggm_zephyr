@@ -85,17 +85,32 @@ struct module *module_new(struct synth *top, const char *name, ...)
 	m->top = top;
 	m->info = mi;
 
+	/* allocate link list headers for the output port destinations */
+	int n = port_count(mi->out);
+	if (n > 0) {
+		struct output_dst **dst = k_calloc(n, sizeof(void *));
+		if (dst == NULL) {
+			LOG_ERR("could not allocate output destination lists");
+			goto error;
+		}
+		m->dst = dst;
+	}
+
 	/* allocate and initialise the module private data */
 	va_start(vargs, name);
 	int err = mi->alloc(m, vargs);
 	va_end(vargs);
 	if (err != 0) {
 		LOG_ERR("could not initialise module");
-		k_free(m);
-		return NULL;
+		goto error;
 	}
 
 	return m;
+
+error:
+	k_free(m->dst);
+	k_free(m);
+	return NULL;
 }
 
 void module_del(struct module *m)
@@ -104,6 +119,8 @@ void module_del(struct module *m)
 		return;
 	}
 	m->info->free(m);
+	/* TODO - deallocate link lists of output destinations */
+	k_free(m->dst);
 	k_free(m);
 }
 

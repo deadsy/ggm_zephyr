@@ -53,8 +53,7 @@ void event_in(struct module *m, const char *name, const struct event *e, port_fu
 
 /******************************************************************************
  * event_out sends an event time event from the output port of a module.
- * At event time (ie: now) the event will be sent to the ports connected to
- * the output port.
+ * The event will be sent to the ports connected to the output port.
  */
 
 void event_out(struct module *m, int idx, const struct event *e)

@@ -53,6 +53,8 @@ struct output_dst {
  * function prototypes
  */
 
+int port_count(const struct port_info port[]);
+
 int port_get_index(const struct port_info port[], const char *name);
 const struct port_info *port_get_info(const struct port_info port[], const char *name);
 
