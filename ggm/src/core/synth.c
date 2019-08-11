@@ -37,7 +37,7 @@ exit:
 }
 
 /* synth_event_wr writes an event to the event queue */
-int synth_event_wr(struct synth *s, struct module *m, port_func func, const struct event *e)
+int synth_event_wr(struct synth *s, struct module *m, int idx, const struct event *e)
 {
 	struct event_queue *eq = &s->eq;
 	int rc = 0;
@@ -54,7 +54,7 @@ int synth_event_wr(struct synth *s, struct module *m, port_func func, const stru
 	/* copy the event data */
 	struct qevent *x = &eq->queue[eq->wr];
 	x->m = m;
-	x->func = func;
+	x->idx = idx;
 	memcpy(&x->e, e, sizeof(struct event));
 
 	/* advance the write index */
@@ -113,7 +113,7 @@ void synth_process(struct synth *s)
 
 	/* process all queued events */
 	while (synth_event_rd(s, &q) == 0) {
-		q.func(q.m, &q.e);
+		event_out(q.m, q.idx, &q.e);
 	}
 
 	/* zero the audio output buffers */

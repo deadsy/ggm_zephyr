@@ -16,14 +16,20 @@
  */
 
 struct module {
+	const struct module_info *info; /* module info */
 	uint32_t id;                    /* module identifier */
 	struct synth *top;              /* top level synth */
-	const struct module_info *info; /* module info */
+	struct output_dst **dst;        /* output port destinations */
 	void *priv;                     /* pointer to private module data */
 };
 
+/* module_info stores descriptive information common to all module instances of
+ * a given type. The information is defined by code and is known at compile time.
+ * The information is constant at runtime, so the structure can be stored in
+ * read-only memory.
+ */
 struct module_info {
-	char *name;                                             /* module name */
+	const char *name;                                       /* module name */
 	const struct port_info *in;                             /* input ports */
 	const struct port_info *out;                            /* output ports */
 	int (*alloc)(struct module *m, va_list vargs);          /* allocate and initialise the module */

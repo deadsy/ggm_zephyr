@@ -64,7 +64,7 @@ static int metro_alloc(struct module *m, va_list vargs)
 	m->priv = (void *)this;
 
 	/* sequencer */
-	seq = module_new(m->top, "seq", signature_4_4);
+	seq = module_new(m->top, "seq.seq", signature_4_4);
 	if (seq == NULL) {
 		LOG_ERR("could not create sequencer");
 		goto error;
@@ -74,13 +74,18 @@ static int metro_alloc(struct module *m, va_list vargs)
 	this->seq = seq;
 
 	/* midi monitor */
-	mon = module_new(m->top, "midi_mon", MIDI_CHANNEL);
+	mon = module_new(m->top, "midi.mon", MIDI_CHANNEL);
 	if (mon == NULL) {
 		LOG_ERR("could not create MIDI monitor");
 		goto error;
 	}
 	this->mon = mon;
+
+	/* monitor the sequencer output */
 	port_connect(seq, "midi", mon, "midi");
+
+	/* connect the sequencer output to the metronome output */
+	port_connect_thru(seq, "midi", m, "midi");
 
 	return 0;
 
@@ -125,7 +130,7 @@ static const struct port_info out_ports[] = {
 };
 
 const struct module_info metro_module = {
-	.name = "metro",
+	.name = "seq.metro",
 	.in = in_ports,
 	.out = out_ports,
 	.alloc = metro_alloc,

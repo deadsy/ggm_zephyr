@@ -70,7 +70,7 @@ static int osc_voice_alloc(struct module *m, va_list vargs)
 	this->osc = osc;
 
 	/* adsr */
-	adsr = module_new(m->top, "adsr");
+	adsr = module_new(m->top, "env.adsr");
 	if (adsr == NULL) {
 		LOG_ERR("could not create adsr module");
 		goto error;
@@ -128,7 +128,7 @@ static const struct port_info out_ports[] = {
 };
 
 const struct module_info osc_voice_module = {
-	.name = "osc_voice",
+	.name = "voice.osc",
 	.in = in_ports,
 	.out = out_ports,
 	.alloc = osc_voice_alloc,

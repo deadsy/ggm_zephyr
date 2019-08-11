@@ -83,7 +83,7 @@ static int op_note(struct module *m)
 		LOG_INF("note on %d (%d)", args->note, this->ticks);
 		struct event e;
 		event_set_midi(&e, MIDI_STATUS_NOTEON, args->chan, args->note, args->vel);
-		event_push(m, "midi", &e);
+		event_push_name(m, "midi", &e);
 	}
 	sm->duration -= 1;
 	if (sm->duration == 0) {
@@ -92,7 +92,7 @@ static int op_note(struct module *m)
 		LOG_INF("note off (%d)", this->ticks);
 		struct event e;
 		event_set_midi(&e, MIDI_STATUS_NOTEOFF, args->chan, args->note, 0);
-		event_push(m, "midi", &e);
+		event_push_name(m, "midi", &e);
 		return sizeof(struct note_args);
 	}
 	/* waiting... */
@@ -251,7 +251,7 @@ static const struct port_info out_ports[] = {
 };
 
 const struct module_info seq_module = {
-	.name = "seq",
+	.name = "seq.seq",
 	.in = in_ports,
 	.out = out_ports,
 	.alloc = seq_alloc,

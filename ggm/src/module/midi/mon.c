@@ -66,7 +66,7 @@ const static struct port_info in_ports[] = {
 };
 
 const struct module_info midi_mon_module = {
-	.name = "midi_mon",
+	.name = "midi.mon",
 	.in = in_ports,
 	.alloc = midi_mon_alloc,
 	.free = midi_mon_free,

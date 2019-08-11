@@ -52,34 +52,55 @@ void event_in(struct module *m, const char *name, const struct event *e, port_fu
 }
 
 /******************************************************************************
- * event_out sends an event time event from the named output port of a module.
- * The event will be sent to input ports connected to the output port.
+ * event_out sends an event time event from the output port of a module.
+ * At event time (ie: now) the event will be sent to the ports connected to
+ * the output port.
  */
 
-void event_out(struct module *m, const char *name, const struct event *e)
+void event_out(struct module *m, int idx, const struct event *e)
 {
 }
 
-/******************************************************************************
- * event_push sends a process time event from the named output port of a module.
- * The event will be sent to input ports connected to the output port.
- */
-
-void event_push(struct module *m, const char *name, const struct event *e)
+/* output from a named port */
+void event_out_name(struct module *m, const char *name, const struct event *e)
 {
-	/* lookup the port function */
-	const struct port_info *p = port_lookup(m, name);
+	/* get the index of the output port */
+	int idx = port_get_index(m->info->out, name);
 
-	if (p == NULL) {
-		LOG_ERR("%s_%08x does not have port named %s", m->info->name, m->id, name);
+	if (idx < 0) {
+		LOG_ERR("%s_%08x does not have output port %s", m->info->name, m->id, name);
 		return;
 	}
+	event_out(m, idx, e);
+}
 
+/******************************************************************************
+ * event_push sends a process time event from the output port of a module.
+ * At event time the event will be sent to the ports connected to the output
+ * port.
+ */
+
+void event_push(struct module *m, int idx, const struct event *e)
+{
 	/* queue the event for later processing */
-	int rc = synth_event_wr(m->top, m, p->func, e);
+	int rc = synth_event_wr(m->top, m, idx, e);
+
 	if (rc != 0) {
 		LOG_ERR("event queue overflow");
 	}
+}
+
+/* push to a named port */
+void event_push_name(struct module *m, const char *name, const struct event *e)
+{
+	/* get the index of the output port */
+	int idx = port_get_index(m->info->out, name);
+
+	if (idx < 0) {
+		LOG_ERR("%s_%08x does not have output port %s", m->info->name, m->id, name);
+		return;
+	}
+	event_push(m, idx, e);
 }
 
 /*****************************************************************************/

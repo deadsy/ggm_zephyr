@@ -18,8 +18,8 @@
 #define NUM_EVENTS 16           /* must be a power of 2 */
 
 struct qevent {
-	struct module *m;       /* destination module */
-	port_func func;         /* port function to be called */
+	struct module *m;       /* source module */
+	int idx;                /* output port index */
 	struct event e;         /* the queued event */
 };
 
@@ -43,7 +43,7 @@ struct synth *synth_new(void);
 void synth_del(struct synth *s);
 void synth_set_root(struct synth *s, struct module *m);
 void synth_process(struct synth *s);
-int synth_event_wr(struct synth *s, struct module *m, port_func func, const struct event *e);
+int synth_event_wr(struct synth *s, struct module *m, int idx, const struct event *e);
 
 /*****************************************************************************/
 

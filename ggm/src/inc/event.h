@@ -45,8 +45,10 @@ struct event {
 typedef void (*port_func)(struct module *m, const struct event *e);
 
 void event_in(struct module *m, const char *name, const struct event *e, port_func *hdl);
-void event_out(struct module *m, const char *name, const struct event *e);
-void event_push(struct module *m, const char *name, const struct event *e);
+void event_out(struct module *m, int idx, const struct event *e);
+void event_out_name(struct module *m, const char *name, const struct event *e);
+void event_push(struct module *m, int idx, const struct event *e);
+void event_push_name(struct module *m, const char *name, const struct event *e);
 
 /******************************************************************************
  * MIDI events

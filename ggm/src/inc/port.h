@@ -24,7 +24,10 @@ enum port_type {
 	PORT_TYPE_MIDI,                 /* event with MIDI data */
 };
 
-/* port_info contains the information describing a port */
+/* port_info contains the information describing a port. The information is
+ * defined by code and is known at compile time. The information is constant
+ * at runtime, so the structure can be stored in read-only memory.
+ */
 struct port_info {
 	const char *name;       /* port name */
 	enum port_type type;    /* port type */
@@ -34,13 +37,27 @@ struct port_info {
 #define PORT_EOL { NULL, PORT_TYPE_NULL, NULL }
 
 /******************************************************************************
+ * output port destinations: An event sent from an output port is delivered
+ * to input ports on other modules or is used as an output event on the output
+ * port of another module. The connectivity is constructed at runtime, so for
+ * each output port of a module we maintain a linked list of event destinations.
+ */
+
+struct output_dst {
+	struct output_dst *next;        /* next destination */
+	struct module *m;               /* destination module */
+	port_func func;                 /* port function to call */
+};
+
+/******************************************************************************
  * function prototypes
  */
 
-int port_num_by_name(const struct port_info port[], const char *name);
-const struct port_info *port_lookup(struct module *m, const char *name);
+int port_get_index(const struct port_info port[], const char *name);
+const struct port_info *port_get_info(const struct port_info port[], const char *name);
 
 void port_connect(struct module *s, const char *sname, struct module *d, const char *dname);
+void port_connect_thru(struct module *s, const char *sname, struct module *d, const char *dname);
 
 /*****************************************************************************/
 

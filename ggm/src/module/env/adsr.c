@@ -230,7 +230,7 @@ static const struct port_info out_ports[] = {
 };
 
 const struct module_info adsr_module = {
-	.name = "adsr",
+	.name = "env.adsr",
 	.in = in_ports,
 	.out = out_ports,
 	.alloc = adsr_alloc,
