@@ -7,6 +7,10 @@
 #ifndef GGM_SRC_INC_CONST_H
 #define GGM_SRC_INC_CONST_H
 
+#ifndef GGM_SRC_INC_GGM_H
+#warning "please include this file using ggm.h"
+#endif
+
 /******************************************************************************
  * Constants
  */

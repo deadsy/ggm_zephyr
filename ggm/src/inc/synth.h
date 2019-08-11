@@ -7,6 +7,10 @@
 #ifndef GGM_SRC_INC_SYNTH_H
 #define GGM_SRC_INC_SYNTH_H
 
+#ifndef GGM_SRC_INC_GGM_H
+#warning "please include this file using ggm.h"
+#endif
+
 /******************************************************************************
  * top-level synth structure
  */
@@ -39,6 +43,7 @@ struct synth *synth_new(void);
 void synth_del(struct synth *s);
 void synth_set_root(struct synth *s, struct module *m);
 void synth_process(struct synth *s);
+int synth_event_wr(struct synth *s, struct module *m, port_func func, const struct event *e);
 
 /*****************************************************************************/
 

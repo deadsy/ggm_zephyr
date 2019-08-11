@@ -67,6 +67,19 @@ void event_out(struct module *m, const char *name, const struct event *e)
 
 void event_push(struct module *m, const char *name, const struct event *e)
 {
+	/* lookup the port function */
+	const struct port_info *p = port_lookup(m, name);
+
+	if (p == NULL) {
+		LOG_ERR("%s_%08x does not have port named %s", m->info->name, m->id, name);
+		return;
+	}
+
+	/* queue the event for later processing */
+	int rc = synth_event_wr(m->top, m, p->func, e);
+	if (rc != 0) {
+		LOG_ERR("event queue overflow");
+	}
 }
 
 /*****************************************************************************/

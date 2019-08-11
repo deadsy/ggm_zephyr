@@ -7,6 +7,10 @@
 #ifndef GGM_SRC_INC_PORT_H
 #define GGM_SRC_INC_PORT_H
 
+#ifndef GGM_SRC_INC_GGM_H
+#warning "please include this file using ggm.h"
+#endif
+
 /******************************************************************************
  * module ports
  */
@@ -34,6 +38,8 @@ struct port_info {
  */
 
 int port_num_by_name(const struct port_info port[], const char *name);
+const struct port_info *port_lookup(struct module *m, const char *name);
+
 void port_connect(struct module *s, const char *sname, struct module *d, const char *dname);
 
 /*****************************************************************************/

@@ -25,6 +25,24 @@ int port_num_by_name(const struct port_info port[], const char *name)
 	return n;
 }
 
+/******************************************************************************
+ * port_lookup retuns the port info given the module and port name.
+ */
+
+const struct port_info *port_lookup(struct module *m, const char *name)
+{
+	const struct port_info *port = m->info->in;
+	int i = 0;
+
+	while (port[i].type != PORT_TYPE_NULL) {
+		if (strcmp(name, port[i].name) == 0) {
+			return &port[i];
+		}
+		i++;
+	}
+
+	return NULL;
+}
 
 /******************************************************************************
  * port_connect connects source/destination module event ports.
