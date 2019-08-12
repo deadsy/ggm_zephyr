@@ -118,9 +118,20 @@ void module_del(struct module *m)
 	if (m == NULL) {
 		return;
 	}
+
+	/* free the private data */
 	m->info->free(m);
-	/* TODO - deallocate link lists of output destinations */
+
+	/* deallocate the lists of output destinations */
+	int n = port_count(m->info->out);
+	for (int i = 0; i < n; i++) {
+		port_free_dst_list(m->dst[i]);
+	}
+
+	/* deallocate the headers */
 	k_free(m->dst);
+
+	/* deallocate the module data */
 	k_free(m);
 }
 

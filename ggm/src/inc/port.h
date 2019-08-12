@@ -58,8 +58,10 @@ int port_count(const struct port_info port[]);
 int port_get_index(const struct port_info port[], const char *name);
 const struct port_info *port_get_info(const struct port_info port[], const char *name);
 
+void port_free_dst_list(struct output_dst *ptr);
+
 void port_connect(struct module *s, const char *sname, struct module *d, const char *dname);
-void port_connect_thru(struct module *s, const char *sname, struct module *d, const char *dname);
+void port_forward(struct module *s, const char *sname, struct module *d, const char *dname);
 
 /*****************************************************************************/
 

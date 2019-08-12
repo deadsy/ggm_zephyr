@@ -83,9 +83,8 @@ static int metro_alloc(struct module *m, va_list vargs)
 
 	/* monitor the sequencer output */
 	port_connect(seq, "midi", mon, "midi");
-
-	/* connect the sequencer output to the metronome output */
-	port_connect_thru(seq, "midi", m, "midi");
+	/* forward the sequencer output to the metronome output */
+	port_forward(seq, "midi", m, "midi");
 
 	return 0;
 
