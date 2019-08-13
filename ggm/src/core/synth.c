@@ -92,6 +92,17 @@ void synth_del(struct synth *s)
 }
 
 /******************************************************************************
+ * synth_midi_output is called when the running top-level module has a MIDI
+ * message to output. It has the prototype of a port function, and the module
+ * will be the root module.
+ */
+
+static void synth_midi_out(struct module *m, const struct event *e)
+{
+	LOG_INF("TODO");
+}
+
+/******************************************************************************
  * synth_set_root sets the root patch of the synth.
  */
 
@@ -100,13 +111,21 @@ void synth_set_root(struct synth *s, struct module *m)
 	LOG_MOD_NAME(m);
 
 	s->root = m;
+
+	/* TODO allocate audio buffers */
+
+	/* hookup up any MIDI output to the top-level callback */
+	int idx = port_get_index(m->info->out, "midi");
+	if (idx >= 0) {
+		port_add_dst(m, idx, m, synth_midi_out);
+	}
 }
 
 /******************************************************************************
- * synth_process runs the process function of the root patch.
+ * synth_loop runs the top-level synth loop
  */
 
-void synth_process(struct synth *s)
+void synth_loop(struct synth *s)
 {
 	struct module *m = s->root;
 	struct qevent q;

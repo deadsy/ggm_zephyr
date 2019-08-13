@@ -42,7 +42,7 @@ struct synth {
 struct synth *synth_new(void);
 void synth_del(struct synth *s);
 void synth_set_root(struct synth *s, struct module *m);
-void synth_process(struct synth *s);
+void synth_loop(struct synth *s);
 int synth_event_wr(struct synth *s, struct module *m, int idx, const struct event *e);
 
 /*****************************************************************************/

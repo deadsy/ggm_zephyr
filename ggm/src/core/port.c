@@ -51,22 +51,71 @@ const struct port_info *port_get_info(const struct port_info port[], const char 
 }
 
 /******************************************************************************
- * port_output_fwd is the port function used when an output port has
- * been connected to another output port. It will read the output destination
- * list of the destination port and will call those port functions.
+ * port_fwd_X is the port function used when an output port has
+ * been connected to another output port. It will call the event_out
+ * function from the destination port therby forwarding the event.
+ * X is the port index of the output port of the destination module.
  */
 
-static void port_output_fwd(struct module *m, const struct event *e)
+#define NUM_PORT_FWD 8
+
+static void port_fwd_0(struct module *m, const struct event *e)
 {
-	LOG_INF("");
+	event_out(m, 0, e);
 }
+
+static void port_fwd_1(struct module *m, const struct event *e)
+{
+	event_out(m, 1, e);
+}
+
+static void port_fwd_2(struct module *m, const struct event *e)
+{
+	event_out(m, 2, e);
+}
+
+static void port_fwd_3(struct module *m, const struct event *e)
+{
+	event_out(m, 3, e);
+}
+
+static void port_fwd_4(struct module *m, const struct event *e)
+{
+	event_out(m, 4, e);
+}
+
+static void port_fwd_5(struct module *m, const struct event *e)
+{
+	event_out(m, 5, e);
+}
+
+static void port_fwd_6(struct module *m, const struct event *e)
+{
+	event_out(m, 6, e);
+}
+
+static void port_fwd_7(struct module *m, const struct event *e)
+{
+	event_out(m, 7, e);
+}
+
+static port_func port_fwd[NUM_PORT_FWD] = {
+	port_fwd_0,
+	port_fwd_1,
+	port_fwd_2,
+	port_fwd_3,
+	port_fwd_4,
+	port_fwd_5,
+	port_fwd_6,
+	port_fwd_7,
+};
 
 /******************************************************************************
  * output destination list functions
  */
 
 /* port_add_dst adds a destination port to the output */
-static void port_add_dst(struct module *m, int idx, struct module *dst, port_func func)
+void port_add_dst(struct module *m, int idx, struct module *dst, port_func func)
 {
 	/* allocate the output destination */
 	struct output_dst *x = k_calloc(1, sizeof(struct output_dst));
@@ -184,7 +233,13 @@ void port_forward(struct module *s, const char *sname, struct module *d, const c
 		return;
 	}
 
-	port_add_dst(s, s_idx, d, port_output_fwd);
+	/* check the limit on the destination port index */
+	if (d_idx >= NUM_PORT_FWD) {
+		LOG_ERR("d_idx >= NUM_PORT_FWD (see port.c)");
+		return;
+	}
+
+	port_add_dst(s, s_idx, d, port_fwd[d_idx]);
 }
 
 /*****************************************************************************/

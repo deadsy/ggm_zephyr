@@ -24,8 +24,8 @@ void main(void)
 	struct module *m = module_new(s, "seq.metro");
 	synth_set_root(s, m);
 
-  for(int i = 0; i < 2000; i ++) {
-    synth_process(s);
+  for(int i = 0; i < 3000; i ++) {
+    synth_loop(s);
     k_sleep(3);
   }
 

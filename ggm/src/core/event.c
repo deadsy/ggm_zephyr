@@ -52,15 +52,24 @@ void event_in(struct module *m, const char *name, const struct event *e, port_fu
 }
 
 /******************************************************************************
- * event_out sends an event time event from the output port of a module.
+ * event_out sends an event-time event from the output port of a module.
  * The event will be sent to the ports connected to the output port.
  */
 
 void event_out(struct module *m, int idx, const struct event *e)
 {
+	struct output_dst *ptr = m->dst[idx];
+
+	/* iterate over the event destinations */
+	while (ptr != NULL) {
+		struct output_dst *next = ptr->next;
+		/* call the port function for the event destination */
+		ptr->func(ptr->m, e);
+		ptr = next;
+	}
 }
 
-/* output from a named port */
+/* event_out_name calls event_out on a named port */
 void event_out_name(struct module *m, const char *name, const struct event *e)
 {
 	/* get the index of the output port */
