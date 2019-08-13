@@ -56,7 +56,7 @@ static int metro_alloc(struct module *m, va_list vargs)
 	LOG_MOD_NAME(m);
 
 	/* allocate the private data */
-	struct metro *this = k_calloc(1, sizeof(struct metro));
+	struct metro *this = ggm_calloc(1, sizeof(struct metro));
 	if (this == NULL) {
 		LOG_ERR("could not allocate private data");
 		return -1;
@@ -91,7 +91,7 @@ static int metro_alloc(struct module *m, va_list vargs)
 error:
 	module_del(seq);
 	module_del(mon);
-	k_free(this);
+	ggm_free(this);
 	return -1;
 }
 
@@ -102,7 +102,7 @@ static void metro_free(struct module *m)
 	LOG_MOD_NAME(m);
 	module_del(this->seq);
 	module_del(this->mon);
-	k_free(this);
+	ggm_free(this);
 }
 
 static bool metro_process(struct module *m, float *buf[])

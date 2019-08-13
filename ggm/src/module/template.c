@@ -30,7 +30,7 @@ static int xmod_alloc(struct module *m, va_list vargs)
 	LOG_MOD_NAME(m);
 
 	/* allocate the private data */
-	struct xmod *this = k_calloc(1, sizeof(struct xmod));
+	struct xmod *this = ggm_calloc(1, sizeof(struct xmod));
 	if (this == NULL) {
 		LOG_ERR("could not allocate private data");
 		return -1;
@@ -45,7 +45,7 @@ static void xmod_free(struct module *m)
 	struct xmod *this = (struct xmod *)m->priv;
 
 	LOG_MOD_NAME(m);
-	k_free(this);
+	ggm_free(this);
 }
 
 static bool xmod_process(struct module *m, float *buf[])

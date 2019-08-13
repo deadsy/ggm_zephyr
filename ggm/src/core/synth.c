@@ -71,7 +71,7 @@ exit:
 struct synth *synth_new(void)
 {
 	/* allocate the synth */
-	struct synth *s = k_calloc(1, sizeof(struct synth));
+	struct synth *s = ggm_calloc(1, sizeof(struct synth));
 
 	if (s == NULL) {
 		LOG_ERR("could not allocate synth");
@@ -88,7 +88,7 @@ struct synth *synth_new(void)
 void synth_del(struct synth *s)
 {
 	module_del(s->root);
-	k_free(s);
+	ggm_free(s);
 }
 
 /******************************************************************************

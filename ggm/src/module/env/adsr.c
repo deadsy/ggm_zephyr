@@ -131,7 +131,7 @@ static void adsr_port_release(struct module *m, const struct event *e)
 static int adsr_alloc(struct module *m, va_list vargs)
 {
 	/* allocate the private data */
-	struct adsr_env *env = k_calloc(1, sizeof(struct adsr_env));
+	struct adsr_env *env = ggm_calloc(1, sizeof(struct adsr_env));
 
 	if (env == NULL) {
 		LOG_ERR("could not allocate private data");
@@ -145,7 +145,7 @@ static int adsr_alloc(struct module *m, va_list vargs)
 static void adsr_free(struct module *m)
 {
 	LOG_MOD_NAME(m);
-	k_free(m->priv);
+	ggm_free(m->priv);
 }
 
 static bool adsr_process(struct module *m, float *buf[])

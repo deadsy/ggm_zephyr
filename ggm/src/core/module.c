@@ -74,7 +74,7 @@ struct module *module_new(struct synth *top, const char *name, ...)
 	}
 
 	/* allocate the module */
-	struct module *m = k_calloc(1, sizeof(struct module));
+	struct module *m = ggm_calloc(1, sizeof(struct module));
 	if (m == NULL) {
 		LOG_ERR("could not allocate module");
 		return NULL;
@@ -88,7 +88,7 @@ struct module *module_new(struct synth *top, const char *name, ...)
 	/* allocate link list headers for the output port destinations */
 	int n = port_count(mi->out);
 	if (n > 0) {
-		struct output_dst **dst = k_calloc(n, sizeof(void *));
+		struct output_dst **dst = ggm_calloc(n, sizeof(void *));
 		if (dst == NULL) {
 			LOG_ERR("could not allocate output destination lists");
 			goto error;
@@ -108,8 +108,8 @@ struct module *module_new(struct synth *top, const char *name, ...)
 	return m;
 
 error:
-	k_free(m->dst);
-	k_free(m);
+	ggm_free(m->dst);
+	ggm_free(m);
 	return NULL;
 }
 
@@ -129,10 +129,10 @@ void module_del(struct module *m)
 	}
 
 	/* deallocate the headers */
-	k_free(m->dst);
+	ggm_free(m->dst);
 
 	/* deallocate the module data */
-	k_free(m);
+	ggm_free(m);
 }
 
 /*****************************************************************************/

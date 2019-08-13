@@ -38,7 +38,7 @@ static int midi_mon_alloc(struct module *m, va_list vargs)
 	LOG_MOD_NAME(m);
 
 	/* allocate the private data */
-	struct midi_mon *this = k_calloc(1, sizeof(struct midi_mon));
+	struct midi_mon *this = ggm_calloc(1, sizeof(struct midi_mon));
 	if (this == NULL) {
 		LOG_ERR("could not allocate private data");
 		return -1;
@@ -56,7 +56,7 @@ static void midi_mon_free(struct module *m)
 	struct midi_mon *this = (struct midi_mon *)m->priv;
 
 	LOG_MOD_NAME(m);
-	k_free(this);
+	ggm_free(this);
 }
 
 /******************************************************************************

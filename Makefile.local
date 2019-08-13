@@ -2,7 +2,7 @@ TOP = .
 
 GGM = $(TOP)/ggm
 
-OUTPUT = ggm_test
+OUTPUT = $(TOP)/ggm_test
 
 SRC = $(GGM)/src/app/metro/main.c \
 	$(GGM)/src/core/event.c \
@@ -20,6 +20,7 @@ SRC = $(GGM)/src/app/metro/main.c \
 	$(GGM)/src/module/seq/seq.c \
 	$(GGM)/src/module/seq/metro.c \
 	$(GGM)/src/module/voice/osc.c \
+	$(GGM)/src/osal/linux.c \
 
 OBJ = $(patsubst %.c, %.o, $(SRC))
 
@@ -33,14 +34,19 @@ DEFINE =-D__LINUX__
 # linker flags
 LDFLAGS =
 
+# compiler flags
 CFLAGS = -Wall -Wextra -Wstrict-prototypes
 CFLAGS += -Wno-unused-parameter
+CFLAGS += -g
 
 .c.o:
 	gcc $(INCLUDE) $(DEFINE) $(CFLAGS) -c $< -o $@
 
 all: $(OBJ)
 	gcc $(CFLAGS) $(LDFLAGS) $(OBJ) -o $(OUTPUT)
+
+test:
+	valgrind --leak-check=yes $(OUTPUT)
 
 clean:
 	-rm $(OBJ)	

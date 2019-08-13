@@ -23,7 +23,7 @@ int main(void)
 
   for(int i = 0; i < 3000; i ++) {
     synth_loop(s);
-    k_sleep(3);
+    ggm_mdelay(3);
   }
 
 	synth_del(s);

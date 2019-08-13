@@ -49,7 +49,7 @@ static int osc_voice_alloc(struct module *m, va_list vargs)
 	struct module *adsr = NULL;
 
 	/* allocate the private data */
-	struct osc_voice *this = k_calloc(1, sizeof(struct osc_voice));
+	struct osc_voice *this = ggm_calloc(1, sizeof(struct osc_voice));
 
 	if (this == NULL) {
 		LOG_ERR("could not allocate private data");
@@ -86,7 +86,7 @@ static int osc_voice_alloc(struct module *m, va_list vargs)
 error:
 	module_del(osc);
 	module_del(adsr);
-	k_free(m->priv);
+	ggm_free(m->priv);
 	return -1;
 }
 
@@ -98,7 +98,7 @@ static void osc_voice_free(struct module *m)
 
 	module_del(this->osc);
 	module_del(this->adsr);
-	k_free(m->priv);
+	ggm_free(m->priv);
 }
 
 static bool osc_voice_process(struct module *m, float *buf[])

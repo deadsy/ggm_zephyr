@@ -2,15 +2,15 @@
  * Copyright (c) 2019 Jason T. Harris. (sirmanlypowers@gmail.com)
  *
  * SPDX-License-Identifier: Apache-2.0
+ *
+ * OS Abstraction Layer
+ *
  */
 
 #ifndef GGM_SRC_INC_OSAL_H
 #define GGM_SRC_INC_OSAL_H
 
-/******************************************************************************
- * zephyr
- */
-
+/*****************************************************************************/
 #if defined(__ZEPHYR__)
 
 #include <zephyr.h>
@@ -28,14 +28,24 @@ LOG_MODULE_REGISTER(LOG_MODULE_NAME);
 LOG_MODULE_DECLARE(LOG_MODULE_NAME);
 #endif
 
-/******************************************************************************
- * linux
- */
+static inline void ggm_mdelay(long ms)
+{
+	k_sleep(ms);
+}
 
+static inline void *ggm_calloc(size_t num, size_t size)
+{
+	return k_calloc(num, size);
+}
+
+static inline void ggm_free(void *ptr)
+{
+	k_free(ptr);
+}
+
+/*****************************************************************************/
 #elif defined(__LINUX__)
 
-#include <time.h>
-#include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -50,23 +60,9 @@ static inline const char *log_strdup(const char *s)
 	return s;
 }
 
-static inline int k_sleep(long ms)
-{
-	struct timespec req, rem;
-
-	if (ms > 999) {
-		req.tv_sec = (int)(ms / 1000);
-		req.tv_nsec = (ms - ((long)req.tv_sec * 1000)) * 1000000;
-	} else   {
-		req.tv_sec = 0;
-		req.tv_nsec = ms * 1000000;
-	}
-
-	return nanosleep(&req, &rem);
-}
-
-#define k_calloc calloc
-#define k_free free
+void ggm_mdelay(long ms);
+void *ggm_calloc(size_t num, size_t size);
+void ggm_free(void *ptr);
 
 /*****************************************************************************/
 

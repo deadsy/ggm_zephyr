@@ -38,7 +38,7 @@ static void sine_port_frequency(struct module *m, const struct event *e)
 static int sine_alloc(struct module *m, va_list vargs)
 {
 	/* allocate the private data */
-	struct sine_osc *this = k_calloc(1, sizeof(struct sine_osc));
+	struct sine_osc *this = ggm_calloc(1, sizeof(struct sine_osc));
 
 	if (this == NULL) {
 		LOG_ERR("could not allocate private data");
@@ -52,7 +52,7 @@ static int sine_alloc(struct module *m, va_list vargs)
 static void sine_free(struct module *m)
 {
 	LOG_MOD_NAME(m);
-	k_free(m->priv);
+	ggm_free(m->priv);
 }
 
 static bool sine_process(struct module *m, float *buf[])

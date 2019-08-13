@@ -118,7 +118,7 @@ static port_func port_fwd[NUM_PORT_FWD] = {
 void port_add_dst(struct module *m, int idx, struct module *dst, port_func func)
 {
 	/* allocate the output destination */
-	struct output_dst *x = k_calloc(1, sizeof(struct output_dst));
+	struct output_dst *x = ggm_calloc(1, sizeof(struct output_dst));
 
 	if (x == NULL) {
 		LOG_ERR("unable to allocate output destination list element");
@@ -142,7 +142,7 @@ void port_free_dst_list(struct output_dst *ptr)
 {
 	while (ptr != NULL) {
 		struct output_dst *next = ptr->next;
-		k_free(ptr);
+		ggm_free(ptr);
 		ptr = next;
 	}
 }

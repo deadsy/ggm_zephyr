@@ -194,7 +194,7 @@ static void seq_port_ctrl(struct module *m, const struct event *e)
 static int seq_alloc(struct module *m, va_list vargs)
 {
 	/* allocate the private data */
-	struct seq *this = k_calloc(1, sizeof(struct seq));
+	struct seq *this = ggm_calloc(1, sizeof(struct seq));
 
 	if (this == NULL) {
 		LOG_ERR("could not allocate private data");
@@ -211,7 +211,7 @@ static int seq_alloc(struct module *m, va_list vargs)
 static void seq_free(struct module *m)
 {
 	LOG_MOD_NAME(m);
-	k_free(m->priv);
+	ggm_free(m->priv);
 }
 
 static bool seq_process(struct module *m, float *buf[])

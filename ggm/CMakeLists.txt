@@ -27,4 +27,5 @@ target_sources(app
 		src/module/seq/seq.c
 		src/module/seq/metro.c
 		src/module/voice/osc.c
+		src/osal/zephyr.c
 )
