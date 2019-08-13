@@ -45,6 +45,9 @@ static int midi_mon_alloc(struct module *m, va_list vargs)
 	}
 	m->priv = (void *)this;
 
+	/* setup the channel to monitor */
+	this->chan = va_arg(vargs, int);
+
 	return 0;
 }
 
