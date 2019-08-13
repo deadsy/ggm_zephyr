@@ -71,7 +71,7 @@ static bool sine_process(struct module *m, float *buf[])
  * module information
  */
 
-const static struct port_info in_ports[] = {
+static const struct port_info in_ports[] = {
 	{ .name = "frequency", .type = PORT_TYPE_FLOAT, .func = sine_port_frequency },
 	PORT_EOL,
 };

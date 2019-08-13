@@ -239,7 +239,7 @@ static bool seq_process(struct module *m, float *buf[])
  * module information
  */
 
-const static struct port_info in_ports[] = {
+static const struct port_info in_ports[] = {
 	{ .name = "bpm", .type = PORT_TYPE_FLOAT, .func = seq_port_bpm },
 	{ .name = "ctrl", .type = PORT_TYPE_INT, .func = seq_port_ctrl },
 	PORT_EOL,

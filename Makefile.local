@@ -1,0 +1,47 @@
+TOP = .
+
+GGM = $(TOP)/ggm
+
+OUTPUT = ggm_test
+
+SRC = $(GGM)/src/app/metro/main.c \
+	$(GGM)/src/core/event.c \
+	$(GGM)/src/core/ftoa.c \
+	$(GGM)/src/core/lut.c \
+	$(GGM)/src/core/math.c \
+	$(GGM)/src/core/midi.c \
+	$(GGM)/src/core/module.c \
+	$(GGM)/src/core/port.c \
+	$(GGM)/src/core/synth.c \
+	$(GGM)/src/module/template.c \
+	$(GGM)/src/module/env/adsr.c \
+	$(GGM)/src/module/midi/mon.c \
+	$(GGM)/src/module/osc/sine.c \
+	$(GGM)/src/module/seq/seq.c \
+	$(GGM)/src/module/seq/metro.c \
+	$(GGM)/src/module/voice/osc.c \
+
+OBJ = $(patsubst %.c, %.o, $(SRC))
+
+# include paths
+INCLUDE = -I$(GGM)/src/inc
+INCLUDE += -I$(GGM)/src/module
+
+# defines 
+DEFINE =-D__LINUX__
+
+# linker flags
+LDFLAGS =
+
+CFLAGS = -Wall -Wextra -Wstrict-prototypes
+CFLAGS += -Wno-unused-parameter
+
+.c.o:
+	gcc $(INCLUDE) $(DEFINE) $(CFLAGS) -c $< -o $@
+
+all: $(OBJ)
+	gcc $(CFLAGS) $(LDFLAGS) $(OBJ) -o $(OUTPUT)
+
+clean:
+	-rm $(OBJ)	
+	-rm $(OUTPUT)

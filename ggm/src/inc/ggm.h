@@ -10,9 +10,9 @@
 #include <stddef.h>
 #include <stdarg.h>
 #include <stdbool.h>
+#include <inttypes.h>
 
-#include <zephyr.h>
-#include <logging/log.h>
+#include "osal.h"
 
 #include "const.h"
 #include "util.h"
@@ -26,22 +26,6 @@
  */
 
 #define GGM_VERSION "0.1"
-
-/******************************************************************************
- * logging
- */
-
-/* Display all messages */
-#define LOG_LEVEL LOG_LEVEL_DBG
-
-/* Set the module name for log messages */
-#define LOG_MODULE_NAME ggm
-
-#ifdef GGM_MAIN
-LOG_MODULE_REGISTER(LOG_MODULE_NAME);
-#else
-LOG_MODULE_DECLARE(LOG_MODULE_NAME);
-#endif
 
 /******************************************************************************
  * Lookup Table Functions

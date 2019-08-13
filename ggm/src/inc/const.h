@@ -28,7 +28,7 @@
 #define AudioSamplePeriod (1.f / (float)AudioSampleFrequency)
 
 /* AudioBufferSize is the number of float samples per audio buffer */
-#define AudioBufferSize (128U)
+#define AudioBufferSize (128)
 
 /* SecsPerAudioBuffer is the audio duration for a single audio buffer */
 #define SecsPerAudioBuffer ((float)AudioBufferSize / (float)AudioSampleFrequency)

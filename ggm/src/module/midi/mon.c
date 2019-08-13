@@ -63,7 +63,7 @@ static void midi_mon_free(struct module *m)
  * module information
  */
 
-const static struct port_info in_ports[] = {
+static const struct port_info in_ports[] = {
 	{ .name = "midi", .type = PORT_TYPE_MIDI, .func = midi_mon_port_midi },
 	PORT_EOL,
 };

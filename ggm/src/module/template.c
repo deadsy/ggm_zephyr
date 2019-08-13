@@ -63,7 +63,7 @@ static bool xmod_process(struct module *m, float *buf[])
  * module information
  */
 
-const static struct port_info in_ports[] = {
+static const struct port_info in_ports[] = {
 	{ .name = "name", .type = PORT_TYPE_FLOAT, .func = xmod_port_name },
 	PORT_EOL,
 };

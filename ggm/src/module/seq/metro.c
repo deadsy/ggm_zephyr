@@ -118,7 +118,7 @@ static bool metro_process(struct module *m, float *buf[])
  * module information
  */
 
-const static struct port_info in_ports[] = {
+static const struct port_info in_ports[] = {
 	{ .name = "midi", .type = PORT_TYPE_MIDI, .func = metro_port_midi },
 	PORT_EOL,
 };

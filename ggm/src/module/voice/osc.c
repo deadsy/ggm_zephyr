@@ -116,7 +116,7 @@ static bool osc_voice_process(struct module *m, float *buf[])
  * module information
  */
 
-const static struct port_info in_ports[] = {
+static const struct port_info in_ports[] = {
 	{ .name = "gate", .type = PORT_TYPE_FLOAT, .func = osc_voice_gate },
 	{ .name = "note", .type = PORT_TYPE_FLOAT, .func = osc_voice_note },
 	PORT_EOL,

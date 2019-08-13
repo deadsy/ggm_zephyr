@@ -4,9 +4,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include <zephyr.h>
-#include <sys/printk.h>
-
 #define GGM_MAIN
 
 #include "ggm.h"
@@ -16,7 +13,7 @@
  * main
  */
 
-void main(void)
+int main(void)
 {
 	LOG_INF("GooGooMuck %s (%s)", GGM_VERSION, CONFIG_BOARD);
 
@@ -30,6 +27,8 @@ void main(void)
   }
 
 	synth_del(s);
+
+  return 0;
 }
 
 /*****************************************************************************/

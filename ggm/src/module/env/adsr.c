@@ -215,7 +215,7 @@ static bool adsr_process(struct module *m, float *buf[])
  * module information
  */
 
-const static struct port_info in_ports[] = {
+static const struct port_info in_ports[] = {
 	{ .name = "gate", .type = PORT_TYPE_FLOAT, .func = adsr_port_gate },
 	{ .name = "attack", .type = PORT_TYPE_FLOAT, .func = adsr_port_attack },
 	{ .name = "decay", .type = PORT_TYPE_FLOAT, .func = adsr_port_decay },

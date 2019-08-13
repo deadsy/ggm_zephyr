@@ -31,36 +31,43 @@ float midi_pitch_bend(uint16_t val)
  * midi_str returns a descriptive string for a MIDI event
  */
 
-struct midi_msg_str {
-	uint8_t msg;
-	const char *str;
+static const char *midi_msg_channel[] = {
+	"?(00)",                        /* 0x00 */
+	"?(10)",                        /* 0x10 */
+	"?(20)",                        /* 0x20 */
+	"?(30)",                        /* 0x30 */
+	"?(40)",                        /* 0x40 */
+	"?(50)",                        /* 0x50 */
+	"?(60)",                        /* 0x60 */
+	"?(70)",                        /* 0x70 */
+	"note off",                     /* 0x80 */
+	"note on",                      /* 0x90 */
+	"polyphonic aftertouch",        /* 0xa0 */
+	"control change",               /* 0xb0 */
+	"program change",               /* 0xc0 */
+	"channel aftertouch",           /* 0xd0 */
+	"pitch wheel",                  /* 0xe0 */
+	NULL,                           /* 0xf0 */
 };
 
-static const struct midi_msg_str midi_msg_string[] = {
-	{ MIDI_STATUS_NOTEOFF, "note off" },
-	{ MIDI_STATUS_NOTEON, "note on" },
-	{ MIDI_STATUS_POLYPHONICAFTERTOUCH, "polyphonic aftertouch" },
-	{ MIDI_STATUS_CONTROLCHANGE, "control change" },
-	{ MIDI_STATUS_PROGRAMCHANGE, "program change" },
-	{ MIDI_STATUS_CHANNELAFTERTOUCH, "channel aftertouch" },
-	{ MIDI_STATUS_PITCHWHEEL, "pitch wheel" },
-	{ MIDI_STATUS_SYSEXSTART, "sysex start" },
-	{ MIDI_STATUS_QUARTERFRAME, "quarter frame" },
-	{ MIDI_STATUS_SONGPOINTER, "song pointer" },
-	{ MIDI_STATUS_SONGSELECT, "song select" },
-	{ MIDI_STATUS_TUNEREQUEST, "tune request" },
-	{ MIDI_STATUS_SYSEXEND, "sysex end" },
-	{ MIDI_STATUS_TIMINGCLOCK, "timing clock" },
-	{ MIDI_STATUS_START, "start" },
-	{ MIDI_STATUS_CONTINUE, "continue" },
-	{ MIDI_STATUS_STOP, "stop" },
-	{ MIDI_STATUS_ACTIVESENSING, "active sensing" },
-	{ MIDI_STATUS_RESET, "reset" },
-	{ MIDI_STATUS_COMMON, "common" },
-	{ MIDI_STATUS_REALTIME, "realtime" },
+static const char *midi_msg_system[] = {
+	"sysex start",          /* 0xf0 */
+	"quarter frame",        /* 0xf1 */
+	"song pointer",         /* 0xf2 */
+	"song select",          /* 0xf3 */
+	"?(f4)",                /* 0xf4 */
+	"?(f5)",                /* 0xf5 */
+	"tune request",         /* 0xf6 */
+	"sysex end",            /* 0xf7 */
+	"timing clock",         /* 0xf8 */
+	"?(f9)",                /* 0xf9 */
+	"start",                /* 0xfa */
+	"continue",             /* 0xfb */
+	"stop",                 /* 0xfc */
+	"?(fd)",                /* 0xfd */
+	"active sensing",       /* 0xfe */
+	"reset",                /* 0xff */
 };
-
-#define NUM_MIDI_MSG (sizeof(midi_msg_string) / sizeof(struct midi_msg_str))
 
 char *midi_str(const struct event *e, char *s, size_t n)
 {
@@ -70,21 +77,15 @@ char *midi_str(const struct event *e, char *s, size_t n)
 		return NULL;
 	}
 
-	uint8_t msg = event_get_midi_msg(e);
-	const char *msg_str = NULL;
-
-	for (int j = 0; j < NUM_MIDI_MSG; j++) {
-		if (midi_msg_string[j].msg == msg) {
-			msg_str = midi_msg_string[j].str;
-			break;
-		}
-	}
-
-	if (msg_str != NULL) {
-		i += snprintf(&s[i], n - i, "%s", msg_str);
+	uint8_t status = e->u.midi.status;
+	const char *msg;
+	if ((status & 0xf0) == 0xf0) {
+		msg = midi_msg_system[status & 15];
 	} else {
-		i += snprintf(&s[i], n - i, "unknown(%02x)", msg);
+		msg = midi_msg_channel[status >> 4];
 	}
+
+	i += snprintf(&s[i], n - i, "%s", msg);
 
 //	i += snprintf(&s[i], n - i, " status %02x arg0 %02x arg1 %02x", e->u.midi.status, e->u.midi.arg0, e->u.midi.arg1);
 	return s;
