@@ -54,6 +54,7 @@ struct output_dst {
  */
 
 int port_count(const struct port_info port[]);
+int port_count_by_type(const struct port_info port[], enum port_type type);
 
 int port_get_index(const struct port_info port[], const char *name);
 const struct port_info *port_get_info(const struct port_info port[], const char *name);

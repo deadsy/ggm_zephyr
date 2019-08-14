@@ -10,7 +10,7 @@
  * port counting functions
  */
 
-/* port_count return the number of ports on an input/output list */
+/* port_count returns the number of ports */
 int port_count(const struct port_info port[])
 {
 	int i = 0;
@@ -22,6 +22,24 @@ int port_count(const struct port_info port[])
 		i++;
 	}
 	return i;
+}
+
+/* port_count_by_type returns the number of ports of a given type */
+int port_count_by_type(const struct port_info port[], enum port_type type)
+{
+	int i = 0;
+	int n = 0;
+
+	if (port == NULL) {
+		return 0;
+	}
+	while (port[i].type != PORT_TYPE_NULL) {
+		if (port[i].type == type) {
+			n++;
+		}
+		i++;
+	}
+	return n;
 }
 
 /******************************************************************************

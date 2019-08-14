@@ -112,7 +112,9 @@ void synth_set_root(struct synth *s, struct module *m)
 
 	s->root = m;
 
-	/* TODO allocate audio buffers */
+	/* allocate the audio buffers */
+	s->n_in = port_count_by_type(m->info->in, PORT_TYPE_AUDIO);
+	s->n_out = port_count_by_type(m->info->out, PORT_TYPE_AUDIO);
 
 	/* hookup up any MIDI output to the top-level callback */
 	int idx = port_get_index(m->info->out, "midi");
@@ -135,10 +137,8 @@ void synth_loop(struct synth *s)
 		event_out(q.m, q.idx, &q.e);
 	}
 
-	/* zero the audio output buffers */
-
 	/* run the buffer processing */
-	m->info->process(m, NULL);
+	m->info->process(m, s->bufs);
 }
 
 /*****************************************************************************/

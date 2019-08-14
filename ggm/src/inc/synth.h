@@ -33,6 +33,9 @@ struct event_queue {
 struct synth {
 	struct module *root;    /* root patch */
 	struct event_queue eq;  /* event queue */
+	float **bufs;           /* allocated audio buffers */
+	int n_in;               /* number of input audio buffers */
+	int n_out;              /* number of output audio buffers */
 };
 
 /******************************************************************************
