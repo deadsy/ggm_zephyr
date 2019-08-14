@@ -123,7 +123,7 @@ char *midi_str(const struct event *e, char *s, size_t n)
 	case MIDI_STATUS_NOTEON:        {
 		uint8_t ch = event_get_midi_channel(e);
 		uint8_t note = event_get_midi_note(e);
-		uint8_t vel = event_get_midi_vel_int(e);
+		uint8_t vel = event_get_midi_velocity_int(e);
 		snprintf(s, n, "%s ch %d note %d vel %d", msg, ch, note, vel);
 		return s;
 	}
@@ -160,7 +160,7 @@ char *midi_str(const struct event *e, char *s, size_t n)
 	case MIDI_STATUS_POLYPHONICAFTERTOUCH:  {
 		uint8_t ch = event_get_midi_channel(e);
 		uint8_t note = event_get_midi_note(e);
-		uint8_t pressure = event_get_midi_vel_int(e);
+		uint8_t pressure = event_get_midi_velocity_int(e);
 		snprintf(s, n, "%s ch %d note %d pressure %d", msg, ch, note, pressure);
 		return s;
 	}

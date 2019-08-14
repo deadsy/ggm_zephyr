@@ -122,14 +122,14 @@ static inline float event_get_midi_cc_float(const struct event *e)
 }
 
 
-/* event_get_midi_vel_int returns the MIDI note velocity (int) */
-static inline uint8_t event_get_midi_vel_int(const struct event *e)
+/* event_get_midi_velocity_int returns the MIDI note velocity (int) */
+static inline uint8_t event_get_midi_velocity_int(const struct event *e)
 {
 	return e->u.midi.arg1;
 }
 
-/* event_get_midi_vel_float returns the MIDI note velocity (float) */
-static inline float event_get_midi_vel_float(const struct event *e)
+/* event_get_midi_velocity_float returns the MIDI note velocity (float) */
+static inline float event_get_midi_velocity_float(const struct event *e)
 {
 	return (float)(e->u.midi.arg1 & 0x7f) * (1.f / 127.f);
 }
