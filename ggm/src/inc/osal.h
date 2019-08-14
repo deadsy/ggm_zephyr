@@ -51,9 +51,16 @@ static inline void ggm_free(void *ptr)
 
 #define CONFIG_BOARD "linux"
 
-#define LOG_ERR printf
-#define LOG_INF printf
-#define LOG_WRN printf
+#define LOG_LEVEL_NONE 0
+#define LOG_LEVEL_ERR  1
+#define LOG_LEVEL_WRN  2
+#define LOG_LEVEL_INF  3
+#define LOG_LEVEL_DBG  4
+
+#define LOG_ERR(...) ggm_log(LOG_LEVEL_ERR, __FILE__, __FUNCTION__, __LINE__, __VA_ARGS__)
+#define LOG_WRN(...) ggm_log(LOG_LEVEL_WRN, __FILE__, __FUNCTION__, __LINE__, __VA_ARGS__)
+#define LOG_INF(...) ggm_log(LOG_LEVEL_INF, __FILE__, __FUNCTION__, __LINE__, __VA_ARGS__)
+#define LOG_DBG(...) ggm_log(LOG_LEVEL_DBG, __FILE__, __FUNCTION__, __LINE__, __VA_ARGS__)
 
 static inline const char *log_strdup(const char *s)
 {
@@ -63,6 +70,7 @@ static inline const char *log_strdup(const char *s)
 void ggm_mdelay(long ms);
 void *ggm_calloc(size_t num, size_t size);
 void ggm_free(void *ptr);
+void ggm_log(int level, const char *filename, const char *funcname, int line, ...);
 
 /*****************************************************************************/
 

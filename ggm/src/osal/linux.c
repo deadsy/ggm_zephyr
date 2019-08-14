@@ -44,4 +44,35 @@ void ggm_free(void *ptr)
 	return free(ptr);
 }
 
+/******************************************************************************
+ * logging
+ */
+
+static const char *level_str[] = {
+	"none",
+	"err",
+	"wrn",
+	"inf",
+	"dbg",
+};
+
+void ggm_log(int level, const char *filename, const char *funcname, int line, ...)
+{
+	va_list args;
+
+	/* header */
+	char hdr[128];
+
+	snprintf(hdr, sizeof(hdr), "%s %s:%s(%d)", level_str[level], filename, funcname, line);
+
+	/* message */
+	char msg[128];
+	va_start(args, line);
+	const char *fmt = va_arg(args, char *);
+	vsnprintf(msg, sizeof(msg), fmt, args);
+	va_end(args);
+
+	printf("%-60s %s\n", hdr, msg);
+}
+
 /*****************************************************************************/

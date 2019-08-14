@@ -37,7 +37,7 @@ LDFLAGS =
 # compiler flags
 CFLAGS = -Wall -Wextra -Wstrict-prototypes
 CFLAGS += -Wno-unused-parameter
-CFLAGS += -g
+#CFLAGS += -g
 
 .c.o:
 	gcc $(INCLUDE) $(DEFINE) $(CFLAGS) -c $< -o $@
