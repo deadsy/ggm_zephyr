@@ -56,6 +56,16 @@ static const char *level_str[] = {
 	"dbg",
 };
 
+static const char *strip_prefix(const char *prefix, const char *s)
+{
+	int n = strlen(prefix);
+
+	if (strncmp(prefix, s, n) == 0) {
+		s = &s[n];
+	}
+	return s;
+}
+
 void ggm_log(int level, const char *filename, const char *funcname, int line, ...)
 {
 	va_list args;
@@ -63,6 +73,7 @@ void ggm_log(int level, const char *filename, const char *funcname, int line, ..
 	/* header */
 	char hdr[128];
 
+	filename = strip_prefix("ggm/src/", filename);
 	snprintf(hdr, sizeof(hdr), "%s %s:%s(%d)", level_str[level], filename, funcname, line);
 
 	/* message */
