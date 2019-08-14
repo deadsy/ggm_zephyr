@@ -28,6 +28,41 @@ float midi_pitch_bend(uint16_t val)
 }
 
 /******************************************************************************
+ * MIDI note names
+ */
+
+#if 0
+
+const notesInOctave = 12
+
+		      var sharpNotes = [notesInOctave] string {
+	"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B",
+}
+
+func(n MidiNote) sharpString() string {
+	return sharpNotes[n % notesInOctave]
+}
+
+var flatNotes = [notesInOctave] string {
+	"C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B",
+}
+
+func(n MidiNote) flatString() string {
+	return flatNotes[n % notesInOctave]
+}
+
+// Octave returns the MIDI octave of the MIDI note.
+func(n MidiNote) Octave() int {
+	return int(n) / notesInOctave
+}
+
+func(n MidiNote) String() string {
+	return fmt.Sprintf("%s%d", n.sharpString(), n.Octave())
+}
+
+#endif
+
+/******************************************************************************
  * midi_str returns a descriptive string for a MIDI event
  */
 
@@ -71,8 +106,6 @@ static const char *midi_msg_system[] = {
 
 char *midi_str(const struct event *e, char *s, size_t n)
 {
-	int i = 0;
-
 	if (e->type != EVENT_TYPE_MIDI) {
 		return NULL;
 	}
@@ -85,9 +118,55 @@ char *midi_str(const struct event *e, char *s, size_t n)
 		msg = midi_msg_channel[status >> 4];
 	}
 
-	i += snprintf(&s[i], n - i, "%s", msg);
+	switch (status & 0xf0) {
+	case MIDI_STATUS_NOTEOFF:
+	case MIDI_STATUS_NOTEON:        {
+		uint8_t ch = event_get_midi_channel(e);
+		uint8_t note = event_get_midi_note(e);
+		uint8_t vel = event_get_midi_vel_int(e);
+		snprintf(s, n, "%s ch %d note %d vel %d", msg, ch, note, vel);
+		return s;
+	}
 
-//	i += snprintf(&s[i], n - i, " status %02x arg0 %02x arg1 %02x", e->u.midi.status, e->u.midi.arg0, e->u.midi.arg1);
+	case MIDI_STATUS_CONTROLCHANGE: {
+		uint8_t ch = event_get_midi_channel(e);
+		uint8_t ctrl = event_get_midi_cc_num(e);
+		uint8_t val = event_get_midi_cc_int(e);
+		snprintf(s, n, "%s ch %d ctrl %d val %d", msg, ch, ctrl, val);
+		return s;
+	}
+
+	case MIDI_STATUS_PITCHWHEEL:    {
+		uint8_t ch = event_get_midi_channel(e);
+		uint16_t val = event_get_midi_pitch_wheel(e);
+		snprintf(s, n, "%s ch %d val %d", msg, ch, val);
+		return s;
+	}
+
+	case MIDI_STATUS_PROGRAMCHANGE: {
+		uint8_t ch = event_get_midi_channel(e);
+		uint16_t prog = event_get_midi_program(e);
+		snprintf(s, n, "%s ch %d prog %d", msg, ch, prog);
+		return s;
+	}
+
+	case MIDI_STATUS_CHANNELAFTERTOUCH:     {
+		uint8_t ch = event_get_midi_channel(e);
+		uint8_t pressure = event_get_midi_pressure(e);
+		snprintf(s, n, "%s ch %d pressure %d", msg, ch, pressure);
+		return s;
+	}
+
+	case MIDI_STATUS_POLYPHONICAFTERTOUCH:  {
+		uint8_t ch = event_get_midi_channel(e);
+		uint8_t note = event_get_midi_note(e);
+		uint8_t pressure = event_get_midi_vel_int(e);
+		snprintf(s, n, "%s ch %d note %d pressure %d", msg, ch, note, pressure);
+		return s;
+	}
+	}
+
+	snprintf(s, n, "%s status %d arg0 %d arg1 %d", msg, e->u.midi.status, e->u.midi.arg0, e->u.midi.arg1);
 	return s;
 }
 

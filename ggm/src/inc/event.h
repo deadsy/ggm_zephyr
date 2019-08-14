@@ -97,6 +97,61 @@ static inline uint8_t event_get_midi_channel(const struct event *e)
 	return e->u.midi.status & 0xf;
 }
 
+/* event_get_midi_note returns the MIDI note number */
+static inline uint8_t event_get_midi_note(const struct event *e)
+{
+	return e->u.midi.arg0;
+}
+
+/* event_get_midi_cc_num returns the MIDI continuous controller number */
+static inline uint8_t event_get_midi_cc_num(const struct event *e)
+{
+	return e->u.midi.arg0;
+}
+
+/* event_get_midi_cc_int returns the MIDI continuous controller value (int) */
+static inline uint8_t event_get_midi_cc_int(const struct event *e)
+{
+	return e->u.midi.arg1;
+}
+
+/* event_get_midi_cc_float returns the MIDI continuous controller value (float) */
+static inline float event_get_midi_cc_float(const struct event *e)
+{
+	return (float)(e->u.midi.arg1 & 0x7f) * (1.f / 127.f);
+}
+
+
+/* event_get_midi_vel_int returns the MIDI note velocity (int) */
+static inline uint8_t event_get_midi_vel_int(const struct event *e)
+{
+	return e->u.midi.arg1;
+}
+
+/* event_get_midi_vel_float returns the MIDI note velocity (float) */
+static inline float event_get_midi_vel_float(const struct event *e)
+{
+	return (float)(e->u.midi.arg1 & 0x7f) * (1.f / 127.f);
+}
+
+/* event_get_midi_pitch_wheel returns the MIDI pitch wheel value */
+static inline uint16_t event_get_midi_pitch_wheel(const struct event *e)
+{
+	return (uint16_t)(e->u.midi.arg1 << 7) | (uint16_t)(e->u.midi.arg0);
+}
+
+/* event_get_midi_program returns the MIDI program number */
+static inline uint8_t event_get_midi_program(const struct event *e)
+{
+	return e->u.midi.arg0;
+}
+
+/* event_get_midi_pressure returns the MIDI pressure value */
+static inline uint8_t event_get_midi_pressure(const struct event *e)
+{
+	return e->u.midi.arg0;
+}
+
 /* event_get_midi_msg returns the MIDI message */
 static inline uint8_t event_get_midi_msg(const struct event *e)
 {
@@ -107,61 +162,6 @@ static inline uint8_t event_get_midi_msg(const struct event *e)
 	}
 	return status & 0xf0;
 }
-
-
-#if 0
-
-// GetChannel returns the MIDI channel number.
-func(e * EventMIDI) GetChannel() uint8 {
-	return e.status & 0xf
-}
-
-// GetNote returns the MIDI note value.
-func(e * EventMIDI) GetNote() uint8 {
-	return e.arg0
-}
-
-// GetCcNum returns the MIDI continuous controller number.
-func(e * EventMIDI) GetCcNum() uint8 {
-	return e.arg0
-}
-
-// GetCcInt returns the MIDI continuous controller value as an integer.
-func(e * EventMIDI) GetCcInt() uint8 {
-	return e.arg1
-}
-
-// GetCcFloat returns the MIDI continuous controller value as a float32 (0..1).
-func(e * EventMIDI) GetCcFloat() float32 {
-	return float32(e.arg1 & 0x7f) * (1.0 / 127.0)
-}
-
-// GetVelocityInt returns the MIDI note velocityas a uint8.
-func(e * EventMIDI) GetVelocityInt() uint8 {
-	return e.arg1
-}
-
-// GetVelocityFloat returns the MIDI note velocity as a float32 (0..1).
-func(e * EventMIDI) GetVelocityFloat() float32 {
-	return float32(e.arg1 & 0x7f) * (1.0 / 127.0)
-}
-
-// GetPitchWheel returns the MIDI pitch wheel value.
-func(e * EventMIDI) GetPitchWheel() uint16 {
-	return uint16(e.arg1) << 7 | uint16(e.arg0)
-}
-
-// GetProgram returns the MIDI program number.
-func(e * EventMIDI) GetProgram() uint8 {
-	return e.arg0
-}
-
-// GetPressure returns the MIDI pressure value.
-func(e * EventMIDI) GetPressure() uint8 {
-	return e.arg0
-}
-
-#endif
 
 static inline const struct event *event_filter_midi_channel(const struct event *e, uint8_t chan)
 {
