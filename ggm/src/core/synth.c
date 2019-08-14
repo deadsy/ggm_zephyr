@@ -88,6 +88,13 @@ struct synth *synth_new(void)
 void synth_del(struct synth *s)
 {
 	module_del(s->root);
+
+	/* free the allocated audio buffers */
+	if (s->bufs != NULL) {
+		ggm_free(s->bufs[0]);
+		ggm_free(s->bufs);
+	}
+
 	ggm_free(s);
 }
 
@@ -106,21 +113,47 @@ static void synth_midi_out(struct module *m, const struct event *e)
  * synth_set_root sets the root patch of the synth.
  */
 
-void synth_set_root(struct synth *s, struct module *m)
+int synth_set_root(struct synth *s, struct module *m)
 {
 	LOG_MOD_NAME(m);
 
 	s->root = m;
 
-	/* allocate the audio buffers */
+	/* how many audio buffers do we need? */
 	s->n_in = port_count_by_type(m->info->in, PORT_TYPE_AUDIO);
 	s->n_out = port_count_by_type(m->info->out, PORT_TYPE_AUDIO);
+	int nbufs = s->n_in + s->n_out;
+
+	/* allocate the audio buffer list */
+	s->bufs = ggm_calloc(nbufs, sizeof(float *));
+	if (s->bufs == NULL) {
+		LOG_ERR("could not allocate audio buffer list");
+		goto error;
+	}
+
+	/* allocate the audio buffers */
+	float *buf = ggm_calloc(nbufs, AudioBufferSize * sizeof(float));
+	if (buf == NULL) {
+		LOG_ERR("could not allocate audio buffers");
+		goto error;
+	}
+
+	/* setup the audio buffer list */
+	for (int i = 0; i < nbufs; i++) {
+		s->bufs[i] = &buf[i * AudioBufferSize];
+	}
 
 	/* hookup up any MIDI output to the top-level callback */
 	int idx = port_get_index(m->info->out, "midi");
 	if (idx >= 0) {
 		port_add_dst(m, idx, m, synth_midi_out);
 	}
+
+	return 0;
+
+error:
+	ggm_free(s->bufs);
+	return -1;
 }
 
 /******************************************************************************

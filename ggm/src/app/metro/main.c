@@ -19,16 +19,20 @@ int main(void)
 
 	struct synth *s = synth_new();
 	struct module *m = module_new(s, "seq.metro");
-	synth_set_root(s, m);
 
-  for(int i = 0; i < 3000; i ++) {
-    synth_loop(s);
-    ggm_mdelay(3);
-  }
+	int err = synth_set_root(s, m);
+	if (err != 0) {
+		goto exit;
+	}
 
+	for (int i = 0; i < 3000; i++) {
+		synth_loop(s);
+		ggm_mdelay(3);
+	}
+
+exit:
 	synth_del(s);
-
-  return 0;
+	return 0;
 }
 
 /*****************************************************************************/
