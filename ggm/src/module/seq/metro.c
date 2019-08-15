@@ -128,7 +128,7 @@ static const struct port_info out_ports[] = {
 	PORT_EOL,
 };
 
-const struct module_info metro_module = {
+const struct module_info seq_metro_module = {
 	.name = "seq.metro",
 	.in = in_ports,
 	.out = out_ports,
@@ -137,6 +137,6 @@ const struct module_info metro_module = {
 	.process = metro_process,
 };
 
-MODULE_REGISTER(metro_module);
+MODULE_REGISTER(seq_metro_module);
 
 /*****************************************************************************/

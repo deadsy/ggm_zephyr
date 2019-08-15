@@ -81,7 +81,7 @@ static const struct port_info out_ports[] = {
 	PORT_EOL,
 };
 
-const struct module_info sine_module = {
+const struct module_info osc_sine_module = {
 	.name = "osc.sine",
 	.in = in_ports,
 	.out = out_ports,
@@ -90,6 +90,6 @@ const struct module_info sine_module = {
 	.process = sine_process,
 };
 
-MODULE_REGISTER(sine_module);
+MODULE_REGISTER(osc_sine_module);
 
 /*****************************************************************************/

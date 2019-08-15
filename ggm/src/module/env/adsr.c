@@ -229,7 +229,7 @@ static const struct port_info out_ports[] = {
 	PORT_EOL,
 };
 
-const struct module_info adsr_module = {
+const struct module_info env_adsr_module = {
 	.name = "env.adsr",
 	.in = in_ports,
 	.out = out_ports,
@@ -238,6 +238,6 @@ const struct module_info adsr_module = {
 	.process = adsr_process,
 };
 
-MODULE_REGISTER(adsr_module);
+MODULE_REGISTER(env_adsr_module);
 
 /*****************************************************************************/

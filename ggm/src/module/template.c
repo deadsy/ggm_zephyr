@@ -48,10 +48,10 @@ static void xmod_free(struct module *m)
 	ggm_free(this);
 }
 
-static bool xmod_process(struct module *m, float *buf[])
+static bool xmod_process(struct module *m, float *bufs[])
 {
 	struct xmod *this = (struct xmod *)m->priv;
-	float *out = buf[0];
+	float *out = bufs[0];
 
 	(void)this;
 	(void)out;

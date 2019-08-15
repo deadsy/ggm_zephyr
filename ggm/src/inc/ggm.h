@@ -68,12 +68,13 @@ float midi_pitch_bend(uint16_t val);
  * block operations
  */
 
-void block_mul(float *out, float *buf, size_t n);
-void block_mul_k(float *out, float k, size_t n);
-void block_add(float *out, float *buf, size_t n);
-void block_add_k(float *out, float k, size_t n);
-void block_copy(float *dst, const float *src, size_t n);
-void block_copy_mul_k(float *dst, const float *src, float k, size_t n);
+void block_zero(float *out);
+void block_mul(float *out, float *buf);
+void block_mul_k(float *out, float k);
+void block_add(float *out, float *buf);
+void block_add_k(float *out, float k);
+void block_copy(float *dst, const float *src);
+void block_copy_mul_k(float *dst, const float *src, float k);
 
 /*****************************************************************************/
 

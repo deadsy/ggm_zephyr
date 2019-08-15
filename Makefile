@@ -6,7 +6,8 @@ APP= ggm
 BOARD = mimxrt1020_evk
 #BOARD = stm32f4_disco
 
-ZEPHYR_BASE = $(TOP)/zephyr
+ZEPHYR_BASE = $(TOP)/zephyr/zephyr
+ZEPHYR_MODULES = $(TOP)/zephyr/hal_stm32
 ZEPHYR_TOOLCHAIN_VARIANT = cross-compile
 CROSS_COMPILE = /opt/gcc-arm-none-eabi-8-2018-q4-major/bin/arm-none-eabi-
 
@@ -52,5 +53,5 @@ init:
 	ZEPHYR_BASE=$(ZEPHYR_BASE) \
 	ZEPHYR_TOOLCHAIN_VARIANT=$(ZEPHYR_TOOLCHAIN_VARIANT) \
 	CROSS_COMPILE=$(CROSS_COMPILE) \
-	cmake -GNinja -DBOARD=$(BOARD) -S $(APP) -B $(BUILD)
+	cmake -GNinja -DZEPHYR_MODULES=$(ZEPHYR_MODULES) -DBOARD=$(BOARD) -S $(APP) -B $(BUILD)
 	touch $@

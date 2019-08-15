@@ -5,6 +5,7 @@ GGM = $(TOP)/ggm
 OUTPUT = $(TOP)/ggm_test
 
 SRC = $(GGM)/src/app/metro/main.c \
+	$(GGM)/src/core/block.c \
 	$(GGM)/src/core/event.c \
 	$(GGM)/src/core/ftoa.c \
 	$(GGM)/src/core/lut.c \
@@ -16,6 +17,7 @@ SRC = $(GGM)/src/app/metro/main.c \
 	$(GGM)/src/module/template.c \
 	$(GGM)/src/module/env/adsr.c \
 	$(GGM)/src/module/midi/mon.c \
+	$(GGM)/src/module/midi/poly.c \
 	$(GGM)/src/module/osc/sine.c \
 	$(GGM)/src/module/seq/seq.c \
 	$(GGM)/src/module/seq/metro.c \

@@ -2,11 +2,7 @@
  * Copyright (c) 2019 Jason T. Harris. (sirmanlypowers@gmail.com)
  *
  * SPDX-License-Identifier: Apache-2.0
- */
-
-#include "ggm.h"
-
-/******************************************************************************
+ *
  * Block Operations
  * Note: Unrolling these loops and breaking up the operations tends to speed them
  * up because it gives the compiler a chance to pipeline loads and stores.
@@ -14,28 +10,42 @@
  * because the compiler will re-order them as it sees fit.
  *
  * The block_mul/add() function seem immune to improvements. They use vldmia/vstmia
- * and it maybe that other functions could benefit from multiple load/store also.
+ * and it maybe that other functions could benefit from multiple load/store also. *
  */
 
-/* multiply two buffers */
-void block_mul(float *out, float *buf, size_t n)
+#include "ggm.h"
+
+/*****************************************************************************/
+
+/* block_zero sets a buffer to zero */
+void block_zero(float *out)
 {
-	for (size_t i = 0; i < n; i++) {
+	for (size_t i = 0; i < AudioBufferSize; i++) {
+		out[i] = 0.f;
+	}
+}
+
+/* block_mul multiplies two buffers */
+void block_mul(float *out, float *buf)
+{
+	for (size_t i = 0; i < AudioBufferSize; i++) {
 		out[i] *= buf[i];
 	}
 }
 
-/* add two buffers */
-void block_add(float *out, float *buf, size_t n)
+/* block_add adds two buffers */
+void block_add(float *out, float *buf)
 {
-	for (size_t i = 0; i < n; i++) {
+	for (size_t i = 0; i < AudioBufferSize; i++) {
 		out[i] += buf[i];
 	}
 }
 
-/* multiply a block by a scalar */
-void block_mul_k(float *out, float k, size_t n)
+/* block_mul_k multiplies a block by a scalar */
+void block_mul_k(float *out, float k)
 {
+	size_t n = AudioBufferSize;
+
 	/* unroll x4 */
 	while (n > 0) {
 		out[0] *= k;
@@ -47,9 +57,11 @@ void block_mul_k(float *out, float k, size_t n)
 	}
 }
 
-/* add a scalar to a buffer */
-void block_add_k(float *out, float k, size_t n)
+/* block_add_k adds a scalar to a buffer */
+void block_add_k(float *out, float k)
 {
+	size_t n = AudioBufferSize;
+
 	/* unroll x4 */
 	while (n > 0) {
 		out[0] += k;
@@ -61,9 +73,11 @@ void block_add_k(float *out, float k, size_t n)
 	}
 }
 
-/* copy a block */
-void block_copy(float *dst, const float *src, size_t n)
+/* block_copy copies a block */
+void block_copy(float *dst, const float *src)
 {
+	size_t n = AudioBufferSize;
+
 	/* unroll x4 */
 	while (n > 0) {
 		dst[0] = src[0];
@@ -76,9 +90,11 @@ void block_copy(float *dst, const float *src, size_t n)
 	}
 }
 
-/* copy a block and multiply by k */
-void block_copy_mul_k(float *dst, const float *src, float k, size_t n)
+/* block_copy_mul_k copies a block and multiplies by k */
+void block_copy_mul_k(float *dst, const float *src, float k)
 {
+	size_t n = AudioBufferSize;
+
 	/* unroll x4 */
 	while (n > 0) {
 		dst[0] = src[0] * k;

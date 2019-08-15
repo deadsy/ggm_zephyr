@@ -12,6 +12,7 @@ target_include_directories(app
 target_sources(app
 	PRIVATE
 		src/app/metro/main.c
+		src/core/block.c
 		src/core/event.c
 		src/core/ftoa.c
 		src/core/lut.c
@@ -23,6 +24,7 @@ target_sources(app
 		src/module/template.c
 		src/module/env/adsr.c
 		src/module/midi/mon.c
+		src/module/midi/poly.c
 		src/module/osc/sine.c
 		src/module/seq/seq.c
 		src/module/seq/metro.c

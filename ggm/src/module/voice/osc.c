@@ -127,7 +127,7 @@ static const struct port_info out_ports[] = {
 	PORT_EOL,
 };
 
-const struct module_info osc_voice_module = {
+const struct module_info voice_osc_module = {
 	.name = "voice.osc",
 	.in = in_ports,
 	.out = out_ports,
@@ -136,6 +136,6 @@ const struct module_info osc_voice_module = {
 	.process = osc_voice_process,
 };
 
-MODULE_REGISTER(osc_voice_module);
+MODULE_REGISTER(voice_osc_module);
 
 /*****************************************************************************/

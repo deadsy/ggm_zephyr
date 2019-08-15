@@ -250,7 +250,7 @@ static const struct port_info out_ports[] = {
 	PORT_EOL,
 };
 
-const struct module_info seq_module = {
+const struct module_info seq_seq_module = {
 	.name = "seq.seq",
 	.in = in_ports,
 	.out = out_ports,
@@ -259,6 +259,6 @@ const struct module_info seq_module = {
 	.process = seq_process,
 };
 
-MODULE_REGISTER(seq_module);
+MODULE_REGISTER(seq_seq_module);
 
 /*****************************************************************************/
