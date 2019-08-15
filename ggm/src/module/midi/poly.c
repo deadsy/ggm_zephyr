@@ -33,20 +33,20 @@ struct poly {
  */
 
 /* voice_lookup returns the voice module for this MIDI note (or NULL) */
-static struct module *voice_lookup(struct module *m, uint8_t note)
+static struct voice *voice_lookup(struct module *m, uint8_t note)
 {
 	struct poly *this = (struct poly *)m->priv;
 
 	for (int i = 0; i < MAX_POLYPHONY; i++) {
 		if (this->voice[i].note == note) {
-			return this->voice[i].m;
+			return &this->voice[i];
 		}
 	}
 	return NULL;
 }
 
 /* voice_alloc allocates a new voice module for the MIDI note */
-static struct module *voice_alloc(struct module *m, uint8_t note)
+static struct voice *voice_alloc(struct module *m, uint8_t note)
 {
 	struct poly *this = (struct poly *)m->priv;
 
@@ -66,7 +66,7 @@ static struct module *voice_alloc(struct module *m, uint8_t note)
 	event_in_float(v->m, "note", (float)note + this->bend, NULL);
 	v->note = note;
 
-	return v->m;
+	return v;
 }
 
 /******************************************************************************
@@ -87,19 +87,19 @@ static void poly_port_midi(struct module *m, const struct event *e)
 	case MIDI_STATUS_NOTEON: {
 		uint8_t note = event_get_midi_note(e);
 		float vel = event_get_midi_velocity_float(e);
-		struct module *v = voice_lookup(m, note);
+		struct voice *v = voice_lookup(m, note);
 		if (v == NULL) {
 			v = voice_alloc(m, note);
 		}
 		/* note: vel = 0 is the same as note off (gate=0) */
-		event_in_float(v, "gate", vel, NULL);
+		event_in_float(v->m, "gate", vel, NULL);
 		break;
 	}
 	case MIDI_STATUS_NOTEOFF: {
-		struct module *v = voice_lookup(m, event_get_midi_note(e));
+		struct voice *v = voice_lookup(m, event_get_midi_note(e));
 		if (v != NULL) {
 			/* send a note off control event, ignore the note off velocity (for now) */
-			event_in_float(v, "gate", 0.f, NULL);
+			event_in_float(v->m, "gate", 0.f, NULL);
 		}
 		break;
 	}
@@ -182,11 +182,11 @@ static bool poly_process(struct module *m, float *bufs[])
 
 	// run each voice
 	for (int i = 0; i < MAX_POLYPHONY; i++) {
-		struct module *v = this->voice[i].m;
+		struct module *vm = this->voice[i].m;
 		float vbuf[AudioBufferSize];
 		float *vbufs[] = { vbuf, };
 
-		if (v->info->process(v, vbufs)) {
+		if (vm->info->process(vm, vbufs)) {
 			block_add(out, vbuf);
 			active = true;
 		}

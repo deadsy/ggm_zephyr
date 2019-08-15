@@ -3,8 +3,8 @@ TOP = $(PWD)
 BUILD = build
 APP= ggm
 
-BOARD = mimxrt1020_evk
-#BOARD = stm32f4_disco
+#BOARD = mimxrt1020_evk
+BOARD = stm32f4_disco
 
 ZEPHYR_BASE = $(TOP)/zephyr/zephyr
 ZEPHYR_MODULES = $(TOP)/zephyr/hal_stm32
