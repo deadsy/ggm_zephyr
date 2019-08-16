@@ -55,6 +55,23 @@ static inline float clampf_hi(float x, float a)
 	return (x > a) ? a : x;
 }
 
+
+/******************************************************************************
+ * clamp integer values
+ */
+
+/* clamp x between a and b */
+static inline int clampi(int x, int a, int b)
+{
+	if (x < a) {
+		return a;
+	}
+	if (x > b) {
+		return b;
+	}
+	return x;
+}
+
 /******************************************************************************
  * linear mapping map x = 0..1 to y = a..b
  */

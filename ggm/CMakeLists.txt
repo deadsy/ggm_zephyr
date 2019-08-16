@@ -25,6 +25,7 @@ target_sources(app
 		src/module/env/adsr.c
 		src/module/midi/mon.c
 		src/module/midi/poly.c
+		src/module/osc/lfo.c
 		src/module/osc/sine.c
 		src/module/seq/seq.c
 		src/module/seq/metro.c
