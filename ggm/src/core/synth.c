@@ -87,6 +87,10 @@ struct synth *synth_new(void)
 
 void synth_del(struct synth *s)
 {
+	if (s == NULL) {
+		return;
+	}
+
 	module_del(s->root);
 
 	/* free the allocated audio buffers */
