@@ -4,8 +4,7 @@ GGM = $(TOP)/ggm
 
 OUTPUT = $(TOP)/ggm_test
 
-SRC = $(GGM)/src/app/metro/main.c \
-	$(GGM)/src/core/block.c \
+SRC = $(GGM)/src/core/block.c \
 	$(GGM)/src/core/event.c \
 	$(GGM)/src/core/ftoa.c \
 	$(GGM)/src/core/lut.c \
@@ -20,10 +19,11 @@ SRC = $(GGM)/src/app/metro/main.c \
 	$(GGM)/src/module/midi/poly.c \
 	$(GGM)/src/module/osc/lfo.c \
 	$(GGM)/src/module/osc/sine.c \
+	$(GGM)/src/module/root/metro.c \
 	$(GGM)/src/module/seq/seq.c \
-	$(GGM)/src/module/seq/metro.c \
 	$(GGM)/src/module/voice/osc.c \
-	$(GGM)/src/osal/linux.c \
+	$(GGM)/src/os/linux/linux.c \
+	$(GGM)/src/os/linux/main.c \
 
 OBJ = $(patsubst %.c, %.o, $(SRC))
 

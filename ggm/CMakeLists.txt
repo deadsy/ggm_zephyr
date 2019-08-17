@@ -11,7 +11,6 @@ target_include_directories(app
 
 target_sources(app
 	PRIVATE
-		src/app/metro/main.c
 		src/core/block.c
 		src/core/event.c
 		src/core/ftoa.c
@@ -27,8 +26,9 @@ target_sources(app
 		src/module/midi/poly.c
 		src/module/osc/lfo.c
 		src/module/osc/sine.c
+		src/module/root/metro.c
 		src/module/seq/seq.c
-		src/module/seq/metro.c
 		src/module/voice/osc.c
-		src/osal/zephyr.c
+		src/os/zephyr/zephyr.c
+		src/os/zephyr/main.c
 )

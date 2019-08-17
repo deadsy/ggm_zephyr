@@ -18,7 +18,7 @@ int main(void)
 	LOG_INF("GooGooMuck %s (%s)", GGM_VERSION, CONFIG_BOARD);
 
 	struct synth *s = synth_new();
-	struct module *m = module_new(s, "seq.metro");
+	struct module *m = module_new(s, "root.metro");
 
 	int err = synth_set_root(s, m);
 	if (err != 0) {

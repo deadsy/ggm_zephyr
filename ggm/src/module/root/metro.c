@@ -2,6 +2,9 @@
  * Copyright (c) 2019 Jason T. Harris. (sirmanlypowers@gmail.com)
  *
  * SPDX-License-Identifier: Apache-2.0
+ *
+ * This is the root patch for a metronome.
+ *
  */
 
 #include "ggm.h"
@@ -120,16 +123,20 @@ static bool metro_process(struct module *m, float *buf[])
 
 static const struct port_info in_ports[] = {
 	{ .name = "midi", .type = PORT_TYPE_MIDI, .func = metro_port_midi },
+	{ .name = "in0", .type = PORT_TYPE_AUDIO },
+	{ .name = "in1", .type = PORT_TYPE_AUDIO },
 	PORT_EOL,
 };
 
 static const struct port_info out_ports[] = {
 	{ .name = "midi", .type = PORT_TYPE_MIDI, },
+	{ .name = "out0", .type = PORT_TYPE_AUDIO },
+	{ .name = "out1", .type = PORT_TYPE_AUDIO },
 	PORT_EOL,
 };
 
-const struct module_info seq_metro_module = {
-	.name = "seq.metro",
+const struct module_info root_metro_module = {
+	.name = "root.metro",
 	.in = in_ports,
 	.out = out_ports,
 	.alloc = metro_alloc,
@@ -137,6 +144,6 @@ const struct module_info seq_metro_module = {
 	.process = metro_process,
 };
 
-MODULE_REGISTER(seq_metro_module);
+MODULE_REGISTER(root_metro_module);
 
 /*****************************************************************************/
