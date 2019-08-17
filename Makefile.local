@@ -23,16 +23,19 @@ SRC = $(GGM)/src/core/block.c \
 	$(GGM)/src/module/seq/seq.c \
 	$(GGM)/src/module/voice/osc.c \
 	$(GGM)/src/os/linux/linux.c \
+	$(GGM)/src/os/linux/log.c \
 	$(GGM)/src/os/linux/main.c \
 
 OBJ = $(patsubst %.c, %.o, $(SRC))
 
 # include paths
 INCLUDE = -I$(GGM)/src/inc
+INCLUDE += -I$(GGM)/src/os
 INCLUDE += -I$(GGM)/src/module
 
 # defines 
 DEFINE =-D__LINUX__
+DEFINE += -DLOG_USE_COLOR
 
 # linker flags
 LDFLAGS =

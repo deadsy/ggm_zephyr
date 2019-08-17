@@ -15,6 +15,8 @@
 
 int main(void)
 {
+	log_set_prefix("ggm/src/");
+
 	LOG_INF("GooGooMuck %s (%s)", GGM_VERSION, CONFIG_BOARD);
 
 	struct synth *s = synth_new();
