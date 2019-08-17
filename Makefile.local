@@ -6,7 +6,6 @@ OUTPUT = $(TOP)/ggm_test
 
 SRC = $(GGM)/src/core/block.c \
 	$(GGM)/src/core/event.c \
-	$(GGM)/src/core/ftoa.c \
 	$(GGM)/src/core/lut.c \
 	$(GGM)/src/core/math.c \
 	$(GGM)/src/core/midi.c \

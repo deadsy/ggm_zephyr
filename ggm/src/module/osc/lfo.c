@@ -30,9 +30,8 @@ static void lfo_port_rate(struct module *m, const struct event *e)
 {
 	struct lfo *this = (struct lfo *)m->priv;
 	float rate = clampf_lo(event_get_float(e), 0.f);
-	char tmp[64];
 
-	LOG_INF("set rate %s Hz", log_strdup(ftoa(rate, tmp)));
+	LOG_INF("set rate %f Hz", rate);
 	this->xstep = (uint32_t)(rate * FrequencyScale);
 }
 
@@ -40,9 +39,8 @@ static void lfo_port_depth(struct module *m, const struct event *e)
 {
 	struct lfo *this = (struct lfo *)m->priv;
 	float depth = clampf_lo(event_get_float(e), 0.f);
-	char tmp[64];
 
-	LOG_INF("set depth %s", log_strdup(ftoa(depth, tmp)));
+	LOG_INF("set depth %f", depth);
 	this->depth = depth;
 }
 

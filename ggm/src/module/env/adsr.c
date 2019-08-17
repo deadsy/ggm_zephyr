@@ -56,9 +56,8 @@ static void adsr_port_gate(struct module *m, const struct event *e)
 {
 	struct adsr_env *env = (struct adsr_env *)m->priv;
 	float gate = event_get_float(e);
-	char tmp[64];
 
-	LOG_INF("%s_%08x gate %s", m->info->name, m->id, log_strdup(ftoa(gate, tmp)));
+	LOG_INF("%s_%08x gate %f", m->info->name, m->id, gate);
 
 	if (gate != 0.f) {
 		/* enter the attack segment */
@@ -82,9 +81,8 @@ static void adsr_port_attack(struct module *m, const struct event *e)
 {
 	struct adsr_env *env = (struct adsr_env *)m->priv;
 	float attack = clampf_lo(event_get_float(e), 0.f);
-	char tmp[64];
 
-	LOG_INF("%s_%08x set attack time %s secs", m->info->name, m->id, log_strdup(ftoa(attack, tmp)));
+	LOG_INF("%s_%08x set attack time %f secs", m->info->name, m->id, attack);
 	env->ka = get_k(attack, AudioSampleFrequency);
 }
 
@@ -93,9 +91,8 @@ static void adsr_port_decay(struct module *m, const struct event *e)
 {
 	struct adsr_env *env = (struct adsr_env *)m->priv;
 	float decay = clampf_lo(event_get_float(e), 0.f);
-	char tmp[64];
 
-	LOG_INF("%s_%08x set decay time %s secs", m->info->name, m->id, log_strdup(ftoa(decay, tmp)));
+	LOG_INF("%s_%08x set decay time %f secs", m->info->name, m->id, decay);
 	env->kd = get_k(decay, AudioSampleFrequency);
 }
 
@@ -104,9 +101,8 @@ static void adsr_port_sustain(struct module *m, const struct event *e)
 {
 	struct adsr_env *env = (struct adsr_env *)m->priv;
 	float sustain = clampf(event_get_float(e), 0.f, 1.f);
-	char tmp[64];
 
-	LOG_INF("%s_%08x set sustain level %s", m->info->name, m->id, log_strdup(ftoa(sustain, tmp)));
+	LOG_INF("%s_%08x set sustain level %f", m->info->name, m->id, sustain);
 	env->s = sustain;
 	env->d_trigger = 1.f - LEVEL_EPSILON;
 	env->s_trigger = sustain + (1.f - sustain) * LEVEL_EPSILON;
@@ -118,9 +114,8 @@ static void adsr_port_release(struct module *m, const struct event *e)
 {
 	struct adsr_env *env = (struct adsr_env *)m->priv;
 	float release = clampf_lo(event_get_float(e), 0.f);
-	char tmp[64];
 
-	LOG_INF("%s_%08x set release time %s secs", m->info->name, m->id, log_strdup(ftoa(release, tmp)));
+	LOG_INF("%s_%08x set release time %f secs", m->info->name, m->id, release);
 	env->kr = get_k(release, AudioSampleFrequency);
 }
 

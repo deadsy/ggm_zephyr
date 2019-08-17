@@ -154,9 +154,8 @@ static void seq_port_bpm(struct module *m, const struct event *e)
 {
 	struct seq *this = (struct seq *)m->priv;
 	float bpm = clampf(event_get_float(e), MinBeatsPerMin, MaxBeatsPerMin);
-	char tmp[64];
 
-	LOG_INF("%s_%08x set bpm %s", m->info->name, m->id, log_strdup(ftoa(bpm, tmp)));
+	LOG_INF("%s_%08x set bpm %f", m->info->name, m->id, bpm);
 	this->secs_per_tick = SecsPerMin / (bpm * TICKS_PER_BEAT);
 }
 

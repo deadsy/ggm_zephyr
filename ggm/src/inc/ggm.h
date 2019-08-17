@@ -51,13 +51,6 @@ float tanf(float x);
 float powe(float x);
 
 /******************************************************************************
- * 32-bit float to string conversion
- */
-
-char *ftoa(float val, char *buf);
-int float2str(float val, char *buf);
-
-/******************************************************************************
  * MIDI
  */
 

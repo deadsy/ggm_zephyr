@@ -23,9 +23,8 @@ struct sine_osc {
 static void sine_port_frequency(struct module *m, const struct event *e)
 {
 	float frequency = clampf_lo(event_get_float(e), 0);
-	char tmp[64];
 
-	LOG_INF("set frequency %s Hz", log_strdup(ftoa(frequency, tmp)));
+	LOG_INF("set frequency %f Hz", frequency);
 	struct sine_osc *osc = (struct sine_osc *)m->priv;
 	osc->freq = frequency;
 	osc->xstep = (uint32_t)(frequency * FrequencyScale);

@@ -13,7 +13,6 @@ target_sources(app
 	PRIVATE
 		src/core/block.c
 		src/core/event.c
-		src/core/ftoa.c
 		src/core/lut.c
 		src/core/math.c
 		src/core/midi.c
