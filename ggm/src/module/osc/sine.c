@@ -40,7 +40,6 @@ static int sine_alloc(struct module *m, va_list vargs)
 	struct sine_osc *this = ggm_calloc(1, sizeof(struct sine_osc));
 
 	if (this == NULL) {
-		LOG_ERR("could not allocate private data");
 		return -1;
 	}
 

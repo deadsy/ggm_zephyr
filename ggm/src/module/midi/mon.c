@@ -40,7 +40,6 @@ static int midi_mon_alloc(struct module *m, va_list vargs)
 	/* allocate the private data */
 	struct midi_mon *this = ggm_calloc(1, sizeof(struct midi_mon));
 	if (this == NULL) {
-		LOG_ERR("could not allocate private data");
 		return -1;
 	}
 	m->priv = (void *)this;

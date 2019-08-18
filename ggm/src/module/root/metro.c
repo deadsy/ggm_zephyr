@@ -61,7 +61,6 @@ static int metro_alloc(struct module *m, va_list vargs)
 	/* allocate the private data */
 	struct metro *this = ggm_calloc(1, sizeof(struct metro));
 	if (this == NULL) {
-		LOG_ERR("could not allocate private data");
 		return -1;
 	}
 	m->priv = (void *)this;
@@ -69,7 +68,6 @@ static int metro_alloc(struct module *m, va_list vargs)
 	/* sequencer */
 	seq = module_new(m->top, "seq.seq", signature_4_4);
 	if (seq == NULL) {
-		LOG_ERR("could not create sequencer");
 		goto error;
 	}
 	event_in_float(seq, "bpm", 120.0f, NULL);
@@ -79,7 +77,6 @@ static int metro_alloc(struct module *m, va_list vargs)
 	/* midi monitor */
 	mon = module_new(m->top, "midi.mon", MIDI_CHANNEL);
 	if (mon == NULL) {
-		LOG_ERR("could not create MIDI monitor");
 		goto error;
 	}
 	this->mon = mon;

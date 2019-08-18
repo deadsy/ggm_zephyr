@@ -24,7 +24,7 @@ int main(void)
 		goto exit;
 	}
 
-	struct module *m = module_new(s, "root.metro");
+	struct module *m = module_new(s, "root.poly");
 	if (m == NULL) {
 		goto exit;
 	}

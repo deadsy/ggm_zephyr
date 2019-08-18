@@ -93,7 +93,6 @@ static int pan_alloc(struct module *m, va_list vargs)
 	/* allocate the private data */
 	struct pan *this = ggm_calloc(1, sizeof(struct pan));
 	if (this == NULL) {
-		LOG_ERR("could not allocate private data");
 		return -1;
 	}
 	m->priv = (void *)this;

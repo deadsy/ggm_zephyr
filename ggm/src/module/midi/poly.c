@@ -135,17 +135,18 @@ static int poly_alloc(struct module *m, va_list vargs)
 	/* allocate the private data */
 	struct poly *this = ggm_calloc(1, sizeof(struct poly));
 	if (this == NULL) {
-		LOG_ERR("could not allocate private data");
 		return -1;
 	}
 	m->priv = (void *)this;
+
+	/* get the MIDI channel */
+	this->chan = va_arg(vargs, int);
 
 	/* allocate the voices */
 	module_func new_voice = va_arg(vargs, module_func);
 	for (int i = 0; i < MAX_POLYPHONY; i++) {
 		this->voice[i].m = new_voice(m->top);
 		if (this->voice[i].m == NULL) {
-			LOG_ERR("could not create voice module");
 			goto error;
 		}
 	}

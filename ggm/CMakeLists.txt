@@ -27,6 +27,7 @@ target_sources(app
 		src/module/osc/lfo.c
 		src/module/osc/sine.c
 		src/module/root/metro.c
+		src/module/root/poly.c
 		src/module/seq/seq.c
 		src/module/voice/osc.c
 		src/os/zephyr/zephyr.c

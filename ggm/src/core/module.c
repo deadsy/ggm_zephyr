@@ -17,6 +17,7 @@ extern struct module_info mix_pan_module;
 extern struct module_info osc_lfo_module;
 extern struct module_info osc_sine_module;
 extern struct module_info root_metro_module;
+extern struct module_info root_poly_module;
 extern struct module_info seq_seq_module;
 extern struct module_info voice_osc_module;
 
@@ -29,6 +30,7 @@ static const struct module_info *module_list[] = {
 	&osc_lfo_module,
 	&osc_sine_module,
 	&root_metro_module,
+	&root_poly_module,
 	&seq_seq_module,
 	&voice_osc_module,
 	NULL,
@@ -75,15 +77,14 @@ struct module *module_new(struct synth *top, const char *name, ...)
 	const struct module_info *mi = module_find(name);
 
 	if (mi == NULL) {
-		LOG_ERR("could not find module \"%s\"", name);
+		LOG_ERR("could not find module %s", name);
 		return NULL;
 	}
 
 	/* allocate the module */
 	struct module *m = ggm_calloc(1, sizeof(struct module));
 	if (m == NULL) {
-		LOG_ERR("could not allocate module");
-		return NULL;
+		goto error;
 	}
 
 	/* fill in the module data */
@@ -96,7 +97,6 @@ struct module *module_new(struct synth *top, const char *name, ...)
 	if (n > 0) {
 		struct output_dst **dst = ggm_calloc(n, sizeof(void *));
 		if (dst == NULL) {
-			LOG_ERR("could not allocate output destination lists");
 			goto error;
 		}
 		m->dst = dst;
@@ -107,15 +107,17 @@ struct module *module_new(struct synth *top, const char *name, ...)
 	int err = mi->alloc(m, vargs);
 	va_end(vargs);
 	if (err != 0) {
-		LOG_ERR("could not initialise module");
 		goto error;
 	}
 
 	return m;
 
 error:
-	ggm_free(m->dst);
-	ggm_free(m);
+	LOG_ERR("could not create module %s", name);
+	if (m != NULL) {
+		ggm_free(m->dst);
+		ggm_free(m);
+	}
 	return NULL;
 }
 

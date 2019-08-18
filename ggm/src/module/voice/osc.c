@@ -52,8 +52,7 @@ static int osc_voice_alloc(struct module *m, va_list vargs)
 	struct osc_voice *this = ggm_calloc(1, sizeof(struct osc_voice));
 
 	if (this == NULL) {
-		LOG_ERR("could not allocate private data");
-		goto error;
+		return -1;
 	}
 	m->priv = (void *)this;
 
@@ -61,7 +60,6 @@ static int osc_voice_alloc(struct module *m, va_list vargs)
 	module_func new_osc = va_arg(vargs, module_func);
 	osc = new_osc(m->top);
 	if (osc == NULL) {
-		LOG_ERR("could not create oscillator module");
 		goto error;
 	}
 	event_in_float(osc, "duty", 0.1f, NULL);
@@ -72,7 +70,6 @@ static int osc_voice_alloc(struct module *m, va_list vargs)
 	/* adsr */
 	adsr = module_new(m->top, "env.adsr");
 	if (adsr == NULL) {
-		LOG_ERR("could not create adsr module");
 		goto error;
 	}
 	event_in_float(adsr, "attack", 0.1f, NULL);
