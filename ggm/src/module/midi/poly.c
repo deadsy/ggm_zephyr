@@ -14,7 +14,7 @@
  * private state
  */
 
-#define MAX_POLYPHONY 8
+#define MAX_POLYPHONY 4
 
 struct voice {
 	struct module *m;       /* the voice module */
@@ -130,10 +130,9 @@ static void poly_port_midi(struct module *m, const struct event *e)
 
 static int poly_alloc(struct module *m, va_list vargs)
 {
-	LOG_MOD_NAME(m);
-
 	/* allocate the private data */
 	struct poly *this = ggm_calloc(1, sizeof(struct poly));
+
 	if (this == NULL) {
 		return -1;
 	}
@@ -165,7 +164,6 @@ static void poly_free(struct module *m)
 {
 	struct poly *this = (struct poly *)m->priv;
 
-	LOG_MOD_NAME(m);
 	for (int i = 0; i < MAX_POLYPHONY; i++) {
 		module_del(this->voice[i].m);
 	}
@@ -185,9 +183,8 @@ static bool poly_process(struct module *m, float *bufs[])
 	for (int i = 0; i < MAX_POLYPHONY; i++) {
 		struct module *vm = this->voice[i].m;
 		float vbuf[AudioBufferSize];
-		float *vbufs[] = { vbuf, };
 
-		if (vm->info->process(vm, vbufs)) {
+		if (vm->info->process(vm, (float *[]){ vbuf, })) {
 			block_add(out, vbuf);
 			active = true;
 		}

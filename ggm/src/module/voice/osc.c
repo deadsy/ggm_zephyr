@@ -5,6 +5,9 @@
  *
  * Oscillator Voice
  * This voice is a generic oscillator with an ADSR envelope applied to it.
+ *
+ * Arguments:
+ * module_func func, function to create an oscillator module
  */
 
 #include "ggm.h"
@@ -13,7 +16,7 @@
  * private state
  */
 
-struct osc_voice {
+struct osc {
 	struct module *adsr;    /* adsr envelope */
 	struct module *osc;     /* oscillator */
 	port_func gate;         /* port function cache */
@@ -24,16 +27,16 @@ struct osc_voice {
  * module port functions
  */
 
-static void osc_voice_gate(struct module *m, const struct event *e)
+static void osc_gate(struct module *m, const struct event *e)
 {
-	struct osc_voice *this = (struct osc_voice *)m->priv;
+	struct osc *this = (struct osc *)m->priv;
 
 	event_in(this->adsr, "gate", e, &this->gate);
 }
 
-static void osc_voice_note(struct module *m, const struct event *e)
+static void osc_note(struct module *m, const struct event *e)
 {
-	struct osc_voice *this = (struct osc_voice *)m->priv;
+	struct osc *this = (struct osc *)m->priv;
 	float f = midi_to_frequency(event_get_float(e));
 
 	event_in_float(this->osc, "frequency", f, &this->freq);
@@ -43,13 +46,13 @@ static void osc_voice_note(struct module *m, const struct event *e)
  * module functions
  */
 
-static int osc_voice_alloc(struct module *m, va_list vargs)
+static int osc_alloc(struct module *m, va_list vargs)
 {
 	struct module *osc = NULL;
 	struct module *adsr = NULL;
 
 	/* allocate the private data */
-	struct osc_voice *this = ggm_calloc(1, sizeof(struct osc_voice));
+	struct osc *this = ggm_calloc(1, sizeof(struct osc));
 
 	if (this == NULL) {
 		return -1;
@@ -87,26 +90,30 @@ error:
 	return -1;
 }
 
-static void osc_voice_free(struct module *m)
+static void osc_free(struct module *m)
 {
-	LOG_MOD_NAME(m);
-
-	struct osc_voice *this = (struct osc_voice *)m->priv;
+	struct osc *this = (struct osc *)m->priv;
 
 	module_del(this->osc);
 	module_del(this->adsr);
 	ggm_free(m->priv);
 }
 
-static bool osc_voice_process(struct module *m, float *buf[])
+static bool osc_process(struct module *m, float *buf[])
 {
-	struct osc_voice *this = (struct osc_voice *)m->priv;
-	float *out = buf[0];
+	struct osc *this = (struct osc *)m->priv;
+	struct module *adsr = this->adsr;
+	float env[AudioBufferSize];
+	bool active = adsr->info->process(adsr, (float *[]){ env, });
 
-	(void)this;
-	(void)out;
+	if (active) {
+		struct module *osc = this->osc;
+		float *out = buf[0];
+		osc->info->process(osc, (float *[]){ out, });
+		block_mul(out, env);
+	}
 
-	return true;
+	return active;
 }
 
 /******************************************************************************
@@ -114,8 +121,8 @@ static bool osc_voice_process(struct module *m, float *buf[])
  */
 
 static const struct port_info in_ports[] = {
-	{ .name = "gate", .type = PORT_TYPE_FLOAT, .func = osc_voice_gate },
-	{ .name = "note", .type = PORT_TYPE_FLOAT, .func = osc_voice_note },
+	{ .name = "gate", .type = PORT_TYPE_FLOAT, .func = osc_gate },
+	{ .name = "note", .type = PORT_TYPE_FLOAT, .func = osc_note },
 	PORT_EOL,
 };
 
@@ -128,9 +135,9 @@ const struct module_info voice_osc_module = {
 	.name = "voice.osc",
 	.in = in_ports,
 	.out = out_ports,
-	.alloc = osc_voice_alloc,
-	.free = osc_voice_free,
-	.process = osc_voice_process,
+	.alloc = osc_alloc,
+	.free = osc_free,
+	.process = osc_process,
 };
 
 MODULE_REGISTER(voice_osc_module);

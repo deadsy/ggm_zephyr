@@ -60,10 +60,9 @@ static int poly_alloc(struct module *m, va_list vargs)
 	struct module *poly = NULL;
 	struct module *pan = NULL;
 
-	LOG_MOD_NAME(m);
-
 	/* allocate the private data */
 	struct poly *this = ggm_calloc(1, sizeof(struct poly));
+
 	if (this == NULL) {
 		return -1;
 	}
@@ -96,7 +95,6 @@ static void poly_free(struct module *m)
 {
 	struct poly *this = (struct poly *)m->priv;
 
-	LOG_MOD_NAME(m);
 	module_del(this->poly);
 	module_del(this->pan);
 	ggm_free(this);

@@ -92,6 +92,8 @@ struct module *module_new(struct synth *top, const char *name, ...)
 	m->top = top;
 	m->info = mi;
 
+	LOG_INF("%s_%08x", m->info->name, m->id);
+
 	/* allocate link list headers for the output port destinations */
 	int n = port_count(mi->out);
 	if (n > 0) {
@@ -126,6 +128,8 @@ void module_del(struct module *m)
 	if (m == NULL) {
 		return;
 	}
+
+	LOG_INF("%s_%08x", m->info->name, m->id);
 
 	/* free the private data */
 	m->info->free(m);

@@ -27,10 +27,9 @@ static void xmod_port_name(struct module *m, const struct event *e)
 
 static int xmod_alloc(struct module *m, va_list vargs)
 {
-	LOG_MOD_NAME(m);
-
 	/* allocate the private data */
 	struct xmod *this = ggm_calloc(1, sizeof(struct xmod));
+
 	if (this == NULL) {
 		return -1;
 	}
@@ -43,7 +42,6 @@ static void xmod_free(struct module *m)
 {
 	struct xmod *this = (struct xmod *)m->priv;
 
-	LOG_MOD_NAME(m);
 	ggm_free(this);
 }
 

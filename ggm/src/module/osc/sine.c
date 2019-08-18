@@ -49,7 +49,6 @@ static int sine_alloc(struct module *m, va_list vargs)
 
 static void sine_free(struct module *m)
 {
-	LOG_MOD_NAME(m);
 	ggm_free(m->priv);
 }
 

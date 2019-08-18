@@ -5,6 +5,11 @@
  *
  * Left/Right Pan and Volume Module
  * Takes a single audio buffer stream as input and outputs left and right channels.
+ *
+ * Arguments:
+ * uint8_t ch, MIDI channel
+ * uint8_t cc_pan, MIDI CC number for pan control
+ * uint8_t cc_vol, MIDI CC number for volume control
  */
 
 #include "ggm.h"
@@ -14,7 +19,7 @@
  */
 
 struct pan {
-	uint8_t chan;           /* MIDI channel */
+	uint8_t ch;             /* MIDI channel */
 	uint8_t cc_pan;         /* MIDI CC number for pan control */
 	uint8_t cc_vol;         /* MIDI CC number for volume control */
 	float vol;              /* overall volume */
@@ -40,7 +45,7 @@ static void set_vol(struct module *m, float vol)
 {
 	struct pan *this = (struct pan *)m->priv;
 
-	LOG_INF("set volume %f", vol);
+	LOG_DBG("set volume %f", vol);
 	/* convert to a linear volume */
 	this->vol = pow2(vol) - 1.f;
 	pan_set(m);
@@ -50,7 +55,7 @@ static void set_pan(struct module *m, float pan)
 {
 	struct pan *this = (struct pan *)m->priv;
 
-	LOG_INF("set pan %f", pan);
+	LOG_DBG("set pan %f", pan);
 	this->pan = pan * (0.5f * Pi);
 	pan_set(m);
 }
@@ -59,7 +64,7 @@ static void pan_port_midi(struct module *m, const struct event *e)
 {
 	struct pan *this = (struct pan *)m->priv;
 
-	e =  event_filter_midi_channel(e, this->chan);
+	e =  event_filter_midi_channel(e, this->ch);
 	if (e != NULL) {
 		if (event_get_midi_msg(e) == MIDI_STATUS_CONTROLCHANGE) {
 			uint8_t cc = event_get_midi_cc_num(e);
@@ -88,19 +93,20 @@ static void pan_port_pan(struct module *m, const struct event *e)
 
 static int pan_alloc(struct module *m, va_list vargs)
 {
-	LOG_MOD_NAME(m);
-
 	/* allocate the private data */
 	struct pan *this = ggm_calloc(1, sizeof(struct pan));
+
 	if (this == NULL) {
 		return -1;
 	}
 	m->priv = (void *)this;
 
 	/* setup the MIDI parameters */
-	this->chan = va_arg(vargs, int);
+	this->ch = va_arg(vargs, int);
 	this->cc_pan = va_arg(vargs, int);
 	this->cc_vol = va_arg(vargs, int);
+
+	LOG_DBG("ch %d cc_pan %d cc_vol %d", this->ch, this->cc_pan, this->cc_vol);
 
 	/* set some default values */
 	set_vol(m, 1.f);
@@ -113,7 +119,6 @@ static void pan_free(struct module *m)
 {
 	struct pan *this = (struct pan *)m->priv;
 
-	LOG_MOD_NAME(m);
 	ggm_free(this);
 }
 

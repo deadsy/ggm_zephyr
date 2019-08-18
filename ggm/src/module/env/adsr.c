@@ -57,7 +57,7 @@ static void adsr_port_gate(struct module *m, const struct event *e)
 	struct adsr *this = (struct adsr *)m->priv;
 	float gate = event_get_float(e);
 
-	LOG_INF("%s_%08x gate %f", m->info->name, m->id, gate);
+	LOG_DBG("%s_%08x gate %f", m->info->name, m->id, gate);
 
 	if (gate != 0.f) {
 		/* enter the attack segment */
@@ -82,7 +82,7 @@ static void adsr_port_attack(struct module *m, const struct event *e)
 	struct adsr *this = (struct adsr *)m->priv;
 	float attack = clampf_lo(event_get_float(e), 0.f);
 
-	LOG_INF("%s_%08x set attack time %f secs", m->info->name, m->id, attack);
+	LOG_DBG("%s_%08x set attack time %f secs", m->info->name, m->id, attack);
 	this->ka = get_k(attack, AudioSampleFrequency);
 }
 
@@ -92,7 +92,7 @@ static void adsr_port_decay(struct module *m, const struct event *e)
 	struct adsr *this = (struct adsr *)m->priv;
 	float decay = clampf_lo(event_get_float(e), 0.f);
 
-	LOG_INF("%s_%08x set decay time %f secs", m->info->name, m->id, decay);
+	LOG_DBG("%s_%08x set decay time %f secs", m->info->name, m->id, decay);
 	this->kd = get_k(decay, AudioSampleFrequency);
 }
 
@@ -102,7 +102,7 @@ static void adsr_port_sustain(struct module *m, const struct event *e)
 	struct adsr *this = (struct adsr *)m->priv;
 	float sustain = clampf(event_get_float(e), 0.f, 1.f);
 
-	LOG_INF("%s_%08x set sustain level %f", m->info->name, m->id, sustain);
+	LOG_DBG("%s_%08x set sustain level %f", m->info->name, m->id, sustain);
 	this->s = sustain;
 	this->d_trigger = 1.f - LEVEL_EPSILON;
 	this->s_trigger = sustain + (1.f - sustain) * LEVEL_EPSILON;
@@ -115,7 +115,7 @@ static void adsr_port_release(struct module *m, const struct event *e)
 	struct adsr *this = (struct adsr *)m->priv;
 	float release = clampf_lo(event_get_float(e), 0.f);
 
-	LOG_INF("%s_%08x set release time %f secs", m->info->name, m->id, release);
+	LOG_DBG("%s_%08x set release time %f secs", m->info->name, m->id, release);
 	this->kr = get_k(release, AudioSampleFrequency);
 }
 
@@ -138,7 +138,6 @@ static int adsr_alloc(struct module *m, va_list vargs)
 
 static void adsr_free(struct module *m)
 {
-	LOG_MOD_NAME(m);
 	ggm_free(m->priv);
 }
 
