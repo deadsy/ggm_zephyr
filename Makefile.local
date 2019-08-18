@@ -41,6 +41,9 @@ DEFINE += -DLOG_USE_COLOR
 # linker flags
 LDFLAGS =
 
+# libraries
+LIBS = -ljack
+
 # compiler flags
 CFLAGS = -Wall -Wextra -Wstrict-prototypes
 CFLAGS += -Wno-unused-parameter
@@ -50,7 +53,7 @@ CFLAGS += -Wno-unused-parameter
 	gcc $(INCLUDE) $(DEFINE) $(CFLAGS) -c $< -o $@
 
 all: $(OBJ)
-	gcc $(CFLAGS) $(LDFLAGS) $(OBJ) -o $(OUTPUT)
+	gcc $(CFLAGS) $(LDFLAGS) $(OBJ) $(LIBS) -o $(OUTPUT)
 
 test:
 	valgrind --leak-check=yes $(OUTPUT)

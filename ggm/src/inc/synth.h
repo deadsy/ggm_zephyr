@@ -34,8 +34,10 @@ struct synth {
 	struct module *root;    /* root patch */
 	struct event_queue eq;  /* event queue */
 	float **bufs;           /* allocated audio buffers */
-	int n_in;               /* number of input audio buffers */
-	int n_out;              /* number of output audio buffers */
+	int audio_in;           /* number of input audio buffers */
+	int audio_out;          /* number of output audio buffers */
+	int midi_in;            /* number of input MIDI ports */
+	int midi_out;           /* number of output MIDI ports */
 };
 
 /******************************************************************************
@@ -45,6 +47,7 @@ struct synth {
 struct synth *synth_new(void);
 void synth_del(struct synth *s);
 int synth_set_root(struct synth *s, struct module *m);
+bool synth_has_root(struct synth *s);
 void synth_loop(struct synth *s);
 int synth_event_wr(struct synth *s, struct module *m, int idx, const struct event *e);
 
