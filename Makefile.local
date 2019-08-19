@@ -56,7 +56,7 @@ all: $(OBJ)
 	gcc $(CFLAGS) $(LDFLAGS) $(OBJ) $(LIBS) -o $(OUTPUT)
 
 test:
-	valgrind --leak-check=yes $(OUTPUT)
+	valgrind --leak-check=full --show-leak-kinds=all $(OUTPUT)
 
 clean:
 	-rm $(OBJ)	
