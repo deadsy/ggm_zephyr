@@ -124,13 +124,13 @@ int synth_set_root(struct synth *s, struct module *m)
 	s->root = m;
 
 	/* count the in/out ports */
-	s->audio_in = port_count_by_type(m->info->in, PORT_TYPE_AUDIO);
-	s->audio_out = port_count_by_type(m->info->out, PORT_TYPE_AUDIO);
-	s->midi_in = port_count_by_type(m->info->in, PORT_TYPE_MIDI);
-	s->midi_out = port_count_by_type(m->info->out, PORT_TYPE_MIDI);
+	s->n_audio_in = port_count_by_type(m->info->in, PORT_TYPE_AUDIO);
+	s->n_audio_out = port_count_by_type(m->info->out, PORT_TYPE_AUDIO);
+	s->n_midi_in = port_count_by_type(m->info->in, PORT_TYPE_MIDI);
+	s->n_midi_out = port_count_by_type(m->info->out, PORT_TYPE_MIDI);
 
 	/* how many audio buffers do we need? */
-	int nbufs = s->audio_in + s->audio_out;
+	int nbufs = s->n_audio_in + s->n_audio_out;
 
 	/* allocate the audio buffer list */
 	s->bufs = ggm_calloc(nbufs, sizeof(float *));

@@ -31,13 +31,13 @@ struct event_queue {
 };
 
 struct synth {
-	struct module *root;    /* root patch */
-	struct event_queue eq;  /* event queue */
-	float **bufs;           /* allocated audio buffers */
-	int audio_in;           /* number of input audio buffers */
-	int audio_out;          /* number of output audio buffers */
-	int midi_in;            /* number of input MIDI ports */
-	int midi_out;           /* number of output MIDI ports */
+	struct module *root;            /* root patch */
+	struct event_queue eq;          /* event queue */
+	float **bufs;                   /* allocated audio buffers */
+	unsigned int n_audio_in;        /* number of input audio buffers */
+	unsigned int n_audio_out;       /* number of output audio buffers */
+	unsigned int n_midi_in;         /* number of input MIDI ports */
+	unsigned int n_midi_out;        /* number of output MIDI ports */
 };
 
 /******************************************************************************

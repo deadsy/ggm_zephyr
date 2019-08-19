@@ -11,9 +11,9 @@
  */
 
 /* port_count returns the number of ports */
-int port_count(const struct port_info port[])
+unsigned int port_count(const struct port_info port[])
 {
-	int i = 0;
+	unsigned int i = 0;
 
 	if (port == NULL) {
 		return 0;
@@ -25,10 +25,10 @@ int port_count(const struct port_info port[])
 }
 
 /* port_count_by_type returns the number of ports of a given type */
-int port_count_by_type(const struct port_info port[], enum port_type type)
+unsigned int port_count_by_type(const struct port_info port[], enum port_type type)
 {
 	int i = 0;
-	int n = 0;
+	unsigned int n = 0;
 
 	if (port == NULL) {
 		return 0;
