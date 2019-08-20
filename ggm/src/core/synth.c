@@ -103,7 +103,7 @@ void synth_del(struct synth *s)
 }
 
 /******************************************************************************
- * synth_midi_output is called when the running top-level module has a MIDI
+ * synth_midi_out is called when the running top-level module has a MIDI
  * message to output. It has the prototype of a port function, and the module
  * will be the root module.
  */
@@ -111,6 +111,24 @@ void synth_del(struct synth *s)
 static void synth_midi_out(struct module *m, const struct event *e)
 {
 	LOG_INF("TODO");
+}
+
+/******************************************************************************
+ * synth_midi_in is called when the external driver has a MIDI message to
+ * input. The index number indicates which of the n MIDI inputs ports should be
+ * called.
+ */
+
+void synth_midi_in(struct synth *s, unsigned int idx, const struct event *e)
+{
+	// TODO port function caching
+	if (s->n_midi_in == 1) {
+		event_in(s->root, "midi", e, NULL);
+	} else {
+		char name[16];
+		snprintf(name, sizeof(name), "midi%d", idx);
+		event_in(s->root, name, e, NULL);
+	}
 }
 
 /******************************************************************************

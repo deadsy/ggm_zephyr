@@ -26,6 +26,15 @@ struct jack {
 };
 
 /******************************************************************************
+ * convert jack MIDI buffer to MIDI event
+ */
+
+static void jack_convert_midi_event(struct event *dst, jack_midi_event_t *src)
+{
+	LOG_INF("time %d size %d buffer %p", src->time, src->size, src->buffer);
+}
+
+/******************************************************************************
  * jack ports
  */
 
@@ -42,13 +51,11 @@ static void jack_free_ports(
 
 	for (size_t i = 0; i < n; i++) {
 		if (port[i] != NULL) {
-			char name[128];
-			snprintf(name, sizeof(name), "%s%lu", base_name, i);
 			int err = jack_port_unregister(client, port[i]);
 			if (err != 0) {
-				LOG_ERR("unable to unregister %s", name);
+				LOG_ERR("unable to unregister %s_%lu", base_name, i);
 			}
-			LOG_DBG("unregistered %s", name);
+			LOG_DBG("unregistered %s_%lu", base_name, i);
 		}
 	}
 
@@ -76,7 +83,7 @@ static jack_port_t **jack_alloc_ports(
 
 	for (size_t i = 0; i < n; i++) {
 		char name[128];
-		snprintf(name, sizeof(name), "%s%lu", base_name, i);
+		snprintf(name, sizeof(name), "%s_%lu", base_name, i);
 		port[i] = jack_port_register(client, name, type, flags, 0);
 		if (port[i] == NULL) {
 			LOG_ERR("unable to register port %s", name);
@@ -102,7 +109,7 @@ static int jack_process(jack_nframes_t nframes, void *arg)
 	struct synth *s = (struct synth *)j->synth;
 	unsigned int i;
 
-	LOG_DBG("nframes %d", nframes);
+	// LOG_DBG("nframes %d", nframes);
 
 	/* read MIDI input events */
 	for (i = 0; i < s->n_midi_in; i++) {
@@ -119,8 +126,10 @@ static int jack_process(jack_nframes_t nframes, void *arg)
 				LOG_ERR("jack_midi_event_get() returned %d", err);
 				continue;
 			}
-			/* TODO */
-			LOG_INF("time %d size %d buffer %p", event.time, event.size, event.buffer);
+			/* forward the MIDI event to the root module of the synth  */
+			struct event e;
+			jack_convert_midi_event(&e, &event);
+			synth_midi_in(s, i, &e);
 		}
 	}
 
@@ -131,7 +140,7 @@ static int jack_process(jack_nframes_t nframes, void *arg)
 	}
 
 	/* run the synth loop */
-	// synth_loop(s);
+	synth_loop(s);
 
 	/* write to the audio output buffers */
 	unsigned int ofs = s->n_audio_in;

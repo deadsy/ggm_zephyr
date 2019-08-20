@@ -20,8 +20,8 @@ esac
 
 CONNECT=/usr/local/bin/jack_connect
 
-$CONNECT $MIDI_CAPTURE_0 babi:midi_in_0
-$CONNECT $PLAYBACK_0 babi:audio_out_0
-$CONNECT $PLAYBACK_1 babi:audio_out_1
+$CONNECT $MIDI_CAPTURE_0 ggm:midi_in_0
+$CONNECT $PLAYBACK_0 ggm:audio_out_0
+$CONNECT $PLAYBACK_1 ggm:audio_out_1
 
 exit $?

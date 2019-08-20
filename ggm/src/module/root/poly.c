@@ -105,8 +105,8 @@ static bool poly_process(struct module *m, float *bufs[])
 	struct poly *this = (struct poly *)m->priv;
 	struct module *poly = this->poly;
 	struct module *pan = this->pan;
-	float *out0 = bufs[2];
-	float *out1 = bufs[3];
+	float *out0 = bufs[0];
+	float *out1 = bufs[1];
 	float tmp[AudioBufferSize];
 
 	poly->info->process(poly, (float *[]){ tmp, });
