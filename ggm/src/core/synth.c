@@ -94,10 +94,7 @@ void synth_del(struct synth *s)
 	module_del(s->root);
 
 	/* free the allocated audio buffers */
-	if (s->bufs != NULL) {
-		ggm_free(s->bufs[0]);
-		ggm_free(s->bufs);
-	}
+	ggm_free(s->bufs[0]);
 
 	ggm_free(s);
 }
@@ -115,20 +112,19 @@ static void synth_midi_out(struct module *m, const struct event *e)
 
 /******************************************************************************
  * synth_midi_in is called when the external driver has a MIDI message to
- * input. The index number indicates which of the n MIDI inputs ports should be
+ * input. The index number indicates which of the MIDI inputs ports should be
  * called.
  */
 
 void synth_midi_in(struct synth *s, unsigned int idx, const struct event *e)
 {
-	// TODO port function caching
-	if (s->n_midi_in == 1) {
-		event_in(s->root, "midi", e, NULL);
-	} else {
-		char name[16];
-		snprintf(name, sizeof(name), "midi%d", idx);
-		event_in(s->root, name, e, NULL);
+	port_func func = s->midi_in[idx];
+
+	if (func == NULL) {
+		LOG_WRN("midi_in_%d has a null port function", idx);
+		return;
 	}
+	func(s->root, e);
 }
 
 /******************************************************************************
@@ -139,29 +135,43 @@ int synth_set_root(struct synth *s, struct module *m)
 {
 	LOG_MOD_NAME(m);
 
-	s->root = m;
-
 	/* count the in/out ports */
 	s->n_audio_in = port_count_by_type(m->info->in, PORT_TYPE_AUDIO);
 	s->n_audio_out = port_count_by_type(m->info->out, PORT_TYPE_AUDIO);
 	s->n_midi_in = port_count_by_type(m->info->in, PORT_TYPE_MIDI);
 	s->n_midi_out = port_count_by_type(m->info->out, PORT_TYPE_MIDI);
 
+	/* check the MIDI inputs against the fixed cache size */
+	if (s->n_midi_in > NUM_MIDI_IN) {
+		LOG_ERR("number of MIDI inputs > NUM_MIDI_IN");
+		return -1;
+	}
+
+	/* fill in the cache of MIDI input port functions */
+	if (s->n_midi_in > 0) {
+		const struct port_info *p = m->info->in;
+		int i = 0, j = 0;
+		while (p[j].type != PORT_TYPE_NULL) {
+			if (p[j].type == PORT_TYPE_MIDI) {
+				s->midi_in[i] = p[j].func;
+				i++;
+			}
+			j++;
+		}
+	}
+
 	/* how many audio buffers do we need? */
 	int nbufs = s->n_audio_in + s->n_audio_out;
-
-	/* allocate the audio buffer list */
-	s->bufs = ggm_calloc(nbufs, sizeof(float *));
-	if (s->bufs == NULL) {
-		LOG_ERR("could not allocate audio buffer list");
-		goto error;
+	if (nbufs > NUM_AUDIO_PORTS) {
+		LOG_ERR("number of audio input/output ports > NUM_AUDIO_PORTS");
+		return -1;
 	}
 
 	/* allocate the audio buffers */
 	float *buf = ggm_calloc(nbufs, AudioBufferSize * sizeof(float));
 	if (buf == NULL) {
 		LOG_ERR("could not allocate audio buffers");
-		goto error;
+		return -1;
 	}
 
 	/* setup the audio buffer list */
@@ -170,17 +180,14 @@ int synth_set_root(struct synth *s, struct module *m)
 	}
 
 	/* hookup up any MIDI output to the top-level callback */
+	/* TODO fix for n outputs */
 	int idx = port_get_index(m->info->out, "midi");
 	if (idx >= 0) {
 		port_add_dst(m, idx, m, synth_midi_out);
 	}
 
+	s->root = m;
 	return 0;
-
-error:
-	ggm_free(s->bufs);
-	s->root = NULL;
-	return -1;
 }
 
 bool synth_has_root(struct synth *s)

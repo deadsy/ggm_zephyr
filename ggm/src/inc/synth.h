@@ -16,6 +16,8 @@
  */
 
 #define NUM_EVENTS 16           /* must be a power of 2 */
+#define NUM_MIDI_IN 4           /* max number of MIDI input ports for root patch */
+#define NUM_AUDIO_PORTS 8       /* max number of audio input/output ports for root patch */
 
 struct qevent {
 	struct module *m;       /* source module */
@@ -33,7 +35,8 @@ struct event_queue {
 struct synth {
 	struct module *root;            /* root patch */
 	struct event_queue eq;          /* event queue */
-	float **bufs;                   /* allocated audio buffers */
+	float *bufs[NUM_AUDIO_PORTS];   /* allocated audio buffers */
+	port_func midi_in[NUM_MIDI_IN]; /* cache of MIDI input port functions */
 	unsigned int n_audio_in;        /* number of input audio buffers */
 	unsigned int n_audio_out;       /* number of output audio buffers */
 	unsigned int n_midi_in;         /* number of input MIDI ports */
