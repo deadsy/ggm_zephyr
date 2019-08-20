@@ -91,6 +91,14 @@ static inline void event_set_midi_note(struct event *e, uint8_t msg, uint8_t cha
 	e->u.midi.arg1 = velocity & 127;
 }
 
+static inline void event_set_midi(struct event *e, uint8_t status, uint8_t arg0, uint8_t arg1)
+{
+	e->type = EVENT_TYPE_MIDI;
+	e->u.midi.status = status;
+	e->u.midi.arg0 = arg0;
+	e->u.midi.arg1 = arg1;
+}
+
 /* event_get_midi_channel returns the MIDI channel number */
 static inline uint8_t event_get_midi_channel(const struct event *e)
 {

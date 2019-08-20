@@ -29,9 +29,77 @@ struct jack {
  * convert jack MIDI buffer to MIDI event
  */
 
-static void jack_convert_midi_event(struct event *dst, jack_midi_event_t *src)
+static int jack_convert_midi_event(struct event *dst, jack_midi_event_t *src)
 {
+	uint8_t *buf = src->buffer;
+	unsigned int n = src->size;
+
 	LOG_INF("time %d size %d buffer %p", src->time, src->size, src->buffer);
+
+	if (n == 0) {
+		LOG_WRN("jack midi event has no data");
+		return -1;
+	}
+
+	uint8_t status = buf[0];
+
+	if (status < MIDI_STATUS_COMMON) {
+		/* channel message */
+		switch (status & 0xf0) {
+		case MIDI_STATUS_NOTEOFF:
+		case MIDI_STATUS_NOTEON:
+		case MIDI_STATUS_POLYPHONICAFTERTOUCH:
+		case MIDI_STATUS_CONTROLCHANGE:
+		case MIDI_STATUS_PITCHWHEEL: {
+			if (n == 3) {
+				event_set_midi(dst, buf[0], buf[1], buf[2]);
+				return 0;
+			}
+			LOG_WRN("jack midi event size != 3");
+			break;
+		}
+		case MIDI_STATUS_PROGRAMCHANGE:
+		case MIDI_STATUS_CHANNELAFTERTOUCH: {
+			if (n == 2) {
+				event_set_midi(dst, buf[0], buf[1], 0);
+				return 0;
+			}
+			LOG_WRN("jack midi event size != 2");
+			break;
+		}
+		default:
+			LOG_WRN("unhandled channel msg %02x", status);
+			break;
+		}
+	} else if (status < MIDI_STATUS_REALTIME) {
+		/* system common message */
+		switch (status) {
+		case MIDI_STATUS_SYSEXSTART:
+		case MIDI_STATUS_QUARTERFRAME:
+		case MIDI_STATUS_SONGPOINTER:
+		case MIDI_STATUS_SONGSELECT:
+		case MIDI_STATUS_TUNEREQUEST:
+		case MIDI_STATUS_SYSEXEND:
+		default:
+			LOG_WRN("unhandled system commmon msg %02x", status);
+			break;
+		}
+	} else {
+		/* system real time message */
+		switch (status) {
+		case MIDI_STATUS_TIMINGCLOCK:
+		case MIDI_STATUS_START:
+		case MIDI_STATUS_CONTINUE:
+		case MIDI_STATUS_STOP:
+		case MIDI_STATUS_ACTIVESENSING:
+		case MIDI_STATUS_RESET:
+		default:
+			LOG_WRN("unhandled system realtime msg %02x", status);
+			break;
+		}
+	}
+
+	return -1;
 }
 
 /******************************************************************************
