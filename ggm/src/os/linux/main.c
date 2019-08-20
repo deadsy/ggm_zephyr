@@ -16,20 +16,30 @@
  * jack data
  */
 
+#define MAX_AUDIO_IN 4  /* maximum number of audio input ports */
+#define MAX_AUDIO_OUT 4 /* maximum number of audio output ports */
+#define MAX_MIDI_IN 4   /* maximum number of MIDI input ports */
+#define MAX_MIDI_OUT 4  /* maximum number of MIDI output ports */
+
 struct jack {
 	struct synth *synth;
 	jack_client_t *client;
-	jack_port_t **audio_in;         /* audio input ports */
-	jack_port_t **audio_out;        /* audio output ports */
-	jack_port_t **midi_in;          /* MIDI input ports */
-	jack_port_t **midi_out;         /* MIDI output ports */
+	size_t n_audio_in;                      /* number of input audio ports */
+	size_t n_audio_out;                     /* number of output audio ports */
+	size_t n_midi_in;                       /* number of input MIDI ports */
+	size_t n_midi_out;                      /* number of output MIDI ports */
+	jack_port_t *audio_in[MAX_AUDIO_IN];    /* audio input jack ports */
+	jack_port_t *audio_out[MAX_AUDIO_OUT];  /* audio output jack ports */
+	jack_port_t *midi_in[MAX_MIDI_IN];      /* MIDI input jack ports */
+	jack_port_t *midi_out[MAX_MIDI_OUT];    /* MIDI output jack ports */
+	port_func midi_in_pf[MAX_MIDI_IN];      /* MIDI input port functions */
 };
 
 /******************************************************************************
  * convert jack MIDI buffer to MIDI event
  */
 
-static int jack_convert_midi_event(struct event *dst, jack_midi_event_t *src)
+static struct event *jack_convert_midi_event(struct event *dst, jack_midi_event_t *src)
 {
 	uint8_t *buf = src->buffer;
 	unsigned int n = src->size;
@@ -38,7 +48,7 @@ static int jack_convert_midi_event(struct event *dst, jack_midi_event_t *src)
 
 	if (n == 0) {
 		LOG_WRN("jack midi event has no data");
-		return -1;
+		return NULL;
 	}
 
 	uint8_t status = buf[0];
@@ -53,7 +63,7 @@ static int jack_convert_midi_event(struct event *dst, jack_midi_event_t *src)
 		case MIDI_STATUS_PITCHWHEEL: {
 			if (n == 3) {
 				event_set_midi(dst, buf[0], buf[1], buf[2]);
-				return 0;
+				return dst;
 			}
 			LOG_WRN("jack midi event size != 3");
 			break;
@@ -62,7 +72,7 @@ static int jack_convert_midi_event(struct event *dst, jack_midi_event_t *src)
 		case MIDI_STATUS_CHANNELAFTERTOUCH: {
 			if (n == 2) {
 				event_set_midi(dst, buf[0], buf[1], 0);
-				return 0;
+				return dst;
 			}
 			LOG_WRN("jack midi event size != 2");
 			break;
@@ -73,47 +83,27 @@ static int jack_convert_midi_event(struct event *dst, jack_midi_event_t *src)
 		}
 	} else if (status < MIDI_STATUS_REALTIME) {
 		/* system common message */
-		switch (status) {
-		case MIDI_STATUS_SYSEXSTART:
-		case MIDI_STATUS_QUARTERFRAME:
-		case MIDI_STATUS_SONGPOINTER:
-		case MIDI_STATUS_SONGSELECT:
-		case MIDI_STATUS_TUNEREQUEST:
-		case MIDI_STATUS_SYSEXEND:
-		default:
-			LOG_WRN("unhandled system commmon msg %02x", status);
-			break;
-		}
+		LOG_WRN("unhandled system commmon msg %02x", status);
 	} else {
 		/* system real time message */
-		switch (status) {
-		case MIDI_STATUS_TIMINGCLOCK:
-		case MIDI_STATUS_START:
-		case MIDI_STATUS_CONTINUE:
-		case MIDI_STATUS_STOP:
-		case MIDI_STATUS_ACTIVESENSING:
-		case MIDI_STATUS_RESET:
-		default:
-			LOG_WRN("unhandled system realtime msg %02x", status);
-			break;
-		}
+		LOG_WRN("unhandled system realtime msg %02x", status);
 	}
 
-	return -1;
+	return NULL;
 }
 
 /******************************************************************************
  * jack ports
  */
 
-static void jack_free_ports(
+static void jack_unregister_ports(
 	jack_client_t *client,
-	unsigned int n,
-	const char *base_name,
-	jack_port_t **port
+	jack_port_t **port,
+	size_t n,
+	const char *base_name
 	)
 {
-	if (port == NULL) {
+	if (n == 0) {
 		return;
 	}
 
@@ -122,33 +112,23 @@ static void jack_free_ports(
 			int err = jack_port_unregister(client, port[i]);
 			if (err != 0) {
 				LOG_ERR("unable to unregister %s_%lu", base_name, i);
+			} else {
+				LOG_DBG("unregistered %s_%lu", base_name, i);
 			}
-			LOG_DBG("unregistered %s_%lu", base_name, i);
+			port[i] = NULL;
 		}
 	}
-
-	ggm_free(port);
 }
 
-
-static jack_port_t **jack_alloc_ports(
+static size_t jack_register_ports(
 	jack_client_t *client,
-	unsigned int n,
+	jack_port_t **port,
+	size_t n,
 	const char *base_name,
 	const char *type,
 	unsigned long flags
 	)
 {
-	if (n == 0) {
-		return NULL;
-	}
-
-	jack_port_t **port = (jack_port_t **)ggm_calloc(n, sizeof(jack_port_t *));
-	if (port == NULL) {
-		LOG_ERR("unable to allocate port array");
-		return NULL;
-	}
-
 	for (size_t i = 0; i < n; i++) {
 		char name[128];
 		snprintf(name, sizeof(name), "%s_%lu", base_name, i);
@@ -159,12 +139,11 @@ static jack_port_t **jack_alloc_ports(
 		}
 		LOG_DBG("registered %s", name);
 	}
-
-	return port;
+	return n;
 
 error:
-	jack_free_ports(client, n, base_name, port);
-	return NULL;
+	jack_unregister_ports(client, port, n, base_name);
+	return 0;
 }
 
 /******************************************************************************
@@ -175,12 +154,12 @@ static int jack_process(jack_nframes_t nframes, void *arg)
 {
 	struct jack *j = (struct jack *)arg;
 	struct synth *s = (struct synth *)j->synth;
-	unsigned int i;
+	size_t i;
 
 	// LOG_DBG("nframes %d", nframes);
 
 	/* read MIDI input events */
-	for (i = 0; i < s->n_midi_in; i++) {
+	for (i = 0; i < j->n_midi_in; i++) {
 		void *buf = jack_port_get_buffer(j->midi_in[i], nframes);
 		if (buf == NULL) {
 			LOG_ERR("jack_port_get_buffer() returned NULL");
@@ -195,14 +174,18 @@ static int jack_process(jack_nframes_t nframes, void *arg)
 				continue;
 			}
 			/* forward the MIDI event to the root module of the synth  */
-			struct event e;
-			jack_convert_midi_event(&e, &event);
-			synth_midi_in(s, i, &e);
+			port_func func = j->midi_in_pf[i];
+			if (func != NULL) {
+				struct event e;
+				func(s->root, jack_convert_midi_event(&e, &event));
+			} else {
+				LOG_WRN("midi_in_%d has a null port function", i);
+			}
 		}
 	}
 
 	/* read from the audio input buffers */
-	for (i = 0; i < s->n_audio_in; i++) {
+	for (i = 0; i < j->n_audio_in; i++) {
 		float *buf = (float *)jack_port_get_buffer(j->audio_in[i], nframes);
 		block_copy(s->bufs[i], buf);
 	}
@@ -211,8 +194,8 @@ static int jack_process(jack_nframes_t nframes, void *arg)
 	synth_loop(s);
 
 	/* write to the audio output buffers */
-	unsigned int ofs = s->n_audio_in;
-	for (i = 0; i < s->n_audio_out; i++) {
+	unsigned int ofs = j->n_audio_in;
+	for (i = 0; i < j->n_audio_out; i++) {
 		float *buf = (float *)jack_port_get_buffer(j->audio_out[i], nframes);
 		block_copy(buf, s->bufs[ofs + i]);
 	}
@@ -239,12 +222,11 @@ static void jack_del(struct jack *j)
 		return;
 	}
 	if (j->client != NULL) {
-		struct synth *s = j->synth;
 		jack_deactivate(j->client);
-		jack_free_ports(j->client, s->n_audio_in, "audio_in", j->audio_in);
-		jack_free_ports(j->client, s->n_audio_out, "audio_out", j->audio_out);
-		jack_free_ports(j->client, s->n_midi_in, "midi_in", j->midi_in);
-		jack_free_ports(j->client, s->n_midi_out, "midi_out", j->midi_out);
+		jack_unregister_ports(j->client, j->audio_in, j->n_audio_in, "audio_in");
+		jack_unregister_ports(j->client, j->audio_out, j->n_audio_out, "audio_out");
+		jack_unregister_ports(j->client, j->midi_in, j->n_midi_in, "midi_in");
+		jack_unregister_ports(j->client, j->midi_out, j->n_midi_out, "midi_out");
 		jack_client_close(j->client);
 	}
 	ggm_free(j);
@@ -253,6 +235,7 @@ static void jack_del(struct jack *j)
 static struct jack *jack_new(struct synth *s)
 {
 	jack_status_t status;
+	size_t n;
 	int err;
 
 	LOG_INF("jack version %s", jack_get_version_string());
@@ -268,8 +251,31 @@ static struct jack *jack_new(struct synth *s)
 		return NULL;
 	}
 
-	/* setup the jack data */
+	/* setup the synth link */
 	j->synth = s;
+
+	/* count and check the in/out ports */
+	struct module *m = s->root;
+	j->n_audio_in = port_count_by_type(m->info->in, PORT_TYPE_AUDIO);
+	if (j->n_audio_in > MAX_AUDIO_IN) {
+		LOG_ERR("number of audio inputs(%d) > MAX_AUDIO_IN", j->n_audio_in);
+		goto error;
+	}
+	j->n_audio_out = port_count_by_type(m->info->out, PORT_TYPE_AUDIO);
+	if (j->n_audio_out > MAX_AUDIO_OUT) {
+		LOG_ERR("number of audio outputs(%d) > MAX_AUDIO_OUT", j->n_audio_out);
+		goto error;
+	}
+	j->n_midi_in = port_count_by_type(m->info->in, PORT_TYPE_MIDI);
+	if (j->n_midi_in > MAX_MIDI_IN) {
+		LOG_ERR("number of midi inputs(%d) > MAX_MIDI_IN", j->n_midi_in);
+		goto error;
+	}
+	j->n_midi_out = port_count_by_type(m->info->out, PORT_TYPE_MIDI);
+	if (j->n_midi_out > MAX_MIDI_OUT) {
+		LOG_ERR("number of midi outputs(%d) > MAX_MIDI_OUT", j->n_midi_out);
+		goto error;
+	}
 
 	/* open the client */
 	j->client = jack_client_open("ggm", JackNoStartServer, &status);
@@ -304,37 +310,34 @@ static struct jack *jack_new(struct synth *s)
 	 */
 	jack_on_shutdown(j->client, jack_shutdown, (void *)j);
 
+
 	/* audio input ports */
-	if (s->n_audio_in > 0) {
-		j->audio_in = jack_alloc_ports(j->client, s->n_audio_in, "audio_in", JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput);
-		if (j->audio_in == NULL) {
-			goto error;
-		}
+	n = jack_register_ports(j->client, j->audio_in, j->n_audio_in, "audio_in", JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput);
+	if (n != j->n_audio_in) {
+		goto error;
 	}
 
 	/* audio output ports */
-	if (s->n_audio_out > 0) {
-		j->audio_out = jack_alloc_ports(j->client, s->n_audio_out, "audio_out", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput);
-		if (j->audio_out == NULL) {
-			goto error;
-		}
+	n = jack_register_ports(j->client, j->audio_out, j->n_audio_out, "audio_out", JACK_DEFAULT_AUDIO_TYPE, JackPortIsOutput);
+	if (n != j->n_audio_out) {
+		goto error;
 	}
 
 	/* MIDI input ports */
-	if (s->n_midi_in > 0) {
-		j->midi_in = jack_alloc_ports(j->client, s->n_midi_in, "midi_in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput);
-		if (j->midi_in == NULL) {
-			goto error;
-		}
+	n = jack_register_ports(j->client, j->midi_in, j->n_midi_in, "midi_in", JACK_DEFAULT_MIDI_TYPE, JackPortIsInput);
+	if (n != j->n_midi_in) {
+		goto error;
 	}
 
 	/* MIDI output ports */
-	if (s->n_midi_out > 0) {
-		j->midi_out = jack_alloc_ports(j->client, s->n_midi_out, "midi_out", JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput);
-		if (j->midi_out == NULL) {
-			goto error;
-		}
+	n = jack_register_ports(j->client, j->midi_out, j->n_midi_out, "midi_out", JACK_DEFAULT_MIDI_TYPE, JackPortIsOutput);
+	if (n != j->n_midi_out) {
+		goto error;
 	}
+
+	/* cache the MIDI input port functions */
+	/* TODO */
+
 
 	/* Tell the JACK server we are ready to roll.
 	 * Our process() callback will start running now.
@@ -350,10 +353,10 @@ static struct jack *jack_new(struct synth *s)
 error:
 
 	if (j->client != NULL) {
-		jack_free_ports(j->client, s->n_audio_in, "audio_in", j->audio_in);
-		jack_free_ports(j->client, s->n_audio_out, "audio_out", j->audio_out);
-		jack_free_ports(j->client, s->n_midi_in, "midi_in", j->midi_in);
-		jack_free_ports(j->client, s->n_midi_out, "midi_out", j->midi_out);
+		jack_unregister_ports(j->client, j->audio_in, j->n_audio_in, "audio_in");
+		jack_unregister_ports(j->client, j->audio_out, j->n_audio_out, "audio_out");
+		jack_unregister_ports(j->client, j->midi_in, j->n_midi_in, "midi_in");
+		jack_unregister_ports(j->client, j->midi_out, j->n_midi_out, "midi_out");
 		jack_client_close(j->client);
 	}
 

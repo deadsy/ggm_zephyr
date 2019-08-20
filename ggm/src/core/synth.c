@@ -111,23 +111,6 @@ static void synth_midi_out(struct module *m, const struct event *e)
 }
 
 /******************************************************************************
- * synth_midi_in is called when the external driver has a MIDI message to
- * input. The index number indicates which of the MIDI inputs ports should be
- * called.
- */
-
-void synth_midi_in(struct synth *s, unsigned int idx, const struct event *e)
-{
-	port_func func = s->midi_in[idx];
-
-	if (func == NULL) {
-		LOG_WRN("midi_in_%d has a null port function", idx);
-		return;
-	}
-	func(s->root, e);
-}
-
-/******************************************************************************
  * synth_set_root sets the root patch of the synth.
  */
 
@@ -135,33 +118,9 @@ int synth_set_root(struct synth *s, struct module *m)
 {
 	LOG_MOD_NAME(m);
 
-	/* count the in/out ports */
-	s->n_audio_in = port_count_by_type(m->info->in, PORT_TYPE_AUDIO);
-	s->n_audio_out = port_count_by_type(m->info->out, PORT_TYPE_AUDIO);
-	s->n_midi_in = port_count_by_type(m->info->in, PORT_TYPE_MIDI);
-	s->n_midi_out = port_count_by_type(m->info->out, PORT_TYPE_MIDI);
-
-	/* check the MIDI inputs against the fixed cache size */
-	if (s->n_midi_in > NUM_MIDI_IN) {
-		LOG_ERR("number of MIDI inputs > NUM_MIDI_IN");
-		return -1;
-	}
-
-	/* fill in the cache of MIDI input port functions */
-	if (s->n_midi_in > 0) {
-		const struct port_info *p = m->info->in;
-		int i = 0, j = 0;
-		while (p[j].type != PORT_TYPE_NULL) {
-			if (p[j].type == PORT_TYPE_MIDI) {
-				s->midi_in[i] = p[j].func;
-				i++;
-			}
-			j++;
-		}
-	}
-
 	/* how many audio buffers do we need? */
-	int nbufs = s->n_audio_in + s->n_audio_out;
+	size_t nbufs = port_count_by_type(m->info->in, PORT_TYPE_AUDIO);
+	nbufs += port_count_by_type(m->info->out, PORT_TYPE_AUDIO);
 	if (nbufs > NUM_AUDIO_PORTS) {
 		LOG_ERR("number of audio input/output ports > NUM_AUDIO_PORTS");
 		return -1;
@@ -175,7 +134,7 @@ int synth_set_root(struct synth *s, struct module *m)
 	}
 
 	/* setup the audio buffer list */
-	for (int i = 0; i < nbufs; i++) {
+	for (size_t i = 0; i < nbufs; i++) {
 		s->bufs[i] = &buf[i * AudioBufferSize];
 	}
 
