@@ -10,7 +10,7 @@
  * private state
  */
 
-struct sine_osc {
+struct sine {
 	float freq;             /* base frequency */
 	uint32_t x;             /* current x-value */
 	uint32_t xstep;         /* current x-step */
@@ -22,12 +22,12 @@ struct sine_osc {
 
 static void sine_port_frequency(struct module *m, const struct event *e)
 {
+	struct sine *this = (struct sine *)m->priv;
 	float frequency = clampf_lo(event_get_float(e), 0);
 
 	LOG_INF("set frequency %f Hz", frequency);
-	struct sine_osc *osc = (struct sine_osc *)m->priv;
-	osc->freq = frequency;
-	osc->xstep = (uint32_t)(frequency * FrequencyScale);
+	this->freq = frequency;
+	this->xstep = (uint32_t)(frequency * FrequencyScale);
 }
 
 /******************************************************************************
@@ -37,7 +37,7 @@ static void sine_port_frequency(struct module *m, const struct event *e)
 static int sine_alloc(struct module *m, va_list vargs)
 {
 	/* allocate the private data */
-	struct sine_osc *this = ggm_calloc(1, sizeof(struct sine_osc));
+	struct sine *this = ggm_calloc(1, sizeof(struct sine));
 
 	if (this == NULL) {
 		return -1;
@@ -54,13 +54,46 @@ static void sine_free(struct module *m)
 
 static bool sine_process(struct module *m, float *buf[])
 {
-	struct sine_osc *this = (struct sine_osc *)m->priv;
-	float *out = buf[0];
+	struct sine *this = (struct sine *)m->priv;
+	float *am = buf[0];
+	float *fm = buf[1];
+	float *pm = buf[2];
+	float *out = buf[3];
 
-	for (int i = 0; i < AudioBufferSize; i++) {
-		out[i] = cos_lookup(this->x);
-		this->x += this->xstep;
+	if ((pm != NULL) && (fm != NULL)) {
+		LOG_ERR("cannot combine pm/fm");
+		return false;
 	}
+
+	/* phase modulation */
+	if (pm != NULL) {
+		for (int i = 0; i < AudioBufferSize; i++) {
+			out[i] = cos_lookup(this->x);
+			this->x += (uint32_t)((float)this->xstep + (pm[i] * PhaseScale));
+		}
+	}
+
+	/* frequency modulation */
+	if (fm != NULL) {
+		for (int i = 0; i < AudioBufferSize; i++) {
+			out[i] = cos_lookup(this->x);
+			this->x += (uint32_t)((this->freq + fm[i]) * FrequencyScale);
+		}
+	}
+
+	/* normal */
+	if ((pm == NULL) && (fm == NULL)) {
+		for (int i = 0; i < AudioBufferSize; i++) {
+			out[i] = cos_lookup(this->x);
+			this->x += this->xstep;
+		}
+	}
+
+	/* amplitude modulation */
+	if (am != NULL) {
+		block_mul(out, am);
+	}
+
 	return true;
 }
 
@@ -69,6 +102,9 @@ static bool sine_process(struct module *m, float *buf[])
  */
 
 static const struct port_info in_ports[] = {
+	{ .name = "am", .type = PORT_TYPE_AUDIO, },
+	{ .name = "fm", .type = PORT_TYPE_AUDIO, },
+	{ .name = "pm", .type = PORT_TYPE_AUDIO, },
 	{ .name = "frequency", .type = PORT_TYPE_FLOAT, .func = sine_port_frequency },
 	PORT_EOL,
 };
