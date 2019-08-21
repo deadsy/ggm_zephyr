@@ -104,7 +104,7 @@ static const char *midi_msg_system[] = {
 	"reset",                /* 0xff */
 };
 
-char *midi_str(const struct event *e, char *s, size_t n)
+char *midi_str(char *s, size_t n, const struct event *e)
 {
 	if (e->type != EVENT_TYPE_MIDI) {
 		return NULL;

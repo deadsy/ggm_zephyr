@@ -47,7 +47,10 @@ unsigned int port_count_by_type(const struct port_info port[], enum port_type ty
  */
 
 /* port_get_index returns the array index of a named port */
-int port_get_index(const struct port_info port[], const char *name)
+int port_get_index(
+	const struct port_info port[],
+	const char *name
+	)
 {
 	int i = 0;
 
@@ -60,8 +63,22 @@ int port_get_index(const struct port_info port[], const char *name)
 	return -1;
 }
 
+/* port_get_info returns the port info of a named port */
+const struct port_info *port_get_info(
+	const struct port_info port[],
+	const char *name
+	)
+{
+	int i = port_get_index(port, name);
+
+	return (i >= 0) ? &port[i] : NULL;
+}
+
 /* port_get_index_by_type gets the index of the n-th port of a given type */
-int port_get_index_by_type(const struct port_info port[], enum port_type type, unsigned int n)
+int port_get_index_by_type(
+	const struct port_info port[],
+	enum port_type type,
+	size_t n)
 {
 	unsigned int k = 0;
 	int i = 0;
@@ -75,14 +92,17 @@ int port_get_index_by_type(const struct port_info port[], enum port_type type, u
 		}
 		i++;
 	}
-
 	return -1;
 }
 
-/* port_get_info returns the port info of a named port */
-const struct port_info *port_get_info(const struct port_info port[], const char *name)
+/* port_get_info_by_type returns the port info of the n-th port of a given type */
+const struct port_info *port_get_info_by_type(
+	const struct port_info port[],
+	enum port_type type,
+	size_t n
+	)
 {
-	int i = port_get_index(port, name);
+	int i = port_get_index_by_type(port, type, n);
 
 	return (i >= 0) ? &port[i] : NULL;
 }

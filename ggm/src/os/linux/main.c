@@ -44,7 +44,7 @@ static struct event *jack_convert_midi_event(struct event *dst, jack_midi_event_
 	uint8_t *buf = src->buffer;
 	unsigned int n = src->size;
 
-	LOG_INF("time %d size %d buffer %p", src->time, src->size, src->buffer);
+	// LOG_INF("time %d size %d buffer %p", src->time, src->size, src->buffer);
 
 	if (n == 0) {
 		LOG_WRN("jack midi event has no data");
@@ -52,7 +52,6 @@ static struct event *jack_convert_midi_event(struct event *dst, jack_midi_event_
 	}
 
 	uint8_t status = buf[0];
-
 	if (status < MIDI_STATUS_COMMON) {
 		/* channel message */
 		switch (status & 0xf0) {
@@ -241,7 +240,7 @@ static struct jack *jack_new(struct synth *s)
 	LOG_INF("jack version %s", jack_get_version_string());
 
 	if (!synth_has_root(s)) {
-		LOG_ERR("synth does not have a root patch set");
+		LOG_ERR("synth does not have a root patch");
 		return NULL;
 	}
 
@@ -310,7 +309,6 @@ static struct jack *jack_new(struct synth *s)
 	 */
 	jack_on_shutdown(j->client, jack_shutdown, (void *)j);
 
-
 	/* audio input ports */
 	n = jack_register_ports(j->client, j->audio_in, j->n_audio_in, "audio_in", JACK_DEFAULT_AUDIO_TYPE, JackPortIsInput);
 	if (n != j->n_audio_in) {
@@ -336,8 +334,10 @@ static struct jack *jack_new(struct synth *s)
 	}
 
 	/* cache the MIDI input port functions */
-	/* TODO */
-
+	for (size_t i = 0; i < j->n_midi_in; i++) {
+		const struct port_info *pi = port_get_info_by_type(m->info->in, PORT_TYPE_MIDI, i);
+		j->midi_in_pf[i] = pi->func;
+	}
 
 	/* Tell the JACK server we are ready to roll.
 	 * Our process() callback will start running now.

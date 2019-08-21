@@ -183,7 +183,7 @@ static inline const struct event *event_filter_midi_channel(const struct event *
 	return e;
 }
 
-char *midi_str(const struct event *e, char *s, size_t n);
+char *midi_str(char *s, size_t n, const struct event *e);
 
 /******************************************************************************
  * float events

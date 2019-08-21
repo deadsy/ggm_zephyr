@@ -57,8 +57,10 @@ unsigned int port_count(const struct port_info port[]);
 unsigned int port_count_by_type(const struct port_info port[], enum port_type type);
 
 int port_get_index(const struct port_info port[], const char *name);
-int port_get_index_by_type(const struct port_info port[], enum port_type type, unsigned int n);
 const struct port_info *port_get_info(const struct port_info port[], const char *name);
+
+int port_get_index_by_type(const struct port_info port[], enum port_type type, size_t n);
+const struct port_info *port_get_info_by_type(const struct port_info port[], enum port_type type, size_t n);
 
 void port_add_dst(struct module *m, int idx, struct module *dst, port_func func);
 void port_free_dst_list(struct output_dst *ptr);

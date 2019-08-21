@@ -24,8 +24,8 @@ static void midi_mon_port_midi(struct module *m, const struct event *e)
 
 	e =  event_filter_midi_channel(e, this->chan);
 	if (e != NULL) {
-		char tmp[128];
-		LOG_INF("%s", log_strdup(midi_str(e, tmp, sizeof(tmp))));
+		char tmp[32];
+		LOG_INF("%s", log_strdup(midi_str(tmp, sizeof(tmp), e)));
 	}
 }
 
