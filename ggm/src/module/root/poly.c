@@ -12,8 +12,8 @@
  */
 
 #define MIDI_CHAN 0
-#define MIDI_CC_PAN 1
-#define MIDI_CC_VOL 2
+#define MIDI_CC_PAN 7
+#define MIDI_CC_VOL 8
 
 /******************************************************************************
  * private state
@@ -45,9 +45,9 @@ static struct module *poly_voice(struct synth *top)
 static void poly_port_midi(struct module *m, const struct event *e)
 {
 	struct poly *this = (struct poly *)m->priv;
-	char tmp[32];
+	char tmp[64];
 
-	LOG_INF("%s", log_strdup(midi_str(tmp, sizeof(tmp), e)));
+	LOG_DBG("%s", log_strdup(midi_str(tmp, sizeof(tmp), e)));
 
 	/* forward the MIDI events */
 	event_in(this->poly, "midi", e, NULL);

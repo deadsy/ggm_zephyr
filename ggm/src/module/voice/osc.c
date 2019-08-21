@@ -27,14 +27,19 @@ struct osc {
  * module port functions
  */
 
-static void osc_gate(struct module *m, const struct event *e)
+static void osc_port_midi(struct module *m, const struct event *e)
+{
+	/* TODO */
+}
+
+static void osc_port_gate(struct module *m, const struct event *e)
 {
 	struct osc *this = (struct osc *)m->priv;
 
 	event_in(this->adsr, "gate", e, &this->gate);
 }
 
-static void osc_note(struct module *m, const struct event *e)
+static void osc_port_note(struct module *m, const struct event *e)
 {
 	struct osc *this = (struct osc *)m->priv;
 	float f = midi_to_frequency(event_get_float(e));
@@ -121,8 +126,9 @@ static bool osc_process(struct module *m, float *buf[])
  */
 
 static const struct port_info in_ports[] = {
-	{ .name = "gate", .type = PORT_TYPE_FLOAT, .func = osc_gate },
-	{ .name = "note", .type = PORT_TYPE_FLOAT, .func = osc_note },
+	{ .name = "midi", .type = PORT_TYPE_MIDI, .func = osc_port_midi },
+	{ .name = "gate", .type = PORT_TYPE_FLOAT, .func = osc_port_gate },
+	{ .name = "note", .type = PORT_TYPE_FLOAT, .func = osc_port_note },
 	PORT_EOL,
 };
 

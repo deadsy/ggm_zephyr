@@ -163,13 +163,13 @@ void synth_loop(struct synth *s)
 	struct module *m = s->root;
 	struct qevent q;
 
+	/* run the buffer processing */
+	m->info->process(m, s->bufs);
+
 	/* process all queued events */
 	while (synth_event_rd(s, &q) == 0) {
 		event_out(q.m, q.idx, &q.e);
 	}
-
-	/* run the buffer processing */
-	m->info->process(m, s->bufs);
 }
 
 /*****************************************************************************/

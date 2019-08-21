@@ -2,6 +2,8 @@
  * Copyright (c) 2019 Jason T. Harris. (sirmanlypowers@gmail.com)
  *
  * SPDX-License-Identifier: Apache-2.0
+ *
+ * Attack/Decay/Sustain/Release Envelope Generator
  */
 
 #include "ggm.h"
@@ -51,7 +53,7 @@ static float get_k(float t, int rate)
  * module port functions
  */
 
-/* envelope gate, attack(>0) or release(=0) */
+/* envelope gate, reset (<0) or attack(>0) or release(=0) */
 static void adsr_port_gate(struct module *m, const struct event *e)
 {
 	struct adsr *this = (struct adsr *)m->priv;
@@ -59,19 +61,27 @@ static void adsr_port_gate(struct module *m, const struct event *e)
 
 	LOG_DBG("%s_%08x gate %f", m->info->name, m->id, gate);
 
-	if (gate != 0.f) {
-		/* enter the attack segment */
+	/* reset */
+	if (gate < 0.f) {
+		this->val = 0.f;
+		this->state = ADSR_STATE_IDLE;
+		return;
+	}
+
+	/* attack */
+	if (gate > 0.f) {
 		this->state = ADSR_STATE_ATTACK;
-	} else {
-		/* enter the release segment */
-		if (this->state != ADSR_STATE_IDLE) {
-			if (this->kr == 1.f) {
-				/* no release - goto idle */
-				this->val = 0.f;
-				this->state = ADSR_STATE_IDLE;
-			} else {
-				this->state = ADSR_STATE_RELEASE;
-			}
+		return;
+	}
+
+	/* release */
+	if (this->state != ADSR_STATE_IDLE) {
+		if (this->kr == 1.f) {
+			/* no release - goto idle */
+			this->val = 0.f;
+			this->state = ADSR_STATE_IDLE;
+		} else {
+			this->state = ADSR_STATE_RELEASE;
 		}
 	}
 }
@@ -153,6 +163,11 @@ static bool adsr_process(struct module *m, float *buf[])
 
 	for (int i = 0; i < AudioBufferSize; i++) {
 		switch (this->state) {
+
+		case ADSR_STATE_IDLE:
+			/* idle - do nothing */
+			break;
+
 		case ADSR_STATE_ATTACK:
 			/* attack until 1.0 level */
 			if (this->val < this->d_trigger) {
@@ -163,6 +178,7 @@ static bool adsr_process(struct module *m, float *buf[])
 				this->state = ADSR_STATE_DECAY;
 			}
 			break;
+
 		case ADSR_STATE_DECAY:
 			/* decay until sustain level */
 			if (this->val > this->s_trigger) {
@@ -179,10 +195,11 @@ static bool adsr_process(struct module *m, float *buf[])
 				}
 			}
 			break;
+
 		case ADSR_STATE_SUSTAIN:
 			/* sustain - do nothing */
-			this->val = this->s;
 			break;
+
 		case ADSR_STATE_RELEASE:
 			/* release until idle level */
 			if (this->val > this->i_trigger) {
@@ -193,8 +210,10 @@ static bool adsr_process(struct module *m, float *buf[])
 				this->state = ADSR_STATE_IDLE;
 			}
 			break;
+
 		default:
 			LOG_ERR("bad adsr state %d", this->state);
+			this->val = 0.f;
 			this->state = ADSR_STATE_IDLE;
 			break;
 		}
