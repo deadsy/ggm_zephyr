@@ -20,6 +20,20 @@ struct sine {
  * module port functions
  */
 
+/* sine_port_reset resets the state of the oscillator */
+static void sine_port_reset(struct module *m, const struct event *e)
+{
+	bool reset = event_get_bool(e);
+
+	LOG_INF("reset %d", reset);
+	if (reset) {
+		struct sine *this = (struct sine *)m->priv;
+		/* start at a phase that gives a zero output */
+		this->x = QuarterCycle;
+	}
+}
+
+/* sine_port_frequency sets the frequency of the oscillator */
 static void sine_port_frequency(struct module *m, const struct event *e)
 {
 	struct sine *this = (struct sine *)m->priv;
@@ -44,6 +58,9 @@ static int sine_alloc(struct module *m, va_list vargs)
 	}
 
 	m->priv = (void *)this;
+
+	/* start at a phase that gives a zero output */
+	this->x = QuarterCycle;
 	return 0;
 }
 
@@ -99,6 +116,7 @@ if (am != NULL) {
  */
 
 static const struct port_info in_ports[] = {
+	{ .name = "reset", .type = PORT_TYPE_BOOL, .func = sine_port_reset },
 	{ .name = "frequency", .type = PORT_TYPE_FLOAT, .func = sine_port_frequency },
 	PORT_EOL,
 };

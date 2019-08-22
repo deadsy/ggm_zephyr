@@ -59,8 +59,8 @@ static struct voice *voice_alloc(struct module *m, uint8_t note)
 		this->idx = 0;
 	}
 
-	/* quiet the existing voice */
-	event_in_float(v->m, "gate", -1.f, NULL);
+	/* reset the voice */
+	event_in_bool(v->m, "reset", true, NULL);
 
 	/* set the voice note */
 	event_in_float(v->m, "note", (float)note + this->bend, NULL);
@@ -84,6 +84,7 @@ static void poly_port_midi(struct module *m, const struct event *e)
 	}
 
 	switch (event_get_midi_msg(e)) {
+
 	case MIDI_STATUS_NOTEON: {
 		uint8_t note = event_get_midi_note(e);
 		float vel = event_get_midi_velocity_float(e);
@@ -95,6 +96,7 @@ static void poly_port_midi(struct module *m, const struct event *e)
 		event_in_float(v->m, "gate", vel, NULL);
 		break;
 	}
+
 	case MIDI_STATUS_NOTEOFF: {
 		struct voice *v = voice_lookup(m, event_get_midi_note(e));
 		if (v != NULL) {
@@ -103,6 +105,7 @@ static void poly_port_midi(struct module *m, const struct event *e)
 		}
 		break;
 	}
+
 	case MIDI_STATUS_PITCHWHEEL: {
 		/* get the pitch bend value */
 		this->bend = midi_pitch_bend(event_get_midi_pitch_wheel(e));
@@ -113,6 +116,7 @@ static void poly_port_midi(struct module *m, const struct event *e)
 		}
 		break;
 	}
+
 	default: {
 		/* pass through the MIDI event to the voices */
 		for (int i = 0; i < MAX_POLYPHONY; i++) {
@@ -120,6 +124,7 @@ static void poly_port_midi(struct module *m, const struct event *e)
 		}
 		break;
 	}
+
 	}
 
 }

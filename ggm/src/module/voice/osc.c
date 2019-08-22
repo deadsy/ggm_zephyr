@@ -27,11 +27,23 @@ struct osc {
  * module port functions
  */
 
+/* osc_port_reset resets the voice state */
+static void osc_port_reset(struct module *m, const struct event *e)
+{
+	struct osc *this = (struct osc *)m->priv;
+
+	/* forward the reset to the sub-modules */
+	event_in(this->adsr, "reset", e, NULL);
+	event_in(this->osc, "reset", e, NULL);
+}
+
+/* osc_port_midi handles voice midi events */
 static void osc_port_midi(struct module *m, const struct event *e)
 {
 	/* TODO */
 }
 
+/* osc_port_gate is the voice gate event */
 static void osc_port_gate(struct module *m, const struct event *e)
 {
 	struct osc *this = (struct osc *)m->priv;
@@ -39,6 +51,7 @@ static void osc_port_gate(struct module *m, const struct event *e)
 	event_in(this->adsr, "gate", e, &this->gate);
 }
 
+/* osc_port_note is the pitch bent MIDI note (float) used to set the voice frequency */
 static void osc_port_note(struct module *m, const struct event *e)
 {
 	struct osc *this = (struct osc *)m->priv;
@@ -127,6 +140,7 @@ static bool osc_process(struct module *m, float *buf[])
 
 static const struct port_info in_ports[] = {
 	{ .name = "midi", .type = PORT_TYPE_MIDI, .func = osc_port_midi },
+	{ .name = "reset", .type = PORT_TYPE_BOOL, .func = osc_port_reset },
 	{ .name = "gate", .type = PORT_TYPE_FLOAT, .func = osc_port_gate },
 	{ .name = "note", .type = PORT_TYPE_FLOAT, .func = osc_port_note },
 	PORT_EOL,

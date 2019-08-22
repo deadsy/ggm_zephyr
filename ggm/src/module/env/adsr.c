@@ -53,20 +53,26 @@ static float get_k(float t, int rate)
  * module port functions
  */
 
-/* envelope gate, reset (<0) or attack(>0) or release(=0) */
+/* adsr_port_reset resets the state of the envelope */
+static void adsr_port_reset(struct module *m, const struct event *e)
+{
+	bool reset = event_get_bool(e);
+
+	LOG_INF("reset %d", reset);
+	if (reset) {
+		struct adsr *this = (struct adsr *)m->priv;
+		this->val = 0.f;
+		this->state = ADSR_STATE_IDLE;
+	}
+}
+
+/* adsr_port_gate is the envelope gate control, attack(>0) or release(=0) */
 static void adsr_port_gate(struct module *m, const struct event *e)
 {
 	struct adsr *this = (struct adsr *)m->priv;
 	float gate = event_get_float(e);
 
 	LOG_DBG("%s_%08x gate %f", m->info->name, m->id, gate);
-
-	/* reset */
-	if (gate < 0.f) {
-		this->val = 0.f;
-		this->state = ADSR_STATE_IDLE;
-		return;
-	}
 
 	/* attack */
 	if (gate > 0.f) {
@@ -86,7 +92,7 @@ static void adsr_port_gate(struct module *m, const struct event *e)
 	}
 }
 
-/* attack time (secs) */
+/* adsr_port_attack sets the attack time (secs) */
 static void adsr_port_attack(struct module *m, const struct event *e)
 {
 	struct adsr *this = (struct adsr *)m->priv;
@@ -96,7 +102,7 @@ static void adsr_port_attack(struct module *m, const struct event *e)
 	this->ka = get_k(attack, AudioSampleFrequency);
 }
 
-/* decay time (secs) */
+/* adsr_port_decay sets the decay time (secs) */
 static void adsr_port_decay(struct module *m, const struct event *e)
 {
 	struct adsr *this = (struct adsr *)m->priv;
@@ -106,7 +112,7 @@ static void adsr_port_decay(struct module *m, const struct event *e)
 	this->kd = get_k(decay, AudioSampleFrequency);
 }
 
-/* sustain level 0..1 */
+/* adsr_port_sustain sets the sustain level 0..1 */
 static void adsr_port_sustain(struct module *m, const struct event *e)
 {
 	struct adsr *this = (struct adsr *)m->priv;
@@ -119,7 +125,7 @@ static void adsr_port_sustain(struct module *m, const struct event *e)
 	this->i_trigger = sustain * LEVEL_EPSILON;
 }
 
-/* release time (secs) */
+/* adsr_port_release sets the release time (secs) */
 static void adsr_port_release(struct module *m, const struct event *e)
 {
 	struct adsr *this = (struct adsr *)m->priv;
@@ -228,6 +234,7 @@ static bool adsr_process(struct module *m, float *buf[])
  */
 
 static const struct port_info in_ports[] = {
+	{ .name = "reset", .type = PORT_TYPE_BOOL, .func = adsr_port_reset },
 	{ .name = "gate", .type = PORT_TYPE_FLOAT, .func = adsr_port_gate },
 	{ .name = "attack", .type = PORT_TYPE_FLOAT, .func = adsr_port_attack },
 	{ .name = "decay", .type = PORT_TYPE_FLOAT, .func = adsr_port_decay },

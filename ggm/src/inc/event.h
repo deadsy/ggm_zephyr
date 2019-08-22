@@ -235,9 +235,23 @@ static inline void event_in_int(struct module *m, const char *name, int val, por
  * boolean events
  */
 
+static inline void event_set_bool(struct event *e, bool x)
+{
+	e->type = EVENT_TYPE_BOOL;
+	e->u.bval = x;
+}
+
 static inline bool event_get_bool(const struct event *e)
 {
 	return e->u.bval;
+}
+
+static inline void event_in_bool(struct module *m, const char *name, bool val, port_func *hdl)
+{
+	struct event e;
+
+	event_set_bool(&e, val);
+	event_in(m, name, &e, hdl);
 }
 
 /*****************************************************************************/
