@@ -19,6 +19,7 @@ target_sources(app
 		src/core/module.c
 		src/core/port.c
 		src/core/synth.c
+		src/core/util.c
 		src/module/template.c
 		src/module/env/adsr.c
 		src/module/midi/mon.c

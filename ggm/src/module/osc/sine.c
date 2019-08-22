@@ -55,56 +55,50 @@ static void sine_free(struct module *m)
 static bool sine_process(struct module *m, float *buf[])
 {
 	struct sine *this = (struct sine *)m->priv;
-	float *am = buf[0];
-	float *fm = buf[1];
-	float *pm = buf[2];
-	float *out = buf[3];
+	float *out = buf[0];
 
-	if ((pm != NULL) && (fm != NULL)) {
-		LOG_ERR("cannot combine pm/fm");
-		return false;
-	}
-
-	/* phase modulation */
-	if (pm != NULL) {
-		for (int i = 0; i < AudioBufferSize; i++) {
-			out[i] = cos_lookup(this->x);
-			this->x += (uint32_t)((float)this->xstep + (pm[i] * PhaseScale));
-		}
-	}
-
-	/* frequency modulation */
-	if (fm != NULL) {
-		for (int i = 0; i < AudioBufferSize; i++) {
-			out[i] = cos_lookup(this->x);
-			this->x += (uint32_t)((this->freq + fm[i]) * FrequencyScale);
-		}
-	}
-
-	/* normal */
-	if ((pm == NULL) && (fm == NULL)) {
-		for (int i = 0; i < AudioBufferSize; i++) {
-			out[i] = cos_lookup(this->x);
-			this->x += this->xstep;
-		}
-	}
-
-	/* amplitude modulation */
-	if (am != NULL) {
-		block_mul(out, am);
+	for (int i = 0; i < AudioBufferSize; i++) {
+		out[i] = cos_lookup(this->x);
+		this->x += this->xstep;
 	}
 
 	return true;
 }
+
+#if 0
+
+{ .name = "am", .type = PORT_TYPE_AUDIO, },
+{ .name = "fm", .type = PORT_TYPE_AUDIO, },
+{ .name = "pm", .type = PORT_TYPE_AUDIO, },
+
+/* phase modulation */
+if (pm != NULL) {
+	for (int i = 0; i < AudioBufferSize; i++) {
+		out[i] = cos_lookup(this->x);
+		this->x += (uint32_t)((float)this->xstep + (pm[i] * PhaseScale));
+	}
+}
+
+/* frequency modulation */
+if (fm != NULL) {
+	for (int i = 0; i < AudioBufferSize; i++) {
+		out[i] = cos_lookup(this->x);
+		this->x += (uint32_t)((this->freq + fm[i]) * FrequencyScale);
+	}
+}
+
+/* amplitude modulation */
+if (am != NULL) {
+	block_mul(out, am);
+}
+
+#endif
 
 /******************************************************************************
  * module information
  */
 
 static const struct port_info in_ports[] = {
-	{ .name = "am", .type = PORT_TYPE_AUDIO, },
-	{ .name = "fm", .type = PORT_TYPE_AUDIO, },
-	{ .name = "pm", .type = PORT_TYPE_AUDIO, },
 	{ .name = "frequency", .type = PORT_TYPE_FLOAT, .func = sine_port_frequency },
 	PORT_EOL,
 };

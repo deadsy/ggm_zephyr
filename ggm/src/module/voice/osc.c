@@ -82,7 +82,7 @@ static int osc_alloc(struct module *m, va_list vargs)
 	}
 	event_in_float(adsr, "attack", 0.1f, NULL);
 	event_in_float(adsr, "decay", 0.5f, NULL);
-	event_in_float(adsr, "sustain", 0.05f, NULL);
+	event_in_float(adsr, "sustain", 0.85f, NULL);
 	event_in_float(adsr, "release", 1.f, NULL);
 	this->adsr = adsr;
 

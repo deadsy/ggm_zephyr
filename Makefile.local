@@ -12,6 +12,7 @@ SRC = $(GGM)/src/core/block.c \
 	$(GGM)/src/core/module.c \
 	$(GGM)/src/core/port.c \
 	$(GGM)/src/core/synth.c \
+	$(GGM)/src/core/util.c \
 	$(GGM)/src/module/template.c \
 	$(GGM)/src/module/env/adsr.c \
 	$(GGM)/src/module/midi/mon.c \

@@ -2,6 +2,8 @@
  * Copyright (c) 2019 Jason T. Harris. (sirmanlypowers@gmail.com)
  *
  * SPDX-License-Identifier: Apache-2.0
+ *
+ * Utility Functions.
  */
 
 #ifndef GGM_SRC_INC_UTIL_H
@@ -55,7 +57,6 @@ static inline float clampf_hi(float x, float a)
 	return (x > a) ? a : x;
 }
 
-
 /******************************************************************************
  * clamp integer values
  */
@@ -70,15 +71,6 @@ static inline int clampi(int x, int a, int b)
 		return b;
 	}
 	return x;
-}
-
-/******************************************************************************
- * linear mapping map x = 0..1 to y = a..b
- */
-
-static inline float mapf(float x, float a, float b)
-{
-	return ((b - a) * x) + a;
 }
 
 /******************************************************************************
@@ -128,6 +120,13 @@ static inline uint32_t float2uint(float x)
 	val.f = x;
 	return val.ui;
 }
+
+/******************************************************************************
+ * function prototypes
+ */
+
+float map_lin(float x, float y0, float y1);
+float map_exp(float x, float y0, float y1, float k);
 
 /*****************************************************************************/
 

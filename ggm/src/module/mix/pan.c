@@ -47,7 +47,7 @@ static void set_vol(struct module *m, float vol)
 
 	LOG_DBG("set volume %f", vol);
 	/* convert to a linear volume */
-	this->vol = pow2(vol) - 1.f;
+	this->vol = map_exp(vol, 0.f, 1.f, -2.f);
 	pan_set(m);
 }
 
