@@ -24,6 +24,8 @@ struct pan {
 	uint8_t cc_vol;         /* MIDI CC number for volume control */
 	float vol;              /* overall volume */
 	float pan;              /* pan value 0 == left, 1 == right */
+	float new_vol_l;        /* target left channel volume */
+	float new_vol_r;        /* target right channel volume */
 	float vol_l;            /* left channel volume */
 	float vol_r;            /* right channel volume */
 };
@@ -37,8 +39,8 @@ static void pan_set(struct module *m)
 	struct pan *this = (struct pan *)m->priv;
 
 	/* Use sin/cos so that l*l + r*r = K (constant power) */
-	this->vol_l = this->vol * cosf(this->pan);
-	this->vol_r = this->vol * sinf(this->pan);
+	this->new_vol_l = this->vol * cosf(this->pan);
+	this->new_vol_r = this->vol * sinf(this->pan);
 }
 
 static void set_vol(struct module *m, float vol)
@@ -128,6 +130,13 @@ static bool pan_process(struct module *m, float *bufs[])
 	float *in = bufs[0];
 	float *out0 = bufs[1];
 	float *out1 = bufs[2];
+
+	/* use a proportional update to control the actual channel volume */
+	float err_l = this->new_vol_l - this->vol_l;
+	float err_r = this->new_vol_r - this->vol_r;
+
+	this->vol_l += 0.01f * err_l;
+	this->vol_r += 0.01f * err_r;
 
 	block_copy_mul_k(out0, in, this->vol_l);
 	block_copy_mul_k(out1, in, this->vol_r);

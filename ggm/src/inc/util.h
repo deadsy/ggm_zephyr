@@ -107,9 +107,10 @@ static inline float randf(uint32_t *state)
 }
 
 /******************************************************************************
- * float to uint32_t conversion
+ * miscellaneous float routines
  */
 
+/* float2uint return the uint32_t value for the float */
 static inline uint32_t float2uint(float x)
 {
 	union {
@@ -119,6 +120,12 @@ static inline uint32_t float2uint(float x)
 
 	val.f = x;
 	return val.ui;
+}
+
+/* zero_cross returns true if a and b are on different sides of 0.f */
+static inline bool zero_cross(float a, float b)
+{
+	return ((float2uint(a) ^ float2uint(b)) & (1 << 31)) != 0;
 }
 
 /******************************************************************************
