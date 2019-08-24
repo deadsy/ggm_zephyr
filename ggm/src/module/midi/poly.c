@@ -14,11 +14,12 @@
  * private state
  */
 
-#define MAX_POLYPHONY 4
+#define MAX_POLYPHONY 5 /* N active + 1 in soft reset */
 
 struct voice {
 	struct module *m;       /* the voice module */
 	uint8_t note;           /* the MIDI note for this voice */
+	bool reset;             /* indicates a voice in soft reset mode */
 };
 
 struct poly {
@@ -38,7 +39,8 @@ static struct voice *voice_lookup(struct module *m, uint8_t note)
 	struct poly *this = (struct poly *)m->priv;
 
 	for (int i = 0; i < MAX_POLYPHONY; i++) {
-		if (this->voice[i].note == note) {
+		struct voice *v = &this->voice[i];
+		if (v->note == note && (v->reset == false)) {
 			return &this->voice[i];
 		}
 	}
@@ -59,12 +61,20 @@ static struct voice *voice_alloc(struct module *m, uint8_t note)
 		this->idx = 0;
 	}
 
-	/* reset the voice */
+	/* send a hard reset to the new voice */
 	event_in_bool(v->m, "reset", true, NULL);
 
 	/* set the voice note */
 	event_in_float(v->m, "note", (float)note + this->bend, NULL);
 	v->note = note;
+	v->reset = false;
+
+	/* Send a soft reset to the next voice so it will be idle
+	 * when we need to use it.
+	 */
+	struct voice *next_v = &this->voice[this->idx];
+	event_in_bool(next_v->m, "reset", false, NULL);
+	next_v->reset = true;
 
 	return v;
 }

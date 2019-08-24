@@ -20,14 +20,14 @@ struct sine {
  * module port functions
  */
 
-/* sine_port_reset resets the state of the oscillator */
+/* sine_port_reset resets the phase of the oscillator */
 static void sine_port_reset(struct module *m, const struct event *e)
 {
 	bool reset = event_get_bool(e);
 
-	LOG_INF("reset %d", reset);
 	if (reset) {
 		struct sine *this = (struct sine *)m->priv;
+		LOG_DBG("%s_%08x phase reset", m->info->name, m->id);
 		/* start at a phase that gives a zero output */
 		this->x = QuarterCycle;
 	}

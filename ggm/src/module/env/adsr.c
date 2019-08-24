@@ -27,14 +27,18 @@ struct adsr {
 	float ka;                       /* attack constant */
 	float kd;                       /* decay constant */
 	float kr;                       /* release constant */
-	float kreset;                   /* soft reset constant */
+	float k_reset;                  /* soft reset constant */
 	float d_trigger;                /* attack->decay trigger level */
 	float s_trigger;                /* decay->sustain trigger level */
 	float i_trigger;                /* release->idle trigger level */
 	float val;                      /* output value */
 };
 
-#define SOFT_RESET_TIME (1.f * SecsPerAudioBuffer)
+/* When we need to shutdown a voice we do it slowly to avoid any clicks in
+ * the output. The soft reset of the ADSR envelope does this. It's essentially
+ * the same as the release state, but works over a constant/short time period.
+ */
+#define SOFT_RESET_TIME 30e-3f
 
 /******************************************************************************
  * We can't reach the target level with the asymptotic rise/fall of exponentials.
@@ -63,13 +67,18 @@ static void adsr_port_reset(struct module *m, const struct event *e)
 	struct adsr *this = (struct adsr *)m->priv;
 	bool reset = event_get_bool(e);
 
-	LOG_INF("reset %d", reset);
 	if (reset) {
-		/* hard reset */
+		LOG_DBG("%s_%08x hard reset", m->info->name, m->id);
+		if (this->state != ADSR_STATE_IDLE) {
+			/* This is likely to cause clicks in the output.
+			 * A soft reset prior to this time would be nicer.
+			 */
+			LOG_WRN("forced idle");
+		}
 		this->val = 0.f;
 		this->state = ADSR_STATE_IDLE;
 	} else {
-		/* soft reset */
+		LOG_DBG("%s_%08x soft reset", m->info->name, m->id);
 		if (this->state != ADSR_STATE_IDLE) {
 			this->state = ADSR_STATE_RESET;
 		}
@@ -160,7 +169,7 @@ static int adsr_alloc(struct module *m, va_list vargs)
 	m->priv = (void *)this;
 
 	/* set the soft reset time */
-	this->kreset = get_k(SOFT_RESET_TIME, AudioSampleFrequency);
+	this->k_reset = get_k(SOFT_RESET_TIME, AudioSampleFrequency);
 
 	return 0;
 }
@@ -233,7 +242,7 @@ static bool adsr_process(struct module *m, float *buf[])
 		case ADSR_STATE_RESET:
 			/* soft reset to the idle level */
 			if (this->val > this->i_trigger) {
-				this->val += this->kreset * (0.f - this->val);
+				this->val += this->k_reset * (0.f - this->val);
 			} else {
 				/* goto idle state */
 				this->val = 0.f;
