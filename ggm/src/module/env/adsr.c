@@ -18,6 +18,7 @@ enum adsr_state {
 	ADSR_STATE_DECAY,
 	ADSR_STATE_SUSTAIN,
 	ADSR_STATE_RELEASE,
+	ADSR_STATE_RESET,
 };
 
 struct adsr {
@@ -26,11 +27,14 @@ struct adsr {
 	float ka;                       /* attack constant */
 	float kd;                       /* decay constant */
 	float kr;                       /* release constant */
+	float kreset;                   /* soft reset constant */
 	float d_trigger;                /* attack->decay trigger level */
 	float s_trigger;                /* decay->sustain trigger level */
 	float i_trigger;                /* release->idle trigger level */
 	float val;                      /* output value */
 };
+
+#define SOFT_RESET_TIME (1.f * SecsPerAudioBuffer)
 
 /******************************************************************************
  * We can't reach the target level with the asymptotic rise/fall of exponentials.
@@ -56,13 +60,19 @@ static float get_k(float t, int rate)
 /* adsr_port_reset resets the state of the envelope */
 static void adsr_port_reset(struct module *m, const struct event *e)
 {
+	struct adsr *this = (struct adsr *)m->priv;
 	bool reset = event_get_bool(e);
 
 	LOG_INF("reset %d", reset);
 	if (reset) {
-		struct adsr *this = (struct adsr *)m->priv;
+		/* hard reset */
 		this->val = 0.f;
 		this->state = ADSR_STATE_IDLE;
+	} else {
+		/* soft reset */
+		if (this->state != ADSR_STATE_IDLE) {
+			this->state = ADSR_STATE_RESET;
+		}
 	}
 }
 
@@ -149,6 +159,9 @@ static int adsr_alloc(struct module *m, va_list vargs)
 	}
 	m->priv = (void *)this;
 
+	/* set the soft reset time */
+	this->kreset = get_k(SOFT_RESET_TIME, AudioSampleFrequency);
+
 	return 0;
 }
 
@@ -210,6 +223,17 @@ static bool adsr_process(struct module *m, float *buf[])
 			/* release until idle level */
 			if (this->val > this->i_trigger) {
 				this->val += this->kr * (0.f - this->val);
+			} else {
+				/* goto idle state */
+				this->val = 0.f;
+				this->state = ADSR_STATE_IDLE;
+			}
+			break;
+
+		case ADSR_STATE_RESET:
+			/* soft reset to the idle level */
+			if (this->val > this->i_trigger) {
+				this->val += this->kreset * (0.f - this->val);
 			} else {
 				/* goto idle state */
 				this->val = 0.f;
