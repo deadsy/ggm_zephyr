@@ -5,7 +5,7 @@
  */
 
 #include "ggm.h"
-
+#include "osc/osc.h"
 
 /******************************************************************************
  * MIDI setup
@@ -28,14 +28,19 @@ struct poly {
  * polyphonic voice
  */
 
-static struct module *voice_osc(struct synth *top)
+static struct module *voice_osc0(struct synth *top)
 {
 	return module_new(top, "osc.sine");
 }
 
+static struct module *voice_osc1(struct synth *top)
+{
+	return module_new(top, "osc.noise", NOISE_TYPE_BROWN);
+}
+
 static struct module *poly_voice(struct synth *top)
 {
-	return module_new(top, "voice.osc", voice_osc);
+	return module_new(top, "voice.osc", voice_osc1);
 }
 
 /******************************************************************************

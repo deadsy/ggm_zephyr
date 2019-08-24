@@ -52,7 +52,7 @@ static struct voice *voice_alloc(struct module *m, uint8_t note)
 {
 	struct poly *this = (struct poly *)m->priv;
 
-	LOG_INF("note %d", note);
+	LOG_INF("allocate voice %d to note %d", this->idx, note);
 
 	/* do round-robin voice allocation */
 	struct voice *v = &this->voice[this->idx];

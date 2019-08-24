@@ -19,6 +19,7 @@ SRC = $(GGM)/src/core/block.c \
 	$(GGM)/src/module/midi/poly.c \
 	$(GGM)/src/module/mix/pan.c \
 	$(GGM)/src/module/osc/lfo.c \
+	$(GGM)/src/module/osc/noise.c \
 	$(GGM)/src/module/osc/sine.c \
 	$(GGM)/src/module/root/metro.c \
 	$(GGM)/src/module/root/poly.c \
@@ -48,6 +49,7 @@ LIBS = -ljack
 # compiler flags
 CFLAGS = -Wall -Wextra -Wstrict-prototypes
 CFLAGS += -Wno-unused-parameter
+#CFLAGS += -Wdouble-promotion
 #CFLAGS += -g
 
 .c.o:

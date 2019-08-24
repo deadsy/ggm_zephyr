@@ -26,6 +26,7 @@ target_sources(app
 		src/module/midi/poly.c
 		src/module/mix/pan.c
 		src/module/osc/lfo.c
+		src/module/osc/noise.c
 		src/module/osc/sine.c
 		src/module/root/metro.c
 		src/module/root/poly.c

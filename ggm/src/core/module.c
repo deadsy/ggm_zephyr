@@ -15,6 +15,7 @@ extern struct module_info midi_mon_module;
 extern struct module_info midi_poly_module;
 extern struct module_info mix_pan_module;
 extern struct module_info osc_lfo_module;
+extern struct module_info osc_noise_module;
 extern struct module_info osc_sine_module;
 extern struct module_info root_metro_module;
 extern struct module_info root_poly_module;
@@ -28,6 +29,7 @@ static const struct module_info *module_list[] = {
 	&midi_poly_module,
 	&mix_pan_module,
 	&osc_lfo_module,
+	&osc_noise_module,
 	&osc_sine_module,
 	&root_metro_module,
 	&root_poly_module,
