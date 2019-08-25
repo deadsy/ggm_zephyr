@@ -28,19 +28,24 @@ struct poly {
  * polyphonic voice
  */
 
-static struct module *voice_osc0(struct synth *top)
+struct module *voice_osc0(struct synth *top)
 {
 	return module_new(top, "osc.sine");
 }
 
-static struct module *voice_osc1(struct synth *top)
+struct module *voice_osc1(struct synth *top)
 {
 	return module_new(top, "osc.noise", NOISE_TYPE_BROWN);
 }
 
-static struct module *poly_voice(struct synth *top)
+struct module *poly_voice0(struct synth *top)
 {
-	return module_new(top, "voice.osc", voice_osc1);
+	return module_new(top, "voice.osc", voice_osc0);
+}
+
+struct module *poly_voice1(struct synth *top)
+{
+	return module_new(top, "osc.ks");
 }
 
 /******************************************************************************
@@ -77,7 +82,7 @@ static int poly_alloc(struct module *m, va_list vargs)
 	m->priv = (void *)this;
 
 	/* polyphony */
-	poly = module_new(m->top, "midi.poly", MIDI_CHAN, poly_voice);
+	poly = module_new(m->top, "midi.poly", MIDI_CHAN, poly_voice1);
 	if (poly == NULL) {
 		goto error;
 	}

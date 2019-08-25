@@ -185,7 +185,7 @@ static bool adsr_process(struct module *m, float *buf[])
 	float *out = buf[0];
 
 	if (this->state == ADSR_STATE_IDLE) {
-		// zero output
+		/* no output */
 		return false;
 	}
 

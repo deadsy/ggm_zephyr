@@ -8,7 +8,7 @@
  */
 
 #include "ggm.h"
-#include "osc/lfo.h"
+#include "osc/osc.h"
 
 /******************************************************************************
  * private state
@@ -47,7 +47,7 @@ static void lfo_port_depth(struct module *m, const struct event *e)
 static void lfo_port_shape(struct module *m, const struct event *e)
 {
 	struct lfo *this = (struct lfo *)m->priv;
-	int shape = clampi(event_get_int(e), 0, LFO_MAX - 1);
+	int shape = clampi(event_get_int(e), 0, LFO_SHAPE_MAX - 1);
 
 	LOG_INF("set wave shape %d", shape);
 	this->shape = shape;
@@ -96,7 +96,7 @@ static float lfo_sample(struct module *m)
 	int32_t sample = 0;
 
 	switch (this->shape) {
-	case LFO_TRIANGLE: {
+	case LFO_SHAPE_TRIANGLE: {
 		uint32_t x = this->x + (1 << 30);
 		sample = (int32_t)(x >> 6);
 		sample ^= -(int32_t)(x >> 31);
@@ -104,24 +104,24 @@ static float lfo_sample(struct module *m)
 		sample -= (1 << 24);
 		break;
 	}
-	case LFO_SAWDOWN: {
+	case LFO_SHAPE_SAWDOWN: {
 		sample = -(int32_t)(this->x) >> 7;
 		break;
 	}
-	case LFO_SAWUP: {
+	case LFO_SHAPE_SAWUP: {
 		sample = (int32_t)(this->x) >> 7;
 		break;
 	}
-	case LFO_SQUARE: {
+	case LFO_SHAPE_SQUARE: {
 		sample = (int32_t)(this->x & (1 << 31));
 		sample = (sample >> 6) | (1 << 24);
 		break;
 	}
-	case LFO_SINE: {
+	case LFO_SHAPE_SINE: {
 		uint32_t x = this->x - (1 << 30);
 		return cos_lookup(x);
 	}
-	case LFO_SAMPLEANDHOLD: {
+	case LFO_SHAPE_SAMPLEANDHOLD: {
 		if (this->x < this->xstep) {
 			/* 0..253, cycle length = 128, 64 values with bit 7 = 1 */
 			this->rand_state = ((this->rand_state * 179) + 17) & 0xff;
