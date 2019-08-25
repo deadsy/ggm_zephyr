@@ -15,8 +15,8 @@
 struct delay {
 	float *buf;     /* delay line buffer */
 	float t;        /* delay line length (secs) */
-	size_t n;       /* delay line length (samples) */
-	size_t wr;      /* write index */
+	int n;          /* delay line length (samples) */
+	int wr;         /* write index */
 };
 
 /******************************************************************************
@@ -85,15 +85,14 @@ static bool delay_process(struct module *m, float *bufs[])
 		if (rd < 0) {
 			rd = eob;
 		}
-		/* next write index */
-		int next_wr = this->wr + 1;
-		if (next_wr > eob) {
-			next_wr = 0;
-		}
-		/* input/output */
+		/* write/read */
 		this->buf[this->wr] = in[i];
 		out[i] = this->buf[rd];
-		this->wr = next_wr;
+		/* advance the write index */
+		this->wr += 1;
+		if (this->wr > eob) {
+			this->wr = 0;
+		}
 	}
 	return true;
 }

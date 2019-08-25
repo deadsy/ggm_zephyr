@@ -10,7 +10,9 @@
  * the set of all registered modules
  */
 
+extern struct module_info delay_delay_module;
 extern struct module_info env_adsr_module;
+extern struct module_info filter_svf_module;
 extern struct module_info midi_mon_module;
 extern struct module_info midi_poly_module;
 extern struct module_info mix_pan_module;
@@ -25,7 +27,9 @@ extern struct module_info voice_osc_module;
 
 /* module_list is a list off all the system modules */
 static const struct module_info *module_list[] = {
+	&delay_delay_module,
 	&env_adsr_module,
+	&filter_svf_module,
 	&midi_mon_module,
 	&midi_poly_module,
 	&mix_pan_module,

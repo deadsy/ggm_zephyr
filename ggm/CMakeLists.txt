@@ -21,7 +21,9 @@ target_sources(app
 		src/core/synth.c
 		src/core/util.c
 		src/module/template.c
+		src/module/delay/delay.c
 		src/module/env/adsr.c
+		src/module/filter/svf.c
 		src/module/midi/mon.c
 		src/module/midi/poly.c
 		src/module/mix/pan.c
