@@ -17,6 +17,19 @@ struct sine {
 };
 
 /******************************************************************************
+ * sine functions
+ */
+
+static void sine_set_frequency(struct module *m, float freq)
+{
+	struct sine *this = (struct sine *)m->priv;
+
+	LOG_DBG("%s_%08x set frequency %f Hz", m->info->name, m->id, freq);
+	this->freq = freq;
+	this->xstep = (uint32_t)(freq * FrequencyScale);
+}
+
+/******************************************************************************
  * module port functions
  */
 
@@ -36,12 +49,17 @@ static void sine_port_reset(struct module *m, const struct event *e)
 /* sine_port_frequency sets the frequency of the oscillator */
 static void sine_port_frequency(struct module *m, const struct event *e)
 {
-	struct sine *this = (struct sine *)m->priv;
-	float frequency = clampf_lo(event_get_float(e), 0);
+	float freq = clampf_lo(event_get_float(e), 0);
 
-	LOG_INF("set frequency %f Hz", frequency);
-	this->freq = frequency;
-	this->xstep = (uint32_t)(frequency * FrequencyScale);
+	sine_set_frequency(m, freq);
+}
+
+/* sine_port_note is the pitch bent MIDI note (float) used to set frequency */
+static void sine_port_note(struct module *m, const struct event *e)
+{
+	float freq = midi_to_frequency(event_get_float(e));
+
+	sine_set_frequency(m, freq);
 }
 
 /******************************************************************************
@@ -77,39 +95,11 @@ static bool sine_process(struct module *m, float *buf[])
 	for (int i = 0; i < AudioBufferSize; i++) {
 		out[i] = cos_lookup(this->x);
 		this->x += this->xstep;
+		// fm: this->x += (uint32_t)((this->freq + fm[i]) * FrequencyScale);
+		// pm: this->x += (uint32_t)((float)this->xstep + (pm[i] * PhaseScale));
 	}
-
 	return true;
 }
-
-#if 0
-
-{ .name = "am", .type = PORT_TYPE_AUDIO, },
-{ .name = "fm", .type = PORT_TYPE_AUDIO, },
-{ .name = "pm", .type = PORT_TYPE_AUDIO, },
-
-/* phase modulation */
-if (pm != NULL) {
-	for (int i = 0; i < AudioBufferSize; i++) {
-		out[i] = cos_lookup(this->x);
-		this->x += (uint32_t)((float)this->xstep + (pm[i] * PhaseScale));
-	}
-}
-
-/* frequency modulation */
-if (fm != NULL) {
-	for (int i = 0; i < AudioBufferSize; i++) {
-		out[i] = cos_lookup(this->x);
-		this->x += (uint32_t)((this->freq + fm[i]) * FrequencyScale);
-	}
-}
-
-/* amplitude modulation */
-if (am != NULL) {
-	block_mul(out, am);
-}
-
-#endif
 
 /******************************************************************************
  * module information
@@ -118,6 +108,7 @@ if (am != NULL) {
 static const struct port_info in_ports[] = {
 	{ .name = "reset", .type = PORT_TYPE_BOOL, .func = sine_port_reset },
 	{ .name = "frequency", .type = PORT_TYPE_FLOAT, .func = sine_port_frequency },
+	{ .name = "note", .type = PORT_TYPE_FLOAT, .func = sine_port_note },
 	PORT_EOL,
 };
 

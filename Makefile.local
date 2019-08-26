@@ -20,6 +20,7 @@ SRC = $(GGM)/src/core/block.c \
 	$(GGM)/src/module/midi/mon.c \
 	$(GGM)/src/module/midi/poly.c \
 	$(GGM)/src/module/mix/pan.c \
+	$(GGM)/src/module/osc/goom.c \
 	$(GGM)/src/module/osc/ks.c \
 	$(GGM)/src/module/osc/lfo.c \
 	$(GGM)/src/module/osc/noise.c \

@@ -27,6 +27,7 @@ target_sources(app
 		src/module/midi/mon.c
 		src/module/midi/poly.c
 		src/module/mix/pan.c
+		src/module/osc/goom.c
 		src/module/osc/ks.c
 		src/module/osc/lfo.c
 		src/module/osc/noise.c
