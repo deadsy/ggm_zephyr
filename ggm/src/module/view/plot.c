@@ -34,6 +34,47 @@ struct plot {
  * plotting functions
  */
 
+static struct plot_cfg default_cfg = {
+	.name = "plot",
+	.title = "Plot",
+	.x_name = "time",
+	.y0_name = "amplitude",
+	.duration = 30.f * SecsPerAudioBuffer,
+};
+
+static void plot_set_config(struct module *m, struct plot_cfg *cfg)
+{
+	struct plot *this = (struct plot *)m->priv;
+
+	if (cfg == NULL) {
+		this->cfg = &default_cfg;
+	} else {
+		this->cfg = cfg;
+		if (this->cfg->name == NULL) {
+			this->cfg->name = default_cfg.name;
+		}
+		if (this->cfg->title == NULL) {
+			this->cfg->title = default_cfg.title;
+		}
+		if (this->cfg->x_name == NULL) {
+			this->cfg->x_name = default_cfg.x_name;
+		}
+		if (this->cfg->y0_name == NULL) {
+			this->cfg->y0_name = default_cfg.y0_name;
+		}
+		if (this->cfg->duration <= 0.f) {
+			this->cfg->duration = default_cfg.duration;
+		}
+	}
+}
+
+static void plot_fname(struct module *m, const char *suffix, char *s, size_t n)
+{
+	struct plot *this = (struct plot *)m->priv;
+
+	snprintf(s, n, "%s_%08x_%d.%s", this->cfg->name, m->id, this->idx, suffix);
+}
+
 #define PLOT_HEADER		   \
 	"#!/usr/bin/env python3\n" \
 	"import plotly\n"
@@ -46,25 +87,25 @@ static int plot_header(struct module *m)
 	return fprintf(this->f, PLOT_HEADER);
 }
 
-#define PLOT_FOOTER						      \
-	"data = ["						      \
-	"\tplotly.graph_objs.Scatter("				      \
-	"\t\tx=time,"						      \
-	"\t\ty=amplitude,"					      \
-	"\t\tmode = 'lines',"					      \
-	"\t),"							      \
-	"]"							      \
-	"layout = plotly.graph_objs.Layout("			      \
-	"\ttitle='%s',"						      \
-	"\txaxis=dict("						      \
-	"\t\ttitle='%s',"					      \
-	"\t),"							      \
-	"\tyaxis=dict("						      \
-	"\t\ttitle='%s',"					      \
-	"\t\trangemode='tozero',"				      \
-	"\t),"							      \
-	")"							      \
-	"figure = plotly.graph_objs.Figure(data=data, layout=layout)" \
+#define PLOT_FOOTER							\
+	"data = [\n"							\
+	"\tplotly.graph_objs.Scatter(\n"				\
+	"\t\tx=x,\n"							\
+	"\t\ty=y0,\n"							\
+	"\t\tmode = 'lines',\n"						\
+	"\t),\n"							\
+	"]\n"								\
+	"layout = plotly.graph_objs.Layout(\n"				\
+	"\ttitle='%s',\n"						\
+	"\txaxis=dict(\n"						\
+	"\t\ttitle='%s',\n"						\
+	"\t),\n"							\
+	"\tyaxis=dict(\n"						\
+	"\t\ttitle='%s',\n"						\
+	"\t\trangemode='tozero',\n"					\
+	"\t),\n"							\
+	")\n"								\
+	"figure = plotly.graph_objs.Figure(data=data, layout=layout)\n"	\
 	"plotly.offline.plot(figure, filename='%s.html')\n"
 
 /* plot_footer adds a footer to the python plot file. */
@@ -73,7 +114,7 @@ static int plot_footer(struct module *m)
 	struct plot *this = (struct plot *)m->priv;
 	char name[128];
 
-	snprintf(name, sizeof(name), "%s%d.html", this->cfg->name, this->idx);
+	plot_fname(m, "html", name, sizeof(name));
 	return fprintf(this->f, PLOT_FOOTER, this->cfg->title, this->cfg->x_name, this->cfg->y0_name, name);
 }
 
@@ -91,7 +132,7 @@ static int plot_open(struct module *m)
 	struct plot *this = (struct plot *)m->priv;
 	char name[128];
 
-	snprintf(name, sizeof(name), "%s%d.py", this->cfg->name, this->idx);
+	plot_fname(m, "py", name, sizeof(name));
 	LOG_INF("open %s", name);
 	FILE *f = fopen(name, "w");
 	if (f == NULL) {
@@ -163,8 +204,8 @@ static void plot_port_trigger(struct module *m, const struct event *e)
 		return;
 	}
 
-	plot_new_variable(m, this->cfg->x_name);
-	plot_new_variable(m, this->cfg->y0_name);
+	plot_new_variable(m, "x");
+	plot_new_variable(m, "y0");
 	this->triggered = true;
 	this->samples_left = this->samples;
 }
@@ -184,21 +225,8 @@ static int plot_alloc(struct module *m, va_list vargs)
 	m->priv = (void *)this;
 
 	/* plot configuration */
-	this->cfg = va_arg(vargs, struct plot_cfg *);
-
-	/* set some defaults */
-	if (this->cfg->name == NULL) {
-		this->cfg->name = "plot";
-	}
-	if (this->cfg->title == NULL) {
-		this->cfg->title = "Plot";
-	}
-	if (this->cfg->x_name == NULL) {
-		this->cfg->x_name = "time";
-	}
-	if (this->cfg->y0_name == NULL) {
-		this->cfg->y0_name = "Y0";
-	}
+	struct plot_cfg *cfg = va_arg(vargs, struct plot_cfg *);
+	plot_set_config(m, cfg);
 
 	/* set the sampling duration */
 	if (this->cfg->duration <= 0) {
@@ -234,7 +262,7 @@ static bool plot_process(struct module *m, float *bufs[])
 
 		/* plot x */
 		if (x != NULL) {
-			plot_append(m, this->cfg->x_name, x, n);
+			plot_append(m, "x", x, n);
 		} else {
 			/* no x data - use the internal timebase */
 			float time[n];
@@ -243,12 +271,12 @@ static bool plot_process(struct module *m, float *bufs[])
 				time[i] = base;
 				base += AudioSamplePeriod;
 			}
-			plot_append(m, this->cfg->x_name, time, n);
+			plot_append(m, "x", time, n);
 		}
 
 		/* plot y */
 		if (y0 != NULL) {
-			plot_append(m, this->cfg->y0_name, y0, n);
+			plot_append(m, "y0", y0, n);
 		}
 		this->samples_left -= n;
 		/* are we done? */
