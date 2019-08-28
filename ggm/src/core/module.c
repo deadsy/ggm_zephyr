@@ -25,6 +25,9 @@ extern struct module_info root_metro_module;
 extern struct module_info root_poly_module;
 extern struct module_info seq_seq_module;
 extern struct module_info voice_osc_module;
+#if defined(__LINUX__)
+extern struct module_info view_plot_module;
+#endif
 
 /* module_list is a list off all the system modules */
 static const struct module_info *module_list[] = {
@@ -43,6 +46,9 @@ static const struct module_info *module_list[] = {
 	&root_poly_module,
 	&seq_seq_module,
 	&voice_osc_module,
+#if defined(__LINUX__)
+	&view_plot_module,
+#endif
 	NULL,
 };
 

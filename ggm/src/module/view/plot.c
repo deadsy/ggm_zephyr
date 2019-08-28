@@ -123,6 +123,21 @@ static void plot_close(struct module *m)
 	this->idx++;
 }
 
+static int plot_append(struct module *m, const char *name, float *buf, int n)
+{
+	struct plot *this = (struct plot *)m->priv;
+
+	fprintf(this->f, "%s.extend([\n", name);
+	for (int i = 0; i < n; i++) {
+		fprintf(this->f, "%f,", buf[i]);
+		if ((i & 15) == 15) {
+			fprintf(this->f, "\n");
+		}
+	}
+	fprintf(this->f, "])\n");
+	return 0;
+}
+
 /******************************************************************************
  * module port functions
  */
@@ -142,9 +157,9 @@ static void plot_port_trigger(struct module *m, const struct event *e)
 	}
 
 	// trigger!
-	int err = plot_open(m);
-	if (err != 0) {
-		LOG_INF("can't open plot file (%d)", err);
+	int rc = plot_open(m);
+	if (rc != 0) {
+		LOG_INF("can't open plot file");
 		return;
 	}
 
@@ -168,6 +183,31 @@ static int plot_alloc(struct module *m, va_list vargs)
 	}
 	m->priv = (void *)this;
 
+	/* plot configuration */
+	this->cfg = va_arg(vargs, struct plot_cfg *);
+
+	/* set some defaults */
+	if (this->cfg->name == NULL) {
+		this->cfg->name = "plot";
+	}
+	if (this->cfg->title == NULL) {
+		this->cfg->title = "Plot";
+	}
+	if (this->cfg->x_name == NULL) {
+		this->cfg->x_name = "time";
+	}
+	if (this->cfg->y0_name == NULL) {
+		this->cfg->y0_name = "Y0";
+	}
+
+	/* set the sampling duration */
+	if (this->cfg->duration <= 0) {
+		/* get N buffers of samples */
+		this->samples = 4 * AudioBufferSize;
+	} else {
+		this->samples = maxi(16, (int)(this->cfg->duration / AudioSamplePeriod));
+	}
+
 	return 0;
 }
 
@@ -175,18 +215,52 @@ static void plot_free(struct module *m)
 {
 	struct plot *this = (struct plot *)m->priv;
 
+	if (this->triggered) {
+		plot_close(m);
+	}
 	ggm_free(this);
 }
 
 static bool plot_process(struct module *m, float *bufs[])
 {
 	struct plot *this = (struct plot *)m->priv;
-	float *out = bufs[0];
 
-	(void)this;
-	(void)out;
+	if (this->triggered) {
+		float *x = bufs[0];
+		float *y0 = bufs[1];
 
-	return true;
+		/* how many samples should we plot? */
+		int n = mini(this->samples_left, AudioBufferSize);
+
+		/* plot x */
+		if (x != NULL) {
+			plot_append(m, this->cfg->x_name, x, n);
+		} else {
+			/* no x data - use the internal timebase */
+			float time[n];
+			float base = (float)this->x * AudioSamplePeriod;
+			for (int i = 0; i < n; i++) {
+				time[i] = base;
+				base += AudioSamplePeriod;
+			}
+			plot_append(m, this->cfg->x_name, time, n);
+		}
+
+		/* plot y */
+		if (y0 != NULL) {
+			plot_append(m, this->cfg->y0_name, y0, n);
+		}
+		this->samples_left -= n;
+		/* are we done? */
+		if (this->samples_left == 0) {
+			plot_close(m);
+			this->triggered = false;
+		}
+	}
+
+	/* increment the internal time base */
+	this->x += AudioBufferSize;
+	return false;
 }
 
 /******************************************************************************

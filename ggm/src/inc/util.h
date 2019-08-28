@@ -107,6 +107,20 @@ static inline float randf(uint32_t *state)
 }
 
 /******************************************************************************
+ * min/max
+ */
+
+static inline int mini(int a, int b)
+{
+	return (a < b) ? a : b;
+}
+
+static inline int maxi(int a, int b)
+{
+	return (a > b) ? a : b;
+}
+
+/******************************************************************************
  * miscellaneous float routines
  */
 
