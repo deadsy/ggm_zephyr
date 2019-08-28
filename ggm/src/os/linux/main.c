@@ -6,6 +6,8 @@
 
 #define GGM_MAIN
 
+#include <signal.h>
+#include <unistd.h>
 #include <jack/jack.h>
 #include <jack/midiport.h>
 
@@ -369,6 +371,14 @@ error:
  * main
  */
 
+static bool synth_running;
+
+static void ctrl_c_handler(int sig)
+{
+	LOG_INF("caught ctrl-c");
+	synth_running = false;
+}
+
 int main(void)
 {
 	struct jack *j = NULL;
@@ -398,8 +408,16 @@ int main(void)
 		goto exit;
 	}
 
-	while (1) {
-		ggm_mdelay(100);
+	/* catch ctrl-c */
+	void *hdl = signal(SIGINT, ctrl_c_handler);
+	if (hdl == SIG_ERR) {
+		LOG_ERR("can't set SIGINT signal handler");
+		goto exit;
+	}
+
+	synth_running = true;
+	while (synth_running) {
+		sleep(1);
 	}
 
 exit:
