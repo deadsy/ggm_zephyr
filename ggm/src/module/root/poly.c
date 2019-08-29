@@ -30,7 +30,7 @@ struct poly {
 
 struct module *voice_osc0(struct synth *top)
 {
-	return module_new(top, "osc.sine");
+	return module_new(top, "osc.goom");
 }
 
 struct module *voice_osc1(struct synth *top)
@@ -82,7 +82,7 @@ static int poly_alloc(struct module *m, va_list vargs)
 	m->priv = (void *)this;
 
 	/* polyphony */
-	poly = module_new(m->top, "midi.poly", MIDI_CHAN, poly_voice1);
+	poly = module_new(m->top, "midi.poly", MIDI_CHAN, poly_voice0);
 	if (poly == NULL) {
 		goto error;
 	}

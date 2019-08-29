@@ -207,9 +207,12 @@ static int jack_process(jack_nframes_t nframes, void *arg)
 	return 0;
 }
 
+static bool synth_running;
+
 static void jack_shutdown(void *arg)
 {
-	LOG_INF("");
+	LOG_INF("jackd stopped, exiting");
+	synth_running = false;
 }
 
 /******************************************************************************
@@ -371,11 +374,9 @@ error:
  * main
  */
 
-static bool synth_running;
-
 static void ctrl_c_handler(int sig)
 {
-	LOG_INF("caught ctrl-c");
+	LOG_INF("caught ctrl-c, exiting");
 	synth_running = false;
 }
 
