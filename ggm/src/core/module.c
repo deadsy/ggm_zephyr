@@ -21,6 +21,7 @@ extern struct module_info osc_ks_module;
 extern struct module_info osc_lfo_module;
 extern struct module_info osc_noise_module;
 extern struct module_info osc_sine_module;
+extern struct module_info pm_breath_module;
 extern struct module_info root_metro_module;
 extern struct module_info root_poly_module;
 extern struct module_info seq_seq_module;
@@ -42,6 +43,7 @@ static const struct module_info *module_list[] = {
 	&osc_lfo_module,
 	&osc_noise_module,
 	&osc_sine_module,
+	&pm_breath_module,
 	&root_metro_module,
 	&root_poly_module,
 	&seq_seq_module,

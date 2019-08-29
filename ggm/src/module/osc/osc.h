@@ -12,6 +12,7 @@
  */
 
 enum {
+	LFO_SHAPE_NULL,
 	LFO_SHAPE_TRIANGLE,             /* triangle */
 	LFO_SHAPE_SAWDOWN,              /* falling sawtooth */
 	LFO_SHAPE_SAWUP,                /* rising sawtooth */
@@ -26,10 +27,12 @@ enum {
  */
 
 enum {
+	NOISE_TYPE_NULL,
 	NOISE_TYPE_WHITE,       /* white noise */
 	NOISE_TYPE_BROWN,       /* brown noise */
 	NOISE_TYPE_PINK1,       /* pink noise - low quality */
 	NOISE_TYPE_PINK2,       /* pink noise - higher quality */
+	NOISE_TYPE_MAX          /* must be last */
 };
 
 /*****************************************************************************/

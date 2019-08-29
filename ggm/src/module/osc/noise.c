@@ -130,13 +130,21 @@ static int noise_alloc(struct module *m, va_list vargs)
 	}
 	m->priv = (void *)this;
 
-	/* noise type */
+	/* set the noise type */
 	this->type = va_arg(vargs, int);
+	if ((this->type <= 0) || (this->type >= NOISE_TYPE_MAX)) {
+		LOG_ERR("bad noise type %d", this->type);
+		goto error;
+	}
 
 	/* initialise the random seed */
 	rand_init(0, &this->rand);
 
 	return 0;
+
+error:
+	ggm_free(this);
+	return -1;
 }
 
 static void noise_free(struct module *m)

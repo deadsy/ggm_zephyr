@@ -25,6 +25,7 @@ SRC = $(GGM)/src/core/block.c \
 	$(GGM)/src/module/osc/lfo.c \
 	$(GGM)/src/module/osc/noise.c \
 	$(GGM)/src/module/osc/sine.c \
+	$(GGM)/src/module/pm/breath.c \
 	$(GGM)/src/module/root/metro.c \
 	$(GGM)/src/module/root/poly.c \
 	$(GGM)/src/module/seq/seq.c \
