@@ -141,7 +141,7 @@ static void ks_port_attenuation(struct module *m, const struct event *e)
 	float attenuation = clampf(event_get_float(e), 0.f, 1.f);
 
 	LOG_DBG("%s_%08x atennuation %f", m->info->name, m->id, attenuation);
-	this->kval[KS_STATE_PLUCKED] = 0.5 * attenuation;
+	this->kval[KS_STATE_PLUCKED] = 0.5f * attenuation;
 }
 
 static void ks_port_frequency(struct module *m, const struct event *e)
