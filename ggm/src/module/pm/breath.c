@@ -16,13 +16,29 @@
 struct breath {
 	struct module *noise;   /* noise module */
 	struct module *adsr;    /* adsr module */
-	float k;                /* noise scalar */
+	float kn;               /* noise scale */
+	float ka;               /* amplitude scale */
+	float kd;               /* derived scale */
 };
+
+/******************************************************************************
+ * breath functions
+ */
+
+static void breath_set_scale(struct module *m, float kn, float ka)
+{
+	struct breath *this = (struct breath *)m->priv;
+
+	this->kn = kn;
+	this->ka = ka;
+	this->kd = ka / (1.f + kn);
+}
 
 /******************************************************************************
  * module port functions
  */
 
+/* breath_port_reset resets the state of the envelope */
 static void breath_port_reset(struct module *m, const struct event *e)
 {
 	struct breath *this = (struct breath *)m->priv;
@@ -30,6 +46,7 @@ static void breath_port_reset(struct module *m, const struct event *e)
 	event_in(this->adsr, "reset", e, NULL);
 }
 
+/* breath_port_gate is the envelope gate control, attack(>0) or release(=0) */
 static void breath_port_gate(struct module *m, const struct event *e)
 {
 	struct breath *this = (struct breath *)m->priv;
@@ -37,6 +54,7 @@ static void breath_port_gate(struct module *m, const struct event *e)
 	event_in(this->adsr, "gate", e, NULL);
 }
 
+/* breath_port_attack sets the attack time (secs) */
 static void breath_port_attack(struct module *m, const struct event *e)
 {
 	struct breath *this = (struct breath *)m->priv;
@@ -44,6 +62,7 @@ static void breath_port_attack(struct module *m, const struct event *e)
 	event_in(this->adsr, "attack", e, NULL);
 }
 
+/* breath_port_decay sets the decay time (secs) */
 static void breath_port_decay(struct module *m, const struct event *e)
 {
 	struct breath *this = (struct breath *)m->priv;
@@ -51,6 +70,7 @@ static void breath_port_decay(struct module *m, const struct event *e)
 	event_in(this->adsr, "decay", e, NULL);
 }
 
+/* breath_port_sustain sets the sustain level 0..1 */
 static void breath_port_sustain(struct module *m, const struct event *e)
 {
 	struct breath *this = (struct breath *)m->priv;
@@ -58,11 +78,32 @@ static void breath_port_sustain(struct module *m, const struct event *e)
 	event_in(this->adsr, "sustain", e, NULL);
 }
 
+/* breath_port_release sets the release time (secs) */
 static void breath_port_release(struct module *m, const struct event *e)
 {
 	struct breath *this = (struct breath *)m->priv;
 
 	event_in(this->adsr, "release", e, NULL);
+}
+
+/* breath_port_kn sets the scale for the breath noise */
+static void breath_port_kn(struct module *m, const struct event *e)
+{
+	struct breath *this = (struct breath *)m->priv;
+	float kn = clampf_lo(event_get_float(e), 0.f);
+
+	LOG_DBG("%s_%08x set kn %f", m->info->name, m->id, kn);
+	breath_set_scale(m, kn, this->ka);
+}
+
+/* breath_port_ka sets the overall breath excitation amplitude */
+static void breath_port_ka(struct module *m, const struct event *e)
+{
+	struct breath *this = (struct breath *)m->priv;
+	float ka = clampf_lo(event_get_float(e), 0.f);
+
+	LOG_DBG("%s_%08x set ka %f", m->info->name, m->id, ka);
+	breath_set_scale(m, this->kn, ka);
 }
 
 /******************************************************************************
@@ -81,6 +122,9 @@ static int breath_alloc(struct module *m, va_list vargs)
 		return -1;
 	}
 	m->priv = (void *)this;
+
+	/* set some defaults */
+	breath_set_scale(m, 0.5f, 1.f);
 
 	/* noise */
 	noise = module_new(m->top, "osc.noise", NOISE_TYPE_WHITE);
@@ -128,10 +172,12 @@ static bool breath_process(struct module *m, float *bufs[])
 	if (active) {
 		struct module *noise = this->noise;
 		float *out = bufs[0];
+		/* out = ((noise * env * kn) + env) * kd */
 		noise->info->process(noise, (float *[]){ out, });
 		block_mul(out, env);
-		block_mul_k(out, this->k);
+		block_mul_k(out, this->kn);
 		block_add(out, env);
+		block_mul_k(out, this->kd);
 	}
 
 	return active;
@@ -148,6 +194,8 @@ static const struct port_info in_ports[] = {
 	{ .name = "decay", .type = PORT_TYPE_FLOAT, .func = breath_port_decay },
 	{ .name = "sustain", .type = PORT_TYPE_FLOAT, .func = breath_port_sustain },
 	{ .name = "release", .type = PORT_TYPE_FLOAT, .func = breath_port_release },
+	{ .name = "kn", .type = PORT_TYPE_FLOAT, .func = breath_port_kn },
+	{ .name = "ka", .type = PORT_TYPE_FLOAT, .func = breath_port_ka },
 	PORT_EOL,
 };
 
