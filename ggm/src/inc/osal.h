@@ -46,7 +46,6 @@ static inline void ggm_free(void *ptr)
 /*****************************************************************************/
 #elif defined(__LINUX__)
 
-#include <stdio.h>
 #include <string.h>
 
 #include "linux/log.h"

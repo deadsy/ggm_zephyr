@@ -195,7 +195,8 @@ static const struct port_info out_ports[] = {
 };
 
 const struct module_info osc_noise_module = {
-	.name = "osc.noise",
+	.mname = "osc/noise",
+	.iname = "noise",
 	.in = in_ports,
 	.out = out_ports,
 	.alloc = noise_alloc,

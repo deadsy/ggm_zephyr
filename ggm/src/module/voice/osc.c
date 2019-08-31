@@ -79,7 +79,7 @@ static int osc_alloc(struct module *m, va_list vargs)
 
 	/* oscillator */
 	module_func new_osc = va_arg(vargs, module_func);
-	osc = new_osc(m->top);
+	osc = new_osc(m, -1);
 	if (osc == NULL) {
 		goto error;
 	}
@@ -89,7 +89,7 @@ static int osc_alloc(struct module *m, va_list vargs)
 	this->osc = osc;
 
 	/* adsr */
-	adsr = module_new(m->top, "env.adsr");
+	adsr = module_new(m, "env/adsr", -1);
 	if (adsr == NULL) {
 		goto error;
 	}
@@ -152,7 +152,8 @@ static const struct port_info out_ports[] = {
 };
 
 const struct module_info voice_osc_module = {
-	.name = "voice.osc",
+	.mname = "voice/osc",
+	.iname = "voice",
 	.in = in_ports,
 	.out = out_ports,
 	.alloc = osc_alloc,

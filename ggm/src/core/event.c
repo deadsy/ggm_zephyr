@@ -38,7 +38,7 @@ void event_in(struct module *m, const char *name, const struct event *e, port_fu
 	}
 
 	if (func == NULL) {
-		LOG_WRN("%s:%s not found", mi->name, name);
+		LOG_WRN("%s:%s not found", m->name, name);
 		return;
 	}
 
@@ -76,7 +76,7 @@ void event_out_name(struct module *m, const char *name, const struct event *e)
 	int idx = port_get_index(m->info->out, name);
 
 	if (idx < 0) {
-		LOG_ERR("%s_%08x does not have output port %s", m->info->name, m->id, name);
+		LOG_ERR("%s does not have output port %s", m->name, name);
 		return;
 	}
 	event_out(m, idx, e);
@@ -105,7 +105,7 @@ void event_push_name(struct module *m, const char *name, const struct event *e)
 	int idx = port_get_index(m->info->out, name);
 
 	if (idx < 0) {
-		LOG_ERR("%s_%08x does not have output port %s", m->info->name, m->id, name);
+		LOG_ERR("%s does not have output port %s", m->name, name);
 		return;
 	}
 	event_push(m, idx, e);

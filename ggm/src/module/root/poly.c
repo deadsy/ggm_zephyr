@@ -25,27 +25,27 @@ struct poly {
 };
 
 /******************************************************************************
- * polyphonic voice
+ * polyphonic voice (module_func signature)
  */
 
-struct module *voice_osc0(struct synth *top)
+struct module *voice_osc0(struct module *m, int id)
 {
-	return module_new(top, "osc.goom");
+	return module_new(m, "osc/goom", id);
 }
 
-struct module *voice_osc1(struct synth *top)
+struct module *voice_osc1(struct module *m, int id)
 {
-	return module_new(top, "osc.noise", NOISE_TYPE_BROWN);
+	return module_new(m, "osc/noise", id, NOISE_TYPE_BROWN);
 }
 
-struct module *poly_voice0(struct synth *top)
+struct module *poly_voice0(struct module *m, int id)
 {
-	return module_new(top, "voice.osc", voice_osc0);
+	return module_new(m, "voice/osc", id, voice_osc0);
 }
 
-struct module *poly_voice1(struct synth *top)
+struct module *poly_voice1(struct module *m, int id)
 {
-	return module_new(top, "osc.ks");
+	return module_new(m, "osc/ks", id);
 }
 
 /******************************************************************************
@@ -82,14 +82,14 @@ static int poly_alloc(struct module *m, va_list vargs)
 	m->priv = (void *)this;
 
 	/* polyphony */
-	poly = module_new(m->top, "midi.poly", MIDI_CHAN, poly_voice0);
+	poly = module_new(m, "midi/poly", -1, MIDI_CHAN, poly_voice0);
 	if (poly == NULL) {
 		goto error;
 	}
 	this->poly = poly;
 
 	/* pan */
-	pan = module_new(m->top, "mix.pan", MIDI_CHAN, MIDI_CC_PAN, MIDI_CC_VOL);
+	pan = module_new(m, "mix/pan", -1, MIDI_CHAN, MIDI_CC_PAN, MIDI_CC_VOL);
 	if (poly == NULL) {
 		goto error;
 	}
@@ -143,7 +143,8 @@ static const struct port_info out_ports[] = {
 };
 
 const struct module_info root_poly_module = {
-	.name = "root.poly",
+	.mname = "root/poly",
+	.iname = "root",
 	.in = in_ports,
 	.out = out_ports,
 	.alloc = poly_alloc,

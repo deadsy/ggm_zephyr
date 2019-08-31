@@ -35,10 +35,9 @@ static void midi_mon_port_midi(struct module *m, const struct event *e)
 
 static int midi_mon_alloc(struct module *m, va_list vargs)
 {
-	LOG_MOD_NAME(m);
-
 	/* allocate the private data */
 	struct midi_mon *this = ggm_calloc(1, sizeof(struct midi_mon));
+
 	if (this == NULL) {
 		return -1;
 	}
@@ -52,10 +51,7 @@ static int midi_mon_alloc(struct module *m, va_list vargs)
 
 static void midi_mon_free(struct module *m)
 {
-	struct midi_mon *this = (struct midi_mon *)m->priv;
-
-	LOG_MOD_NAME(m);
-	ggm_free(this);
+	ggm_free(m->priv);
 }
 
 /******************************************************************************
@@ -68,7 +64,8 @@ static const struct port_info in_ports[] = {
 };
 
 const struct module_info midi_mon_module = {
-	.name = "midi.mon",
+	.mname = "midi/mon",
+	.iname = "mon",
 	.in = in_ports,
 	.alloc = midi_mon_alloc,
 	.free = midi_mon_free,

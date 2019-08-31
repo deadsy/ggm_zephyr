@@ -162,7 +162,8 @@ static const struct port_info out_ports[] = {
 };
 
 const struct module_info mix_pan_module = {
-	.name = "mix.pan",
+	.mname = "mix/pan",
+	.iname = "pan",
 	.in = in_ports,
 	.out = out_ports,
 	.alloc = pan_alloc,

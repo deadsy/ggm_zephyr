@@ -68,7 +68,7 @@ static void adsr_port_reset(struct module *m, const struct event *e)
 	bool reset = event_get_bool(e);
 
 	if (reset) {
-		LOG_DBG("%s_%08x hard reset", m->info->name, m->id);
+		LOG_DBG("%s hard reset", m->name);
 		if (this->state != ADSR_STATE_IDLE) {
 			/* This is likely to cause clicks in the output.
 			 * A soft reset prior to this time would be nicer.
@@ -78,7 +78,7 @@ static void adsr_port_reset(struct module *m, const struct event *e)
 		this->val = 0.f;
 		this->state = ADSR_STATE_IDLE;
 	} else {
-		LOG_DBG("%s_%08x soft reset", m->info->name, m->id);
+		LOG_DBG("%s soft reset", m->name);
 		if (this->state != ADSR_STATE_IDLE) {
 			this->state = ADSR_STATE_RESET;
 		}
@@ -91,7 +91,7 @@ static void adsr_port_gate(struct module *m, const struct event *e)
 	struct adsr *this = (struct adsr *)m->priv;
 	float gate = event_get_float(e);
 
-	LOG_DBG("%s_%08x gate %f", m->info->name, m->id, gate);
+	LOG_DBG("%s gate %f", m->name, gate);
 
 	/* attack */
 	if (gate > 0.f) {
@@ -117,7 +117,7 @@ static void adsr_port_attack(struct module *m, const struct event *e)
 	struct adsr *this = (struct adsr *)m->priv;
 	float attack = clampf_lo(event_get_float(e), 0.f);
 
-	LOG_DBG("%s_%08x set attack time %f secs", m->info->name, m->id, attack);
+	LOG_DBG("%s set attack time %f secs", m->name, attack);
 	this->ka = get_k(attack, AudioSampleFrequency);
 }
 
@@ -127,7 +127,7 @@ static void adsr_port_decay(struct module *m, const struct event *e)
 	struct adsr *this = (struct adsr *)m->priv;
 	float decay = clampf_lo(event_get_float(e), 0.f);
 
-	LOG_DBG("%s_%08x set decay time %f secs", m->info->name, m->id, decay);
+	LOG_DBG("%s set decay time %f secs", m->name, decay);
 	this->kd = get_k(decay, AudioSampleFrequency);
 }
 
@@ -137,7 +137,7 @@ static void adsr_port_sustain(struct module *m, const struct event *e)
 	struct adsr *this = (struct adsr *)m->priv;
 	float sustain = clampf(event_get_float(e), 0.f, 1.f);
 
-	LOG_DBG("%s_%08x set sustain level %f", m->info->name, m->id, sustain);
+	LOG_DBG("%s set sustain level %f", m->name, sustain);
 	this->s = sustain;
 	this->d_trigger = 1.f - LEVEL_EPSILON;
 	this->s_trigger = sustain + (1.f - sustain) * LEVEL_EPSILON;
@@ -150,7 +150,7 @@ static void adsr_port_release(struct module *m, const struct event *e)
 	struct adsr *this = (struct adsr *)m->priv;
 	float release = clampf_lo(event_get_float(e), 0.f);
 
-	LOG_DBG("%s_%08x set release time %f secs", m->info->name, m->id, release);
+	LOG_DBG("%s set release time %f secs", m->name, release);
 	this->kr = get_k(release, AudioSampleFrequency);
 }
 
@@ -282,7 +282,8 @@ static const struct port_info out_ports[] = {
 };
 
 const struct module_info env_adsr_module = {
-	.name = "env.adsr",
+	.mname = "env/adsr",
+	.iname = "adsr",
 	.in = in_ports,
 	.out = out_ports,
 	.alloc = adsr_alloc,

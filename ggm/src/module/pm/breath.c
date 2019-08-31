@@ -92,7 +92,7 @@ static void breath_port_kn(struct module *m, const struct event *e)
 	struct breath *this = (struct breath *)m->priv;
 	float kn = clampf_lo(event_get_float(e), 0.f);
 
-	LOG_DBG("%s_%08x set kn %f", m->info->name, m->id, kn);
+	LOG_DBG("%s set kn %f", m->name, kn);
 	breath_set_scale(m, kn, this->ka);
 }
 
@@ -102,7 +102,7 @@ static void breath_port_ka(struct module *m, const struct event *e)
 	struct breath *this = (struct breath *)m->priv;
 	float ka = clampf_lo(event_get_float(e), 0.f);
 
-	LOG_DBG("%s_%08x set ka %f", m->info->name, m->id, ka);
+	LOG_DBG("%s set ka %f", m->name, ka);
 	breath_set_scale(m, this->kn, ka);
 }
 
@@ -127,14 +127,14 @@ static int breath_alloc(struct module *m, va_list vargs)
 	breath_set_scale(m, 0.5f, 1.f);
 
 	/* noise */
-	noise = module_new(m->top, "osc.noise", NOISE_TYPE_WHITE);
+	noise = module_new(m, "osc/noise", -1, NOISE_TYPE_WHITE);
 	if (noise == NULL) {
 		goto error;
 	}
 	this->noise = noise;
 
 	/* adsr */
-	adsr = module_new(m->top, "env.adsr");
+	adsr = module_new(m, "env/adsr", -1);
 	if (adsr == NULL) {
 		goto error;
 	}
@@ -205,7 +205,8 @@ static const struct port_info out_ports[] = {
 };
 
 const struct module_info pm_breath_module = {
-	.name = "pm.breath",
+	.mname = "pm/breath",
+	.iname = "breath",
 	.in = in_ports,
 	.out = out_ports,
 	.alloc = breath_alloc,

@@ -17,7 +17,9 @@
 
 struct module {
 	const struct module_info *info; /* module info */
-	uint32_t id;                    /* module identifier */
+	int id;                         /* module identifier */
+	const char *name;               /* full instance name */
+	struct module *parent;          /* parent module */
 	struct synth *top;              /* top level synth */
 	struct output_dst **dst;        /* output port destinations */
 	void *priv;                     /* pointer to private module data */
@@ -29,7 +31,8 @@ struct module {
  * read-only memory.
  */
 struct module_info {
-	const char *name;                                       /* module name */
+	const char *mname;                                      /* module name */
+	const char *iname;                                      /* instance name */
 	const struct port_info *in;                             /* input ports */
 	const struct port_info *out;                            /* output ports */
 	int (*alloc)(struct module *m, va_list vargs);          /* allocate and initialise the module */
@@ -37,9 +40,7 @@ struct module_info {
 	bool (*process)(struct module *m, float *buf[]);        /* process buffers for this module */
 };
 
-typedef struct module * (*module_func)(struct synth *s);
-
-#define LOG_MOD_NAME(m) LOG_INF("%s_%08x", (m)->info->name, (m)->id)
+typedef struct module * (*module_func)(struct module *m, int id);
 
 #define MODULE_REGISTER(x)
 
@@ -47,7 +48,8 @@ typedef struct module * (*module_func)(struct synth *s);
  * function prototypes
  */
 
-struct module *module_new(struct synth *top, const char *name, ...);
+struct module *module_root(struct synth *top, const char *name, int id, ...);
+struct module *module_new(struct module *parent, const char *name, int id, ...);
 void module_del(struct module *m);
 
 /*****************************************************************************/

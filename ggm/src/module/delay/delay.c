@@ -53,7 +53,7 @@ static int delay_alloc(struct module *m, va_list vargs)
 		goto error;
 	}
 
-	LOG_DBG("%s_%08x %d samples %f secs", m->info->name, m->id, this->n, this->t);
+	LOG_DBG("%s %d samples %f secs", m->name, this->n, this->t);
 
 	return 0;
 
@@ -112,7 +112,8 @@ static const struct port_info out_ports[] = {
 };
 
 const struct module_info delay_delay_module = {
-	.name = "delay.delay",
+	.mname = "delay/delay",
+	.iname = "delay",
 	.in = in_ports,
 	.out = out_ports,
 	.alloc = delay_alloc,

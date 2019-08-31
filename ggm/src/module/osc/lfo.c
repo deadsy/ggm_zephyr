@@ -68,10 +68,9 @@ static void lfo_port_sync(struct module *m, const struct event *e)
 
 static int lfo_alloc(struct module *m, va_list vargs)
 {
-	LOG_MOD_NAME(m);
-
 	/* allocate the private data */
 	struct lfo *this = ggm_calloc(1, sizeof(struct lfo));
+
 	if (this == NULL) {
 		return -1;
 	}
@@ -82,10 +81,7 @@ static int lfo_alloc(struct module *m, va_list vargs)
 
 static void lfo_free(struct module *m)
 {
-	struct lfo *this = (struct lfo *)m->priv;
-
-	LOG_MOD_NAME(m);
-	ggm_free(this);
+	ggm_free(m->priv);
 }
 
 static float lfo_sample(struct module *m)
@@ -166,7 +162,8 @@ static const struct port_info out_ports[] = {
 };
 
 const struct module_info osc_lfo_module = {
-	.name = "osc.lfo",
+	.mname = "osc/lfo",
+	.iname = "lfo",
 	.in = in_ports,
 	.out = out_ports,
 	.alloc = lfo_alloc,

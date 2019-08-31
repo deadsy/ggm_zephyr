@@ -61,7 +61,7 @@ static const struct module_info *module_find(const char *name)
 	int i = 0;
 
 	while ((mi = module_list[i]) != NULL) {
-		if (strcmp(mi->name, name) == 0) {
+		if (strcmp(mi->mname, name) == 0) {
 			return mi;
 		}
 		i++;
@@ -70,27 +70,41 @@ static const struct module_info *module_find(const char *name)
 }
 
 /******************************************************************************
- * module new and free
+ * module functions
  */
 
-static uint32_t g_module_id;
-
-/* get_module_id returns a unique identifier for each allocated module */
-static uint32_t get_module_id(void)
+/* module_name constructs the full path name of the module */
+static char *module_name(struct module *p, const char *iname, int id)
 {
-	if (g_module_id == 0) {
-		g_module_id++;
+	char name[128];
+
+	if (p == NULL) {
+		/* this is the root module */
+		if (id >= 0) {
+			snprintf(name, sizeof(name), "%s%d", iname, id);
+		} else {
+			snprintf(name, sizeof(name), "%s", iname);
+		}
+	} else {
+		/* this is a child module */
+		if (id >= 0) {
+			snprintf(name, sizeof(name), "%s.%s%d", p->name, iname, id);
+		} else {
+			snprintf(name, sizeof(name), "%s.%s", p->name, iname);
+		}
 	}
-	uint32_t id = g_module_id;
-	g_module_id++;
-	return id;
+	/* copy the name string into an allocated buffer */
+	size_t n = strlen(name);
+	char *s = ggm_calloc(n + 1, sizeof(char));
+	if (s == NULL) {
+		return NULL;
+	}
+	return strncpy(s, name, n);
 }
 
-/* module_new returns a new instance of a module. */
-struct module *module_new(struct synth *top, const char *name, ...)
+/* module_create creates a module */
+static struct module *module_create(struct synth *s, struct module *p, const char *name, int id, va_list vargs)
 {
-	va_list vargs;
-
 	/* find the module */
 	const struct module_info *mi = module_find(name);
 
@@ -106,11 +120,13 @@ struct module *module_new(struct synth *top, const char *name, ...)
 	}
 
 	/* fill in the module data */
-	m->id = get_module_id();
-	m->top = top;
 	m->info = mi;
+	m->id = id;
+	m->name = module_name(p, mi->iname, m->id);
+	m->parent = p;
+	m->top = s;
 
-	LOG_INF("%s_%08x", m->info->name, m->id);
+	LOG_INF("%s", m->name);
 
 	/* allocate link list headers for the output port destinations */
 	int n = port_count(mi->out);
@@ -123,9 +139,7 @@ struct module *module_new(struct synth *top, const char *name, ...)
 	}
 
 	/* allocate and initialise the module private data */
-	va_start(vargs, name);
 	int err = mi->alloc(m, vargs);
-	va_end(vargs);
 	if (err != 0) {
 		goto error;
 	}
@@ -136,20 +150,48 @@ error:
 	LOG_ERR("could not create module %s", name);
 	if (m != NULL) {
 		ggm_free(m->dst);
+		ggm_free((void *)m->name);
 		ggm_free(m);
 	}
 	return NULL;
 }
 
+/******************************************************************************
+ * functions to create/delete  modules
+ */
+
+/* module_root creates an instance of a root module */
+struct module *module_root(struct synth *top, const char *name, int id, ...)
+{
+	va_list vargs;
+
+	va_start(vargs, id);
+	struct module *m = module_create(top, NULL, name, id, vargs);
+	va_end(vargs);
+	return m;
+}
+
+/* module_new returns a new instance of a module. */
+struct module *module_new(struct module *parent, const char *name, int id, ...)
+{
+	va_list vargs;
+
+	va_start(vargs, id);
+	struct module *m = module_create(parent->top, parent, name, id, vargs);
+	va_end(vargs);
+	return m;
+}
+
+/* module_del deallocates a module and it's sub-modules */
 void module_del(struct module *m)
 {
 	if (m == NULL) {
 		return;
 	}
 
-	LOG_INF("%s_%08x", m->info->name, m->id);
+	LOG_INF("%s", m->name);
 
-	/* free the private data */
+	/* free the sub-modules and private data */
 	m->info->free(m);
 
 	/* deallocate the lists of output destinations */
@@ -158,10 +200,8 @@ void module_del(struct module *m)
 		port_free_dst_list(m->dst[i]);
 	}
 
-	/* deallocate the headers */
 	ggm_free(m->dst);
-
-	/* deallocate the module data */
+	ggm_free((void *)m->name);
 	ggm_free(m);
 }
 

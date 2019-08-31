@@ -71,7 +71,8 @@ static const struct port_info out_ports[] = {
 };
 
 const struct module_info xmod_module = {
-	.name = "xmod",
+	.mname = "xmod",
+	.iname = "xmod",
 	.in = in_ports,
 	.out = out_ports,
 	.alloc = xmod_alloc,

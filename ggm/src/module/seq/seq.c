@@ -155,7 +155,7 @@ static void seq_port_bpm(struct module *m, const struct event *e)
 	struct seq *this = (struct seq *)m->priv;
 	float bpm = clampf(event_get_float(e), MinBeatsPerMin, MaxBeatsPerMin);
 
-	LOG_INF("%s_%08x set bpm %f", m->info->name, m->id, bpm);
+	LOG_INF("%s set bpm %f", m->name, bpm);
 	this->secs_per_tick = SecsPerMin / (bpm * TICKS_PER_BEAT);
 }
 
@@ -209,7 +209,6 @@ static int seq_alloc(struct module *m, va_list vargs)
 
 static void seq_free(struct module *m)
 {
-	LOG_MOD_NAME(m);
 	ggm_free(m->priv);
 }
 
@@ -250,7 +249,8 @@ static const struct port_info out_ports[] = {
 };
 
 const struct module_info seq_seq_module = {
-	.name = "seq.seq",
+	.mname = "seq/seq",
+	.iname = "seq",
 	.in = in_ports,
 	.out = out_ports,
 	.alloc = seq_alloc,

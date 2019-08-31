@@ -56,7 +56,7 @@ static void ks_set_frequency(struct module *m, float freq)
 {
 	struct ks *this = (struct ks *)m->priv;
 
-	LOG_DBG("%s_%08x frequency %f", m->info->name, m->id, freq);
+	LOG_DBG("%s frequency %f", m->name, freq);
 	this->freq = freq;
 	this->xstep = (uint32_t)(freq * FrequencyScale);
 }
@@ -111,11 +111,11 @@ static void ks_port_reset(struct module *m, const struct event *e)
 	bool reset = event_get_bool(e);
 
 	if (reset) {
-		LOG_DBG("%s_%08x hard reset", m->info->name, m->id);
+		LOG_DBG("%s hard reset", m->name);
 		ks_zero_buffer(m);
 		this->state = KS_STATE_IDLE;
 	} else {
-		LOG_DBG("%s_%08x soft reset", m->info->name, m->id);
+		LOG_DBG("%s soft reset", m->name);
 		this->state = KS_STATE_RESET;
 	}
 }
@@ -125,7 +125,7 @@ static void ks_port_gate(struct module *m, const struct event *e)
 	struct ks *this = (struct ks *)m->priv;
 	float gate = event_get_float(e);
 
-	LOG_DBG("%s_%08x gate %f", m->info->name, m->id, gate);
+	LOG_DBG("%s gate %f", m->name, gate);
 
 	if (gate > 0) {
 		ks_pluck_buffer(m, gate);
@@ -140,7 +140,7 @@ static void ks_port_attenuation(struct module *m, const struct event *e)
 	struct ks *this = (struct ks *)m->priv;
 	float attenuation = clampf(event_get_float(e), 0.f, 1.f);
 
-	LOG_DBG("%s_%08x atennuation %f", m->info->name, m->id, attenuation);
+	LOG_DBG("%s atennuation %f", m->name, attenuation);
 	this->kval[KS_STATE_PLUCKED] = 0.5f * attenuation;
 }
 
@@ -237,7 +237,8 @@ static const struct port_info out_ports[] = {
 };
 
 const struct module_info osc_ks_module = {
-	.name = "osc.ks",
+	.mname = "osc/ks",
+	.iname = "ks",
 	.in = in_ports,
 	.out = out_ports,
 	.alloc = ks_alloc,

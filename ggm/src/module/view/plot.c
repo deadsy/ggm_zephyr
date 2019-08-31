@@ -193,7 +193,7 @@ static void plot_port_trigger(struct module *m, const struct event *e)
 	}
 
 	if (this->triggered) {
-		LOG_INF("%s_%08x already triggered", m->info->name, m->id);
+		LOG_INF("%s already triggered", m->name);
 		return;
 	}
 
@@ -303,7 +303,8 @@ static const struct port_info in_ports[] = {
 };
 
 const struct module_info view_plot_module = {
-	.name = "view.plot",
+	.mname = "view/plot",
+	.iname = "plot",
 	.in = in_ports,
 	.alloc = plot_alloc,
 	.free = plot_free,

@@ -394,7 +394,7 @@ int main(void)
 		goto exit;
 	}
 
-	struct module *m = module_new(s, "root.poly");
+	struct module *m = module_root(s, "root/poly", -1);
 	if (m == NULL) {
 		goto exit;
 	}

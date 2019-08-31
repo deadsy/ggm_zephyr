@@ -22,7 +22,7 @@ int main(void)
 		goto exit;
 	}
 
-	struct module *m = module_new(s, "root.metro");
+	struct module *m = module_root(s, "root/metro", -1);
 	if (m == NULL) {
 		goto exit;
 	}

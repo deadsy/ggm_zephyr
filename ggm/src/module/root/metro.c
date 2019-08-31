@@ -56,17 +56,16 @@ static int metro_alloc(struct module *m, va_list vargs)
 	struct module *seq = NULL;
 	struct module *mon = NULL;
 
-	LOG_MOD_NAME(m);
-
 	/* allocate the private data */
 	struct metro *this = ggm_calloc(1, sizeof(struct metro));
+
 	if (this == NULL) {
 		return -1;
 	}
 	m->priv = (void *)this;
 
 	/* sequencer */
-	seq = module_new(m->top, "seq.seq", signature_4_4);
+	seq = module_new(m, "seq/seq", -1, signature_4_4);
 	if (seq == NULL) {
 		goto error;
 	}
@@ -75,7 +74,7 @@ static int metro_alloc(struct module *m, va_list vargs)
 	this->seq = seq;
 
 	/* midi monitor */
-	mon = module_new(m->top, "midi.mon", MIDI_CHANNEL);
+	mon = module_new(m, "midi/mon", -1, MIDI_CHANNEL);
 	if (mon == NULL) {
 		goto error;
 	}
@@ -99,7 +98,6 @@ static void metro_free(struct module *m)
 {
 	struct metro *this = (struct metro *)m->priv;
 
-	LOG_MOD_NAME(m);
 	module_del(this->seq);
 	module_del(this->mon);
 	ggm_free(this);
@@ -133,7 +131,8 @@ static const struct port_info out_ports[] = {
 };
 
 const struct module_info root_metro_module = {
-	.name = "root.metro",
+	.mname = "root/metro",
+	.iname = "root",
 	.in = in_ports,
 	.out = out_ports,
 	.alloc = metro_alloc,

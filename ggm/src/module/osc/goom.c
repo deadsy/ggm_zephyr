@@ -87,7 +87,7 @@ static void goom_set_frequency(struct module *m, float freq)
 {
 	struct goom *this = (struct goom *)m->priv;
 
-	LOG_DBG("%s_%08x set frequency %f Hz", m->info->name, m->id, freq);
+	LOG_DBG("%s set frequency %f Hz", m->name, freq);
 	this->freq = freq;
 	this->xstep = (uint32_t)(freq * FrequencyScale);
 }
@@ -118,7 +118,7 @@ static void goom_port_duty(struct module *m, const struct event *e)
 	struct goom *this = (struct goom *)m->priv;
 	float duty = clampf(event_get_float(e), 0.f, 1.f);
 
-	LOG_INF("%s_%08x set duty cycle %f", m->info->name, m->id, duty);
+	LOG_INF("%s set duty cycle %f", m->name, duty);
 	goom_set_shape(m, duty, this->slope);
 }
 
@@ -128,7 +128,7 @@ static void goom_port_slope(struct module *m, const struct event *e)
 	struct goom *this = (struct goom *)m->priv;
 	float slope = clampf(event_get_float(e), 0.f, 1.f);
 
-	LOG_INF("%s_%08x set slope %f", m->info->name, m->id, slope);
+	LOG_INF("%s set slope %f", m->name, slope);
 	goom_set_shape(m, this->duty, slope);
 }
 
@@ -139,7 +139,7 @@ static void goom_port_reset(struct module *m, const struct event *e)
 
 	if (reset) {
 		struct goom *this = (struct goom *)m->priv;
-		LOG_DBG("%s_%08x phase reset", m->info->name, m->id);
+		LOG_DBG("%s phase reset", m->name);
 		/* start at a phase that gives a zero output */
 		this->x = this->xreset;
 	}
@@ -207,7 +207,8 @@ static const struct port_info out_ports[] = {
 };
 
 const struct module_info osc_goom_module = {
-	.name = "osc.goom",
+	.mname = "osc/goom",
+	.iname = "goom",
 	.in = in_ports,
 	.out = out_ports,
 	.alloc = goom_alloc,

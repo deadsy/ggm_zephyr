@@ -201,7 +201,8 @@ static const struct port_info out_ports[] = {
 };
 
 const struct module_info filter_svf_module = {
-	.name = "filter.svf",
+	.mname = "filter/svf",
+	.iname = "svf",
 	.in = in_ports,
 	.out = out_ports,
 	.alloc = svf_alloc,

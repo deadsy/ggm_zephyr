@@ -24,7 +24,7 @@ static void sine_set_frequency(struct module *m, float freq)
 {
 	struct sine *this = (struct sine *)m->priv;
 
-	LOG_DBG("%s_%08x set frequency %f Hz", m->info->name, m->id, freq);
+	LOG_DBG("%s set frequency %f Hz", m->name, freq);
 	this->freq = freq;
 	this->xstep = (uint32_t)(freq * FrequencyScale);
 }
@@ -40,7 +40,7 @@ static void sine_port_reset(struct module *m, const struct event *e)
 
 	if (reset) {
 		struct sine *this = (struct sine *)m->priv;
-		LOG_DBG("%s_%08x phase reset", m->info->name, m->id);
+		LOG_DBG("%s phase reset", m->name);
 		/* start at a phase that gives a zero output */
 		this->x = QuarterCycle;
 	}
@@ -118,7 +118,8 @@ static const struct port_info out_ports[] = {
 };
 
 const struct module_info osc_sine_module = {
-	.name = "osc.sine",
+	.mname = "osc/sine",
+	.iname = "sine",
 	.in = in_ports,
 	.out = out_ports,
 	.alloc = sine_alloc,

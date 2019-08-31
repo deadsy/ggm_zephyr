@@ -116,7 +116,7 @@ static void synth_midi_out(struct module *m, const struct event *e)
 
 int synth_set_root(struct synth *s, struct module *m)
 {
-	LOG_MOD_NAME(m);
+	LOG_INF("%s", m->name);
 
 	/* how many audio buffers do we need? */
 	size_t nbufs = port_count_by_type(m->info->in, PORT_TYPE_AUDIO);

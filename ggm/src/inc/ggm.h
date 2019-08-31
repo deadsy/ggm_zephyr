@@ -7,6 +7,7 @@
 #ifndef GGM_SRC_INC_GGM_H
 #define GGM_SRC_INC_GGM_H
 
+#include <stdio.h>
 #include <stddef.h>
 #include <stdarg.h>
 #include <stdbool.h>

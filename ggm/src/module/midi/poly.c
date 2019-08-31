@@ -159,7 +159,7 @@ static int poly_alloc(struct module *m, va_list vargs)
 	/* allocate the voices */
 	module_func new_voice = va_arg(vargs, module_func);
 	for (int i = 0; i < MAX_POLYPHONY; i++) {
-		this->voice[i].m = new_voice(m->top);
+		this->voice[i].m = new_voice(m, i);
 		if (this->voice[i].m == NULL) {
 			goto error;
 		}
@@ -223,7 +223,8 @@ static const struct port_info out_ports[] = {
 };
 
 const struct module_info midi_poly_module = {
-	.name = "midi.poly",
+	.mname = "midi/poly",
+	.iname = "poly",
 	.in = in_ports,
 	.out = out_ports,
 	.alloc = poly_alloc,
