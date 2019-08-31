@@ -13,7 +13,6 @@
 extern struct module_info delay_delay_module;
 extern struct module_info env_adsr_module;
 extern struct module_info filter_svf_module;
-extern struct module_info midi_mon_module;
 extern struct module_info midi_poly_module;
 extern struct module_info mix_pan_module;
 extern struct module_info osc_goom_module;
@@ -35,7 +34,6 @@ static const struct module_info *module_list[] = {
 	&delay_delay_module,
 	&env_adsr_module,
 	&filter_svf_module,
-	&midi_mon_module,
 	&midi_poly_module,
 	&mix_pan_module,
 	&osc_goom_module,

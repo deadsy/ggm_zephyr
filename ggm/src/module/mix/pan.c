@@ -5,11 +5,6 @@
  *
  * Left/Right Pan and Volume Module
  * Takes a single audio buffer stream as input and outputs left and right channels.
- *
- * Arguments:
- * uint8_t ch, MIDI channel
- * uint8_t cc_pan, MIDI CC number for pan control
- * uint8_t cc_vol, MIDI CC number for volume control
  */
 
 #include "ggm.h"
@@ -19,9 +14,6 @@
  */
 
 struct pan {
-	uint8_t ch;             /* MIDI channel */
-	uint8_t cc_pan;         /* MIDI CC number for pan control */
-	uint8_t cc_vol;         /* MIDI CC number for volume control */
 	float vol;              /* overall volume */
 	float pan;              /* pan value 0 == left, 1 == right */
 	float new_vol_l;        /* target left channel volume */
@@ -43,50 +35,31 @@ static void pan_set(struct module *m)
 	this->new_vol_r = this->vol * sinf(this->pan);
 }
 
-static void set_vol(struct module *m, float vol)
+/* pan_midi_cc converts a cc message to a 0..1 float event */
+static void pan_midi_cc(struct event *dst, const struct event *src)
+{
+	event_set_float(dst, event_get_midi_cc_float(src));
+}
+
+static void pan_port_vol(struct module *m, const struct event *e)
 {
 	struct pan *this = (struct pan *)m->priv;
+	float vol = clampf(event_get_float(e), 0.f, 1.f);
 
-	LOG_DBG("set volume %f", vol);
+	LOG_INF("%s:vol %f", m->name, vol);
 	/* convert to a linear volume */
 	this->vol = map_exp(vol, 0.f, 1.f, -2.f);
 	pan_set(m);
 }
 
-static void set_pan(struct module *m, float pan)
-{
-	struct pan *this = (struct pan *)m->priv;
-
-	LOG_DBG("set pan %f", pan);
-	this->pan = pan * (0.5f * Pi);
-	pan_set(m);
-}
-
-static void pan_port_midi(struct module *m, const struct event *e)
-{
-	struct pan *this = (struct pan *)m->priv;
-
-	e =  event_filter_midi_channel(e, this->ch);
-	if (e != NULL) {
-		if (event_get_midi_msg(e) == MIDI_STATUS_CONTROLCHANGE) {
-			uint8_t cc = event_get_midi_cc_num(e);
-			if (cc == this->cc_pan) {
-				set_pan(m, event_get_midi_cc_float(e));
-			} else if (cc == this->cc_vol) {
-				set_vol(m, event_get_midi_cc_float(e));
-			}
-		}
-	}
-}
-
-static void pan_port_vol(struct module *m, const struct event *e)
-{
-	set_vol(m, clampf(event_get_float(e), 0.f, 1.f));
-}
-
 static void pan_port_pan(struct module *m, const struct event *e)
 {
-	set_pan(m, clampf(event_get_float(e), 0.f, 1.f));
+	struct pan *this = (struct pan *)m->priv;
+	float pan = clampf(event_get_float(e), 0.f, 1.f);
+
+	LOG_INF("%s:pan %f", m->name, pan);
+	this->pan = pan * (0.5f * Pi);
+	pan_set(m);
 }
 
 /******************************************************************************
@@ -103,16 +76,9 @@ static int pan_alloc(struct module *m, va_list vargs)
 	}
 	m->priv = (void *)this;
 
-	/* setup the MIDI parameters */
-	this->ch = va_arg(vargs, int);
-	this->cc_pan = va_arg(vargs, int);
-	this->cc_vol = va_arg(vargs, int);
-
-	LOG_DBG("ch %d cc_pan %d cc_vol %d", this->ch, this->cc_pan, this->cc_vol);
-
 	/* set some default values */
-	set_vol(m, 1.f);
-	set_pan(m, 0.5f);
+	event_in_float(m, "vol", 1.f, NULL);
+	event_in_float(m, "pan", 0.5f, NULL);
 
 	return 0;
 }
@@ -149,9 +115,8 @@ static bool pan_process(struct module *m, float *bufs[])
 
 static const struct port_info in_ports[] = {
 	{ .name = "in", .type = PORT_TYPE_AUDIO, },
-	{ .name = "midi", .type = PORT_TYPE_MIDI, .func = pan_port_midi, },
-	{ .name = "vol", .type = PORT_TYPE_FLOAT, .func = pan_port_vol, },
-	{ .name = "pan", .type = PORT_TYPE_FLOAT, .func = pan_port_pan, },
+	{ .name = "vol", .type = PORT_TYPE_FLOAT, .func = pan_port_vol, .mf = pan_midi_cc, },
+	{ .name = "pan", .type = PORT_TYPE_FLOAT, .func = pan_port_pan, .mf = pan_midi_cc, },
 	PORT_EOL,
 };
 

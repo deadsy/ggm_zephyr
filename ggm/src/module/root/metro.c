@@ -35,7 +35,6 @@ static const uint8_t signature_4_4[] = {
 
 struct metro {
 	struct module *seq;     /* sequencer */
-	struct module *mon;     /* MIDI monitor */
 };
 
 /******************************************************************************
@@ -54,7 +53,6 @@ static void metro_port_midi(struct module *m, const struct event *e)
 static int metro_alloc(struct module *m, va_list vargs)
 {
 	struct module *seq = NULL;
-	struct module *mon = NULL;
 
 	/* allocate the private data */
 	struct metro *this = ggm_calloc(1, sizeof(struct metro));
@@ -73,15 +71,6 @@ static int metro_alloc(struct module *m, va_list vargs)
 	event_in_int(seq, "ctrl", SEQ_CTRL_START, NULL);
 	this->seq = seq;
 
-	/* midi monitor */
-	mon = module_new(m, "midi/mon", -1, MIDI_CHANNEL);
-	if (mon == NULL) {
-		goto error;
-	}
-	this->mon = mon;
-
-	/* monitor the sequencer output */
-	port_connect(seq, "midi", mon, "midi");
 	/* forward the sequencer output to the metronome output */
 	port_forward(seq, "midi", m, "midi");
 
@@ -89,7 +78,6 @@ static int metro_alloc(struct module *m, va_list vargs)
 
 error:
 	module_del(seq);
-	module_del(mon);
 	ggm_free(this);
 	return -1;
 }
@@ -99,7 +87,6 @@ static void metro_free(struct module *m)
 	struct metro *this = (struct metro *)m->priv;
 
 	module_del(this->seq);
-	module_del(this->mon);
 	ggm_free(this);
 }
 

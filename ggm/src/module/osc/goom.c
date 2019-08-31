@@ -87,7 +87,6 @@ static void goom_set_frequency(struct module *m, float freq)
 {
 	struct goom *this = (struct goom *)m->priv;
 
-	LOG_DBG("%s set frequency %f Hz", m->name, freq);
 	this->freq = freq;
 	this->xstep = (uint32_t)(freq * FrequencyScale);
 }
@@ -101,15 +100,17 @@ static void goom_port_frequency(struct module *m, const struct event *e)
 {
 	float freq = clampf_lo(event_get_float(e), 0.f);
 
+	LOG_DBG("%s:frequency %f Hz", m->name, freq);
 	goom_set_frequency(m, freq);
 }
 
 /* goom_port_note is the pitch bent MIDI note (float) used to set frequency */
 static void goom_port_note(struct module *m, const struct event *e)
 {
-	float freq = midi_to_frequency(event_get_float(e));
+	float note = event_get_float(e);
 
-	goom_set_frequency(m, freq);
+	LOG_DBG("%s:note %f", m->name, note);
+	goom_set_frequency(m, midi_to_frequency(note));
 }
 
 /* goom_port_duty sets the wave duty cycle */
@@ -118,7 +119,7 @@ static void goom_port_duty(struct module *m, const struct event *e)
 	struct goom *this = (struct goom *)m->priv;
 	float duty = clampf(event_get_float(e), 0.f, 1.f);
 
-	LOG_INF("%s set duty cycle %f", m->name, duty);
+	LOG_INF("%s:duty %f", m->name, duty);
 	goom_set_shape(m, duty, this->slope);
 }
 
@@ -128,7 +129,7 @@ static void goom_port_slope(struct module *m, const struct event *e)
 	struct goom *this = (struct goom *)m->priv;
 	float slope = clampf(event_get_float(e), 0.f, 1.f);
 
-	LOG_INF("%s set slope %f", m->name, slope);
+	LOG_INF("%s:slope %f", m->name, slope);
 	goom_set_shape(m, this->duty, slope);
 }
 
@@ -139,7 +140,7 @@ static void goom_port_reset(struct module *m, const struct event *e)
 
 	if (reset) {
 		struct goom *this = (struct goom *)m->priv;
-		LOG_DBG("%s phase reset", m->name);
+		LOG_DBG("%s:reset phase", m->name);
 		/* start at a phase that gives a zero output */
 		this->x = this->xreset;
 	}

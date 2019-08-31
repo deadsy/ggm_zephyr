@@ -12,6 +12,18 @@
 #endif
 
 /******************************************************************************
+ * MIDI control mapping
+ */
+
+struct midi_map {
+	const char *path;       /* module:port path */
+	uint8_t ch;             /* MIDI channel */
+	uint8_t cc;             /* MIDI control number */
+};
+
+#define MIDI_MAP_EOL { NULL, 0, 0 }
+
+/******************************************************************************
  * top-level synth structure
  */
 

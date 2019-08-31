@@ -155,7 +155,7 @@ static void seq_port_bpm(struct module *m, const struct event *e)
 	struct seq *this = (struct seq *)m->priv;
 	float bpm = clampf(event_get_float(e), MinBeatsPerMin, MaxBeatsPerMin);
 
-	LOG_INF("%s set bpm %f", m->name, bpm);
+	LOG_INF("%s:bpm %f", m->name, bpm);
 	this->secs_per_tick = SecsPerMin / (bpm * TICKS_PER_BEAT);
 }
 
@@ -167,21 +167,21 @@ static void seq_port_ctrl(struct module *m, const struct event *e)
 
 	switch (ctrl) {
 	case SEQ_CTRL_STOP: /* stop the sequencer */
-		LOG_INF("ctrl stop");
+		LOG_INF("%s:ctrl stop", m->name);
 		sm->seq_state = SEQ_STATE_STOP;
 		break;
 	case SEQ_CTRL_START: /* start the sequencer */
-		LOG_INF("ctrl start");
+		LOG_INF("%s:ctrl start", m->name);
 		sm->seq_state = SEQ_STATE_RUN;
 		break;
 	case SEQ_CTRL_RESET: /* reset the sequencer */
-		LOG_INF("ctrl reset");
+		LOG_INF("%s:ctrl reset", m->name);
 		sm->seq_state = SEQ_STATE_STOP;
 		sm->op_state = OP_STATE_INIT;
 		sm->pc = 0;
 		break;
 	default:
-		LOG_INF("unknown control value %d", ctrl);
+		LOG_INF("%s:ctrl unknown value %d", m->name, ctrl);
 		break;
 	}
 }

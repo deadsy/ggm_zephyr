@@ -12,8 +12,12 @@
  */
 
 #define MIDI_CHAN 0
-#define MIDI_CC_PAN 7
-#define MIDI_CC_VOL 8
+
+static const struct midi_map midi[] = {
+	{ "root.pan.vol", MIDI_CHAN, 8 },
+	{ "root.pan.pan", MIDI_CHAN, 7 },
+	MIDI_MAP_EOL
+};
 
 /******************************************************************************
  * private state
@@ -61,7 +65,6 @@ static void poly_port_midi(struct module *m, const struct event *e)
 
 	/* forward the MIDI events */
 	event_in(this->poly, "midi", e, NULL);
-	event_in(this->pan, "midi", e, NULL);
 }
 
 /******************************************************************************
@@ -89,7 +92,7 @@ static int poly_alloc(struct module *m, va_list vargs)
 	this->poly = poly;
 
 	/* pan */
-	pan = module_new(m, "mix/pan", -1, MIDI_CHAN, MIDI_CC_PAN, MIDI_CC_VOL);
+	pan = module_new(m, "mix/pan", -1);
 	if (poly == NULL) {
 		goto error;
 	}

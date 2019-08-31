@@ -32,9 +32,10 @@ struct port_info {
 	const char *name;       /* port name */
 	enum port_type type;    /* port type */
 	port_func func;         /* port event function */
+	midi_func mf;           /* MIDI event conversion function */
 };
 
-#define PORT_EOL { NULL, PORT_TYPE_NULL, NULL }
+#define PORT_EOL { NULL, PORT_TYPE_NULL, NULL, NULL }
 
 /******************************************************************************
  * output port destinations: An event sent from an output port is delivered
