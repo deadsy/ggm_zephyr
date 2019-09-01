@@ -35,4 +35,43 @@ float map_exp(float x, float y0, float y1, float k)
 	return (a * pow2(k * x)) + b;
 }
 
+/******************************************************************************
+ * match performs basic string matching. The first string can contain wild cards
+ * * matches multiple characters
+ * ? matches a single character
+ */
+
+bool match(const char *first, const char *second)
+{
+	/* If we reach at the end of both strings, we are done
+	 */
+	if (*first == '\0' && *second == '\0') {
+		return true;
+	}
+
+	/* Make sure that the characters after '*' are present
+	 * in second string. This function assumes that the first
+	 * string will not contain two consecutive '*'
+	 */
+	if (*first == '*' && *(first + 1) != '\0' && *second == '\0') {
+		return false;
+	}
+
+	/* If the first string contains '?', or current characters
+	 * of both strings match
+	 */
+	if (*first == '?' || *first == *second) {
+		return match(first + 1, second + 1);
+	}
+
+	/* If there is *, then there are two possibilities
+	 * a) We consider current character of second string
+	 * b) We ignore current character of second string.
+	 */
+	if (*first == '*') {
+		return match(first + 1, second) || match(first, second + 1);
+	}
+	return false;
+}
+
 /*****************************************************************************/

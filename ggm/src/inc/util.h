@@ -148,6 +148,7 @@ static inline bool zero_cross(float a, float b)
 
 float map_lin(float x, float y0, float y1);
 float map_exp(float x, float y0, float y1, float k);
+bool match(const char *first, const char *second);
 
 /*****************************************************************************/
 
