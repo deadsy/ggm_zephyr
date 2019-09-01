@@ -111,6 +111,87 @@ static void synth_midi_out(struct module *m, const struct event *e)
 }
 
 /******************************************************************************
+ * Incoming MIDI messages are sent directly to the sub-module(s) for which
+ * they are relevant. The map is between a module:port path and the MIDI
+ * channel:cc numbers.
+ */
+
+/* synth_midi_map sets the top-level synth MIDI map */
+int synth_set_midi_map(struct synth *s, const struct midi_map *map)
+{
+	if (s == NULL) {
+		LOG_ERR("no top-level synth set");
+		goto error;
+	}
+
+	if (map == NULL) {
+		LOG_ERR("midi map is null");
+		goto error;
+	}
+
+	if (s->mmap != NULL) {
+		LOG_ERR("midi map is already set");
+		goto error;
+	}
+
+	s->mmap = map;
+
+	/* count the entries */
+	const struct midi_map *mm = map;
+	int n = 0;
+	while (mm->path != NULL) {
+		n += 1;
+		mm++;
+	}
+	if (n == 0) {
+		LOG_ERR("midi map is empty");
+		goto error;
+	}
+
+	LOG_DBG("midi map has %d entries", n);
+	return 0;
+
+error:
+	return -1;
+}
+
+/* synth_lookup_midi_map looks for a given module:port name in the MIDI map.
+ * If there is match the port and module information is cached in the top-level synth
+ * so MIDI messages can be sent directly to the port.
+ */
+void synth_lookup_midi_map(struct synth *s, struct module *m, const struct port_info *pi)
+{
+	if (pi->mf == NULL) {
+		/* The port has no MIDI function to convert a MIDI event
+		 * into a port event, ignore it.
+		 */
+		return;
+	}
+
+	/* build the full module:port name*/
+	char path[128];
+
+	snprintf(path, sizeof(path), "%s:%s", m->name, pi->name);
+
+	/* look for a match in the MIDI map table */
+	const struct midi_map *mm = s->mmap;
+	while (mm->path != NULL) {
+		if (match(mm->path, path)) {
+			break;
+		}
+		mm++;
+	}
+
+	if (mm->path == NULL) {
+		LOG_DBG("%s not found", path);
+		return;
+	}
+
+	LOG_DBG("%s matches %s", path, mm->path);
+
+}
+
+/******************************************************************************
  * synth_set_root sets the root patch of the synth.
  */
 

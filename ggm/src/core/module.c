@@ -136,6 +136,16 @@ static struct module *module_create(struct synth *s, struct module *p, const cha
 		m->dst = dst;
 	}
 
+	/* iterate across input ports and setup any MIDI mapping */
+	if (mi->in != NULL) {
+		const struct port_info *port = mi->in;
+		int i = 0;
+		while (port[i].type != PORT_TYPE_NULL) {
+			synth_lookup_midi_map(m->top, m, &port[i]);
+			i++;
+		}
+	}
+
 	/* allocate and initialise the module private data */
 	int err = mi->alloc(m, vargs);
 	if (err != 0) {

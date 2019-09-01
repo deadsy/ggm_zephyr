@@ -58,6 +58,34 @@ static float get_k(float t, int rate)
 }
 
 /******************************************************************************
+ * MIDI to port event conversion functions
+ */
+
+static void adsr_midi_attack(struct event *dst, const struct event *src)
+{
+	/* 0..1 secs */
+	event_set_float(dst, event_get_midi_cc_float(src));
+}
+
+static void adsr_midi_decay(struct event *dst, const struct event *src)
+{
+	/* 0..2 secs */
+	event_set_float(dst, 2.f * event_get_midi_cc_float(src));
+}
+
+static void adsr_midi_sustain(struct event *dst, const struct event *src)
+{
+	/* 0..1 */
+	event_set_float(dst, event_get_midi_cc_float(src));
+}
+
+static void adsr_midi_release(struct event *dst, const struct event *src)
+{
+	/* 0..5 secs */
+	event_set_float(dst, 5.f * event_get_midi_cc_float(src));
+}
+
+/******************************************************************************
  * module port functions
  */
 
@@ -269,10 +297,10 @@ static bool adsr_process(struct module *m, float *buf[])
 static const struct port_info in_ports[] = {
 	{ .name = "reset", .type = PORT_TYPE_BOOL, .func = adsr_port_reset },
 	{ .name = "gate", .type = PORT_TYPE_FLOAT, .func = adsr_port_gate },
-	{ .name = "attack", .type = PORT_TYPE_FLOAT, .func = adsr_port_attack },
-	{ .name = "decay", .type = PORT_TYPE_FLOAT, .func = adsr_port_decay },
-	{ .name = "sustain", .type = PORT_TYPE_FLOAT, .func = adsr_port_sustain },
-	{ .name = "release", .type = PORT_TYPE_FLOAT, .func = adsr_port_release },
+	{ .name = "attack", .type = PORT_TYPE_FLOAT, .func = adsr_port_attack, .mf = adsr_midi_attack, },
+	{ .name = "decay", .type = PORT_TYPE_FLOAT, .func = adsr_port_decay, .mf = adsr_midi_decay, },
+	{ .name = "sustain", .type = PORT_TYPE_FLOAT, .func = adsr_port_sustain, .mf = adsr_midi_sustain, },
+	{ .name = "release", .type = PORT_TYPE_FLOAT, .func = adsr_port_release, .mf = adsr_midi_release, },
 	PORT_EOL,
 };
 

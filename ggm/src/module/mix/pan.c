@@ -23,6 +23,16 @@ struct pan {
 };
 
 /******************************************************************************
+ * MIDI to port event conversion functions
+ */
+
+/* pan_midi_cc converts a cc message to a 0..1 float event */
+static void pan_midi_cc(struct event *dst, const struct event *src)
+{
+	event_set_float(dst, event_get_midi_cc_float(src));
+}
+
+/******************************************************************************
  * module port functions
  */
 
@@ -33,12 +43,6 @@ static void pan_set(struct module *m)
 	/* Use sin/cos so that l*l + r*r = K (constant power) */
 	this->new_vol_l = this->vol * cosf(this->pan);
 	this->new_vol_r = this->vol * sinf(this->pan);
-}
-
-/* pan_midi_cc converts a cc message to a 0..1 float event */
-static void pan_midi_cc(struct event *dst, const struct event *src)
-{
-	event_set_float(dst, event_get_midi_cc_float(src));
 }
 
 static void pan_port_vol(struct module *m, const struct event *e)

@@ -14,8 +14,12 @@
 #define MIDI_CHAN 0
 
 static const struct midi_map midi[] = {
-	{ "root.pan.vol", MIDI_CHAN, 8 },
-	{ "root.pan.pan", MIDI_CHAN, 7 },
+	{ "root.pan:vol", MIDI_CHAN, 8 },
+	{ "root.pan:pan", MIDI_CHAN, 7 },
+	{ "root.poly.voice*.adsr:attack", MIDI_CHAN, 6 },
+	{ "root.poly.voice*.adsr:decay", MIDI_CHAN, 5 },
+	{ "root.poly.voice*.adsr:sustain", MIDI_CHAN, 4 },
+	{ "root.poly.voice*.adsr:release", MIDI_CHAN, 3 },
 	MIDI_MAP_EOL
 };
 
@@ -83,6 +87,14 @@ static int poly_alloc(struct module *m, va_list vargs)
 		return -1;
 	}
 	m->priv = (void *)this;
+
+	/* Set the synth MIDI map.
+	 * Do this before the sub-modules are created.
+	 */
+	int err = synth_set_midi_map(m->top, midi);
+	if (err < 0) {
+		goto error;
+	}
 
 	/* polyphony */
 	poly = module_new(m, "midi/poly", -1, MIDI_CHAN, poly_voice0);
