@@ -13,14 +13,14 @@
 
 #define MIDI_CHAN 0
 
-static const struct midi_map midi[] = {
-	{ "root.pan:vol", MIDI_CHAN, 8 },
+static const struct midi_cfg mcfg[] = {
+	{ "root.poly.voice*.adsr:attack", MIDI_CHAN, 1 },
+	{ "root.poly.voice*.adsr:decay", MIDI_CHAN, 2 },
+	{ "root.poly.voice*.adsr:sustain", MIDI_CHAN, 3 },
+	{ "root.poly.voice*.adsr:release", MIDI_CHAN, 4 },
 	{ "root.pan:pan", MIDI_CHAN, 7 },
-	{ "root.poly.voice*.adsr:attack", MIDI_CHAN, 6 },
-	{ "root.poly.voice*.adsr:decay", MIDI_CHAN, 5 },
-	{ "root.poly.voice*.adsr:sustain", MIDI_CHAN, 4 },
-	{ "root.poly.voice*.adsr:release", MIDI_CHAN, 3 },
-	MIDI_MAP_EOL
+	{ "root.pan:vol", MIDI_CHAN, 8 },
+	MIDI_CFG_EOL
 };
 
 /******************************************************************************
@@ -63,10 +63,15 @@ struct module *poly_voice1(struct module *m, int id)
 static void poly_port_midi(struct module *m, const struct event *e)
 {
 	struct poly *this = (struct poly *)m->priv;
+	bool consumed = synth_midi_cc(m->top, e);
+
+	/* did the synth level midi cc map dispatch the event? */
+	if (consumed) {
+		return;
+	}
+
 	char tmp[64];
-
 	LOG_DBG("%s", log_strdup(midi_str(tmp, sizeof(tmp), e)));
-
 	/* forward the MIDI events */
 	event_in(this->poly, "midi", e, NULL);
 }
@@ -91,7 +96,7 @@ static int poly_alloc(struct module *m, va_list vargs)
 	/* Set the synth MIDI map.
 	 * Do this before the sub-modules are created.
 	 */
-	int err = synth_set_midi_map(m->top, midi);
+	int err = synth_set_midi_cfg(m->top, mcfg);
 	if (err < 0) {
 		goto error;
 	}

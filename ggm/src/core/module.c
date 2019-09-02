@@ -141,7 +141,7 @@ static struct module *module_create(struct synth *s, struct module *p, const cha
 		const struct port_info *port = mi->in;
 		int i = 0;
 		while (port[i].type != PORT_TYPE_NULL) {
-			synth_lookup_midi_map(m->top, m, &port[i]);
+			synth_lookup_midi_cfg(m->top, m, &port[i]);
 			i++;
 		}
 	}

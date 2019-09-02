@@ -184,6 +184,14 @@ static inline const struct event *event_filter_midi_channel(const struct event *
 	return e;
 }
 
+static inline bool is_midi_cc(const struct event *e)
+{
+	if (e->type != EVENT_TYPE_MIDI) {
+		return false;
+	}
+	return (e->u.midi.status & 0xf0) == MIDI_STATUS_CONTROLCHANGE;
+}
+
 char *midi_str(char *s, size_t n, const struct event *e);
 
 /******************************************************************************
