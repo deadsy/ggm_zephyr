@@ -222,7 +222,7 @@ void synth_lookup_midi_cfg(struct synth *s, struct module *m, const struct port_
 	}
 
 	if (mc->path == NULL) {
-		LOG_DBG("%s not found", path);
+		// LOG_DBG("%s not found", path);
 		return;
 	}
 

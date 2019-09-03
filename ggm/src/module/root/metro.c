@@ -18,7 +18,8 @@
 #define MIDI_CH 0
 
 static const struct midi_cfg mcfg[] = {
-	{ "root.seq:bpm", MIDI_CH, 8 },
+	{ "root.seq:bpm", MIDI_CH, 7 },
+	{ "root.pan:vol", MIDI_CH, 8 },
 	MIDI_CFG_EOL
 };
 
@@ -45,7 +46,14 @@ static const uint8_t signature_4_4[] = {
 
 struct metro {
 	struct module *seq;     /* sequencer */
+	struct module *voice;   /* voice for audio output */
+	struct module *pan;     /* mix mono to stereo output */
 };
+
+static struct module *voice_osc0(struct module *m, int id)
+{
+	return module_new(m, "osc/sine", id);
+}
 
 /******************************************************************************
  * module port functions
@@ -53,7 +61,34 @@ struct metro {
 
 static void metro_port_midi(struct module *m, const struct event *e)
 {
-	synth_midi_cc(m->top, e);
+	struct metro *this = (struct metro *)m->priv;
+	bool consumed = synth_midi_cc(m->top, e);
+
+	/* did the synth level midi cc map dispatch the event? */
+	if (consumed) {
+		return;
+	}
+
+	if (!is_midi_ch(e, MIDI_CH)) {
+		return;
+	}
+
+	switch (event_get_midi_msg(e)) {
+
+	case MIDI_STATUS_NOTEON: {
+		uint8_t note = event_get_midi_note(e);
+		float vel = event_get_midi_velocity_float(e);
+		event_in_float(this->voice, "note", (float)note, NULL);
+		event_in_float(this->voice, "gate", vel, NULL);
+		break;
+	}
+
+	case MIDI_STATUS_NOTEOFF: {
+		event_in_float(this->voice, "gate", 0.f, NULL);
+		break;
+	}
+
+	}
 }
 
 /******************************************************************************
@@ -63,6 +98,8 @@ static void metro_port_midi(struct module *m, const struct event *e)
 static int metro_alloc(struct module *m, va_list vargs)
 {
 	struct module *seq = NULL;
+	struct module *voice = NULL;
+	struct module *pan = NULL;
 
 	/* allocate the private data */
 	struct metro *this = ggm_calloc(1, sizeof(struct metro));
@@ -87,13 +124,32 @@ static int metro_alloc(struct module *m, va_list vargs)
 	event_in_int(seq, "ctrl", SEQ_CTRL_START, NULL);
 	this->seq = seq;
 
-	/* forward the sequencer output to the metronome output */
+	/* voice */
+	voice = module_new(m, "voice/osc", -1, voice_osc0);
+	if (voice == NULL) {
+		goto error;
+	}
+	this->voice = voice;
+
+	/* pan */
+	pan = module_new(m, "mix/pan", -1);
+	if (pan == NULL) {
+		goto error;
+	}
+	this->pan = pan;
+
+	/* forward the sequencer MIDI output to the MIDI output */
 	port_forward(seq, "midi", m, "midi");
+
+	/* connect the sequencer MIDI output to the MIDI input */
+	port_connect(seq, "midi", m, "midi");
 
 	return 0;
 
 error:
 	module_del(seq);
+	module_del(voice);
+	module_del(pan);
 	ggm_free(this);
 	return -1;
 }
@@ -103,16 +159,25 @@ static void metro_free(struct module *m)
 	struct metro *this = (struct metro *)m->priv;
 
 	module_del(this->seq);
+	module_del(this->voice);
+	module_del(this->pan);
 	ggm_free(this);
 }
 
-static bool metro_process(struct module *m, float *buf[])
+static bool metro_process(struct module *m, float *bufs[])
 {
 	struct metro *this = (struct metro *)m->priv;
 	struct module *seq = this->seq;
+	struct module *voice = this->voice;
+	struct module *pan = this->pan;
+	float *out0 = bufs[0];
+	float *out1 = bufs[1];
+	float tmp[AudioBufferSize];
 
 	seq->info->process(seq, NULL);
-	return false;
+	voice->info->process(voice, (float *[]){ tmp, });
+	pan->info->process(pan, (float *[]){ tmp, out0, out1, });
+	return true;
 }
 
 /******************************************************************************

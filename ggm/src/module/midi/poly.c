@@ -87,8 +87,7 @@ static void poly_port_midi(struct module *m, const struct event *e)
 {
 	struct poly *this = (struct poly *)m->priv;
 
-	e =  event_filter_midi_channel(e, this->chan);
-	if (e == NULL) {
+	if (!is_midi_ch(e, this->chan)) {
 		/* it's not for this channel */
 		return;
 	}

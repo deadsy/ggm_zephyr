@@ -100,11 +100,6 @@ static void ks_zero_buffer(struct module *m)
  * module port functions
  */
 
-static void ks_port_midi(struct module *m, const struct event *e)
-{
-	// struct ks *this = (struct ks *)m->priv;
-}
-
 static void ks_port_reset(struct module *m, const struct event *e)
 {
 	struct ks *this = (struct ks *)m->priv;
@@ -222,7 +217,6 @@ static bool ks_process(struct module *m, float *bufs[])
  */
 
 static const struct port_info in_ports[] = {
-	{ .name = "midi", .type = PORT_TYPE_MIDI, .func = ks_port_midi },
 	{ .name = "reset", .type = PORT_TYPE_BOOL, .func = ks_port_reset },
 	{ .name = "gate", .type = PORT_TYPE_FLOAT, .func = ks_port_gate },
 	{ .name = "note", .type = PORT_TYPE_FLOAT, .func = ks_port_note },

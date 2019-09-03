@@ -214,7 +214,7 @@ void port_connect(struct module *s, const char *sname, struct module *d, const c
 	const struct module_info *si = s->info;
 	const struct module_info *di = d->info;
 
-	LOG_INF("%s.%s to %s.%s", s->name, sname,  d->name, dname);
+	LOG_INF("%s:%s to %s:%s", s->name, sname,  d->name, dname);
 
 	/* does the output port exist on the source module? */
 	int s_idx = port_get_index(si->out, sname);
@@ -260,7 +260,7 @@ void port_forward(struct module *s, const char *sname, struct module *d, const c
 	const struct module_info *si = s->info;
 	const struct module_info *di = d->info;
 
-	LOG_INF("%s.%s to %s.%s", s->name, sname,  d->name, dname);
+	LOG_INF("%s:%s to %s:%s", s->name, sname,  d->name, dname);
 
 	/* does the output port exist on the source module? */
 	int s_idx = port_get_index(si->out, sname);

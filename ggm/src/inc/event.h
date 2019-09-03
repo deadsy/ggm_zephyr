@@ -172,24 +172,20 @@ static inline uint8_t event_get_midi_msg(const struct event *e)
 	return status & 0xf0;
 }
 
-static inline const struct event *event_filter_midi_channel(const struct event *e, uint8_t chan)
-{
-	if (e->type != EVENT_TYPE_MIDI) {
-		return NULL;
-	}
-	if (event_get_midi_channel(e) != chan) {
-		return NULL;
-	}
-	/* it's a MIDI event on the channel */
-	return e;
-}
-
 static inline bool is_midi_cc(const struct event *e)
 {
 	if (e->type != EVENT_TYPE_MIDI) {
 		return false;
 	}
 	return (e->u.midi.status & 0xf0) == MIDI_STATUS_CONTROLCHANGE;
+}
+
+static inline bool is_midi_ch(const struct event *e, uint8_t ch)
+{
+	if (e->type != EVENT_TYPE_MIDI) {
+		return false;
+	}
+	return event_get_midi_channel(e) == ch;
 }
 
 char *midi_str(char *s, size_t n, const struct event *e);
