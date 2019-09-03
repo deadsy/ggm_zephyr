@@ -10,21 +10,31 @@
 #include "ggm.h"
 #include "seq/seq.h"
 
+
+/******************************************************************************
+ * MIDI setup
+ */
+
+#define MIDI_CH 0
+
+static const struct midi_cfg mcfg[] = {
+	{ "root.seq:bpm", MIDI_CH, 8 },
+	MIDI_CFG_EOL
+};
+
 /******************************************************************************
  * patterns
  */
 
-#define MIDI_CHANNEL 1
-
 /* 4/4 signature */
 static const uint8_t signature_4_4[] = {
-	SEQ_OP_NOTE, MIDI_CHANNEL, 69, 100, 4,
+	SEQ_OP_NOTE, MIDI_CH, 69, 100, 4,
 	SEQ_OP_REST, 12,
-	SEQ_OP_NOTE, MIDI_CHANNEL, 60, 100, 4,
+	SEQ_OP_NOTE, MIDI_CH, 60, 100, 4,
 	SEQ_OP_REST, 12,
-	SEQ_OP_NOTE, MIDI_CHANNEL, 60, 100, 4,
+	SEQ_OP_NOTE, MIDI_CH, 60, 100, 4,
 	SEQ_OP_REST, 12,
-	SEQ_OP_NOTE, MIDI_CHANNEL, 60, 100, 4,
+	SEQ_OP_NOTE, MIDI_CH, 60, 100, 4,
 	SEQ_OP_REST, 12,
 	SEQ_OP_LOOP,
 };
@@ -43,7 +53,7 @@ struct metro {
 
 static void metro_port_midi(struct module *m, const struct event *e)
 {
-	/* TODO process a CC for bpm control, etc. */
+	synth_midi_cc(m->top, e);
 }
 
 /******************************************************************************
@@ -62,12 +72,18 @@ static int metro_alloc(struct module *m, va_list vargs)
 	}
 	m->priv = (void *)this;
 
+	/* Set the synth MIDI map */
+	int err = synth_set_midi_cfg(m->top, mcfg);
+	if (err < 0) {
+		goto error;
+	}
+
 	/* sequencer */
 	seq = module_new(m, "seq/seq", -1, signature_4_4);
 	if (seq == NULL) {
 		goto error;
 	}
-	event_in_float(seq, "bpm", 120.0f, NULL);
+	event_in_float(seq, "bpm", 120.f, NULL);
 	event_in_int(seq, "ctrl", SEQ_CTRL_START, NULL);
 	this->seq = seq;
 
@@ -105,8 +121,6 @@ static bool metro_process(struct module *m, float *buf[])
 
 static const struct port_info in_ports[] = {
 	{ .name = "midi", .type = PORT_TYPE_MIDI, .func = metro_port_midi },
-	{ .name = "in0", .type = PORT_TYPE_AUDIO },
-	{ .name = "in1", .type = PORT_TYPE_AUDIO },
 	PORT_EOL,
 };
 

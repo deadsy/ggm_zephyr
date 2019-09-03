@@ -93,9 +93,7 @@ static int poly_alloc(struct module *m, va_list vargs)
 	}
 	m->priv = (void *)this;
 
-	/* Set the synth MIDI map.
-	 * Do this before the sub-modules are created.
-	 */
+	/* Set the synth MIDI map */
 	int err = synth_set_midi_cfg(m->top, mcfg);
 	if (err < 0) {
 		goto error;

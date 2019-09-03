@@ -51,12 +51,6 @@
 /* SecsPerMin (seconds per minute) */
 #define SecsPerMin (60.0f)
 
-/* MinBeatsPerMin for sequencer */
-#define MinBeatsPerMin (10.0f)
-
-/* MaxBeatsPerMin for sequencer */
-#define MaxBeatsPerMin (300.0f)
-
 /*****************************************************************************/
 
 #endif /* GGM_SRC_INC_CONST_H */

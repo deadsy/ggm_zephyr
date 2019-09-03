@@ -8,6 +8,13 @@
 #include "seq/seq.h"
 
 /******************************************************************************
+ * constants
+ */
+
+#define MinBeatsPerMin (30.f)
+#define MaxBeatsPerMin (300.f)
+
+/******************************************************************************
  * private state
  */
 
@@ -150,6 +157,11 @@ static void seq_tick(struct module *m)
 
 #define TICKS_PER_BEAT (16.0f)
 
+static void seq_midi_bpm(struct event *dst, const struct event *src)
+{
+	event_set_float(dst, map_lin(event_get_midi_cc_float(src), MinBeatsPerMin, MaxBeatsPerMin));
+}
+
 static void seq_port_bpm(struct module *m, const struct event *e)
 {
 	struct seq *this = (struct seq *)m->priv;
@@ -238,7 +250,7 @@ static bool seq_process(struct module *m, float *buf[])
  */
 
 static const struct port_info in_ports[] = {
-	{ .name = "bpm", .type = PORT_TYPE_FLOAT, .func = seq_port_bpm },
+	{ .name = "bpm", .type = PORT_TYPE_FLOAT, .func = seq_port_bpm, .mf = seq_midi_bpm, },
 	{ .name = "ctrl", .type = PORT_TYPE_INT, .func = seq_port_ctrl },
 	PORT_EOL,
 };

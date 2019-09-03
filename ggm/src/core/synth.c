@@ -119,17 +119,17 @@ static void synth_midi_out(struct module *m, const struct event *e)
 int synth_set_midi_cfg(struct synth *s, const struct midi_cfg *cfg)
 {
 	if (s == NULL) {
-		LOG_ERR("no top-level synth set");
+		LOG_ERR("no top-level synth");
 		goto error;
 	}
 
 	if (cfg == NULL) {
-		LOG_ERR("midi cfg is null");
+		LOG_ERR("midi cfg null");
 		goto error;
 	}
 
 	if (s->mcfg != NULL) {
-		LOG_ERR("midi cfg is already set");
+		LOG_ERR("midi cfg already set");
 		goto error;
 	}
 
@@ -143,11 +143,10 @@ int synth_set_midi_cfg(struct synth *s, const struct midi_cfg *cfg)
 		mc++;
 	}
 	if (n == 0) {
-		LOG_ERR("midi cfg is empty");
+		LOG_ERR("midi cfg empty");
 		goto error;
 	}
 
-	LOG_DBG("midi cfg has %d entries", n);
 	return 0;
 
 error:
@@ -168,12 +167,15 @@ static struct midi_map *synth_lookup_midi_map(struct synth *s, uint8_t ch, uint8
 		if (mm[i].id == id) {
 			return &mm[i];
 		}
-		/* are we trying to allocate? */
-		if (alloc) {
-			/* is the slot empty? */
-			if (mm[i].id == 0) {
+		/* is the slot empty? */
+		if (mm[i].id == 0) {
+			if (alloc) {
+				/* allocate the slot */
 				mm[i].id = id;
 				return &mm[i];
+			} else {
+				/* end of list */
+				return NULL;
 			}
 		}
 	}
@@ -266,7 +268,7 @@ bool synth_midi_cc(struct synth *s, const struct event *e)
 	struct midi_map_entry *mme = &mm->mme[0];
 	for (int i = 0; i < NUM_MIDI_MAP_ENTRIES; i++) {
 		if (mme[i].m == NULL) {
-			/* no more ports on this ch/cc*/
+			/* no more ports on this ch/cc */
 			break;
 		}
 		midi_func mf = mme[i].pi->mf;
