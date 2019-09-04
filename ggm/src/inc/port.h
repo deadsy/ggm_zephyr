@@ -31,7 +31,7 @@ enum port_type {
 struct port_info {
 	const char *name;       /* port name */
 	enum port_type type;    /* port type */
-	port_func func;         /* port event function */
+	port_func pf;           /* port event function */
 	midi_func mf;           /* MIDI event conversion function */
 };
 

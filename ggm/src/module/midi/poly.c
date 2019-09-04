@@ -212,7 +212,7 @@ static bool poly_process(struct module *m, float *bufs[])
  */
 
 static const struct port_info in_ports[] = {
-	{ .name = "midi", .type = PORT_TYPE_MIDI, .func = poly_port_midi },
+	{ .name = "midi", .type = PORT_TYPE_MIDI, .pf = poly_port_midi },
 	PORT_EOL,
 };
 

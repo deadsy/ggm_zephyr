@@ -26,7 +26,7 @@ void event_in(struct module *m, const char *name, const struct event *e, port_fu
 			}
 			/* port name found ?*/
 			if (strcmp(name, p->name) == 0) {
-				func = p->func;
+				func = p->pf;
 				break;
 			}
 			/*next ...*/

@@ -149,10 +149,10 @@ static bool lfo_process(struct module *m, float *bufs[])
  */
 
 static const struct port_info in_ports[] = {
-	{ .name = "rate", .type = PORT_TYPE_FLOAT, .func = lfo_port_rate },
-	{ .name = "depth", .type = PORT_TYPE_FLOAT, .func = lfo_port_depth },
-	{ .name = "shape", .type = PORT_TYPE_INT, .func = lfo_port_shape },
-	{ .name = "sync", .type = PORT_TYPE_BOOL, .func = lfo_port_sync },
+	{ .name = "rate", .type = PORT_TYPE_FLOAT, .pf = lfo_port_rate },
+	{ .name = "depth", .type = PORT_TYPE_FLOAT, .pf = lfo_port_depth },
+	{ .name = "shape", .type = PORT_TYPE_INT, .pf = lfo_port_shape },
+	{ .name = "sync", .type = PORT_TYPE_BOOL, .pf = lfo_port_sync },
 	PORT_EOL,
 };
 

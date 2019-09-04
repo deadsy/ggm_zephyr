@@ -295,12 +295,12 @@ static bool adsr_process(struct module *m, float *buf[])
  */
 
 static const struct port_info in_ports[] = {
-	{ .name = "reset", .type = PORT_TYPE_BOOL, .func = adsr_port_reset },
-	{ .name = "gate", .type = PORT_TYPE_FLOAT, .func = adsr_port_gate },
-	{ .name = "attack", .type = PORT_TYPE_FLOAT, .func = adsr_port_attack, .mf = adsr_midi_attack, },
-	{ .name = "decay", .type = PORT_TYPE_FLOAT, .func = adsr_port_decay, .mf = adsr_midi_decay, },
-	{ .name = "sustain", .type = PORT_TYPE_FLOAT, .func = adsr_port_sustain, .mf = adsr_midi_sustain, },
-	{ .name = "release", .type = PORT_TYPE_FLOAT, .func = adsr_port_release, .mf = adsr_midi_release, },
+	{ .name = "reset", .type = PORT_TYPE_BOOL, .pf = adsr_port_reset },
+	{ .name = "gate", .type = PORT_TYPE_FLOAT, .pf = adsr_port_gate },
+	{ .name = "attack", .type = PORT_TYPE_FLOAT, .pf = adsr_port_attack, .mf = adsr_midi_attack, },
+	{ .name = "decay", .type = PORT_TYPE_FLOAT, .pf = adsr_port_decay, .mf = adsr_midi_decay, },
+	{ .name = "sustain", .type = PORT_TYPE_FLOAT, .pf = adsr_port_sustain, .mf = adsr_midi_sustain, },
+	{ .name = "release", .type = PORT_TYPE_FLOAT, .pf = adsr_port_release, .mf = adsr_midi_release, },
 	PORT_EOL,
 };
 

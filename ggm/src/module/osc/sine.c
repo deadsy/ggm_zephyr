@@ -106,9 +106,9 @@ static bool sine_process(struct module *m, float *buf[])
  */
 
 static const struct port_info in_ports[] = {
-	{ .name = "reset", .type = PORT_TYPE_BOOL, .func = sine_port_reset },
-	{ .name = "frequency", .type = PORT_TYPE_FLOAT, .func = sine_port_frequency },
-	{ .name = "note", .type = PORT_TYPE_FLOAT, .func = sine_port_note },
+	{ .name = "reset", .type = PORT_TYPE_BOOL, .pf = sine_port_reset },
+	{ .name = "frequency", .type = PORT_TYPE_FLOAT, .pf = sine_port_frequency },
+	{ .name = "note", .type = PORT_TYPE_FLOAT, .pf = sine_port_note },
 	PORT_EOL,
 };
 

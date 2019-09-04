@@ -298,7 +298,7 @@ static bool plot_process(struct module *m, float *bufs[])
 static const struct port_info in_ports[] = {
 	{ .name = "x", .type = PORT_TYPE_AUDIO },
 	{ .name = "y0", .type = PORT_TYPE_AUDIO },
-	{ .name = "trigger", .type = PORT_TYPE_BOOL, .func = plot_port_trigger },
+	{ .name = "trigger", .type = PORT_TYPE_BOOL, .pf = plot_port_trigger },
 	PORT_EOL,
 };
 

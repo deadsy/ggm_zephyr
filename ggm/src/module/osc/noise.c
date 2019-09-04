@@ -184,8 +184,8 @@ static bool noise_process(struct module *m, float *bufs[])
  */
 
 static const struct port_info in_ports[] = {
-	{ .name = "reset", .type = PORT_TYPE_BOOL, .func = noise_port_null },
-	{ .name = "frequency", .type = PORT_TYPE_FLOAT, .func = noise_port_null },
+	{ .name = "reset", .type = PORT_TYPE_BOOL, .pf = noise_port_null },
+	{ .name = "frequency", .type = PORT_TYPE_FLOAT, .pf = noise_port_null },
 	PORT_EOL,
 };
 

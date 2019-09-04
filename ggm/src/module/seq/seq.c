@@ -250,8 +250,8 @@ static bool seq_process(struct module *m, float *buf[])
  */
 
 static const struct port_info in_ports[] = {
-	{ .name = "bpm", .type = PORT_TYPE_FLOAT, .func = seq_port_bpm, .mf = seq_midi_bpm, },
-	{ .name = "ctrl", .type = PORT_TYPE_INT, .func = seq_port_ctrl },
+	{ .name = "bpm", .type = PORT_TYPE_FLOAT, .pf = seq_port_bpm, .mf = seq_midi_bpm, },
+	{ .name = "ctrl", .type = PORT_TYPE_INT, .pf = seq_port_ctrl },
 	PORT_EOL,
 };
 

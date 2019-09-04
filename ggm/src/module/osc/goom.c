@@ -194,11 +194,11 @@ static bool goom_process(struct module *m, float *bufs[])
  */
 
 static const struct port_info in_ports[] = {
-	{ .name = "frequency", .type = PORT_TYPE_FLOAT, .func = goom_port_frequency },
-	{ .name = "note", .type = PORT_TYPE_FLOAT, .func = goom_port_note },
-	{ .name = "duty", .type = PORT_TYPE_FLOAT, .func = goom_port_duty },
-	{ .name = "slope", .type = PORT_TYPE_FLOAT, .func = goom_port_slope },
-	{ .name = "reset", .type = PORT_TYPE_BOOL, .func = goom_port_reset },
+	{ .name = "frequency", .type = PORT_TYPE_FLOAT, .pf = goom_port_frequency },
+	{ .name = "note", .type = PORT_TYPE_FLOAT, .pf = goom_port_note },
+	{ .name = "duty", .type = PORT_TYPE_FLOAT, .pf = goom_port_duty },
+	{ .name = "slope", .type = PORT_TYPE_FLOAT, .pf = goom_port_slope },
+	{ .name = "reset", .type = PORT_TYPE_BOOL, .pf = goom_port_reset },
 	PORT_EOL,
 };
 

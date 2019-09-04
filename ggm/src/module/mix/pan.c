@@ -119,8 +119,8 @@ static bool pan_process(struct module *m, float *bufs[])
 
 static const struct port_info in_ports[] = {
 	{ .name = "in", .type = PORT_TYPE_AUDIO, },
-	{ .name = "vol", .type = PORT_TYPE_FLOAT, .func = pan_port_vol, .mf = pan_midi_cc, },
-	{ .name = "pan", .type = PORT_TYPE_FLOAT, .func = pan_port_pan, .mf = pan_midi_cc, },
+	{ .name = "vol", .type = PORT_TYPE_FLOAT, .pf = pan_port_vol, .mf = pan_midi_cc, },
+	{ .name = "pan", .type = PORT_TYPE_FLOAT, .pf = pan_port_pan, .mf = pan_midi_cc, },
 	PORT_EOL,
 };
 

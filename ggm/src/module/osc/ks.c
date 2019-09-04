@@ -217,11 +217,11 @@ static bool ks_process(struct module *m, float *bufs[])
  */
 
 static const struct port_info in_ports[] = {
-	{ .name = "reset", .type = PORT_TYPE_BOOL, .func = ks_port_reset },
-	{ .name = "gate", .type = PORT_TYPE_FLOAT, .func = ks_port_gate },
-	{ .name = "note", .type = PORT_TYPE_FLOAT, .func = ks_port_note },
-	{ .name = "frequency", .type = PORT_TYPE_FLOAT, .func = ks_port_frequency },
-	{ .name = "attenuation", .type = PORT_TYPE_FLOAT, .func = ks_port_attenuation },
+	{ .name = "reset", .type = PORT_TYPE_BOOL, .pf = ks_port_reset },
+	{ .name = "gate", .type = PORT_TYPE_FLOAT, .pf = ks_port_gate },
+	{ .name = "note", .type = PORT_TYPE_FLOAT, .pf = ks_port_note },
+	{ .name = "frequency", .type = PORT_TYPE_FLOAT, .pf = ks_port_frequency },
+	{ .name = "attenuation", .type = PORT_TYPE_FLOAT, .pf = ks_port_attenuation },
 	PORT_EOL,
 };
 

@@ -341,7 +341,7 @@ static struct jack *jack_new(struct synth *s)
 	/* cache the MIDI input port functions */
 	for (size_t i = 0; i < j->n_midi_in; i++) {
 		const struct port_info *pi = port_get_info_by_type(m->info->in, PORT_TYPE_MIDI, i);
-		j->midi_in_pf[i] = pi->func;
+		j->midi_in_pf[i] = pi->pf;
 	}
 
 	/* Tell the JACK server we are ready to roll.

@@ -188,14 +188,14 @@ static bool breath_process(struct module *m, float *bufs[])
  */
 
 static const struct port_info in_ports[] = {
-	{ .name = "reset", .type = PORT_TYPE_BOOL, .func = breath_port_reset },
-	{ .name = "gate", .type = PORT_TYPE_FLOAT, .func = breath_port_gate },
-	{ .name = "attack", .type = PORT_TYPE_FLOAT, .func = breath_port_attack },
-	{ .name = "decay", .type = PORT_TYPE_FLOAT, .func = breath_port_decay },
-	{ .name = "sustain", .type = PORT_TYPE_FLOAT, .func = breath_port_sustain },
-	{ .name = "release", .type = PORT_TYPE_FLOAT, .func = breath_port_release },
-	{ .name = "kn", .type = PORT_TYPE_FLOAT, .func = breath_port_kn },
-	{ .name = "ka", .type = PORT_TYPE_FLOAT, .func = breath_port_ka },
+	{ .name = "reset", .type = PORT_TYPE_BOOL, .pf = breath_port_reset },
+	{ .name = "gate", .type = PORT_TYPE_FLOAT, .pf = breath_port_gate },
+	{ .name = "attack", .type = PORT_TYPE_FLOAT, .pf = breath_port_attack },
+	{ .name = "decay", .type = PORT_TYPE_FLOAT, .pf = breath_port_decay },
+	{ .name = "sustain", .type = PORT_TYPE_FLOAT, .pf = breath_port_sustain },
+	{ .name = "release", .type = PORT_TYPE_FLOAT, .pf = breath_port_release },
+	{ .name = "kn", .type = PORT_TYPE_FLOAT, .pf = breath_port_kn },
+	{ .name = "ka", .type = PORT_TYPE_FLOAT, .pf = breath_port_ka },
 	PORT_EOL,
 };
 

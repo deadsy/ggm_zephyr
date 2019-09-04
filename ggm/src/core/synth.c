@@ -272,7 +272,7 @@ bool synth_midi_cc(struct synth *s, const struct event *e)
 			break;
 		}
 		midi_func mf = mme[i].pi->mf;
-		port_func pf = mme[i].pi->func;
+		port_func pf = mme[i].pi->pf;
 		/* convert from a MIDI event to a port event*/
 		struct event pe;
 		mf(&pe, e);

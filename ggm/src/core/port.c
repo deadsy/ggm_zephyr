@@ -245,7 +245,7 @@ void port_connect(struct module *s, const char *sname, struct module *d, const c
 	}
 
 	/* check for a non-null destination port function */
-	port_func d_pf = di->in[d_idx].func;
+	port_func d_pf = di->in[d_idx].pf;
 	if (d_pf == NULL) {
 		LOG_ERR("input port must have a port function");
 		return;

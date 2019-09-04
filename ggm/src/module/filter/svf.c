@@ -190,8 +190,8 @@ static bool svf_process(struct module *m, float *bufs[])
 
 static const struct port_info in_ports[] = {
 	{ .name = "in", .type = PORT_TYPE_AUDIO, },
-	{ .name = "cutoff", .type = PORT_TYPE_FLOAT, .func = svf_port_cutoff },
-	{ .name = "resonance", .type = PORT_TYPE_FLOAT, .func = svf_port_resonance },
+	{ .name = "cutoff", .type = PORT_TYPE_FLOAT, .pf = svf_port_cutoff },
+	{ .name = "resonance", .type = PORT_TYPE_FLOAT, .pf = svf_port_resonance },
 	PORT_EOL,
 };
 

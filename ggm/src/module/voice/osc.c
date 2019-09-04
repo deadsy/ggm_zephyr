@@ -133,9 +133,9 @@ static bool osc_process(struct module *m, float *buf[])
  */
 
 static const struct port_info in_ports[] = {
-	{ .name = "reset", .type = PORT_TYPE_BOOL, .func = osc_port_reset },
-	{ .name = "gate", .type = PORT_TYPE_FLOAT, .func = osc_port_gate },
-	{ .name = "note", .type = PORT_TYPE_FLOAT, .func = osc_port_note },
+	{ .name = "reset", .type = PORT_TYPE_BOOL, .pf = osc_port_reset },
+	{ .name = "gate", .type = PORT_TYPE_FLOAT, .pf = osc_port_gate },
+	{ .name = "note", .type = PORT_TYPE_FLOAT, .pf = osc_port_note },
 	PORT_EOL,
 };
 
