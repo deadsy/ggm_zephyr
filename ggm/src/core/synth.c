@@ -328,21 +328,24 @@ bool synth_has_root(struct synth *s)
 }
 
 /******************************************************************************
- * synth_loop runs the top-level synth loop
+ * synth_loop runs the top-level synth loop - returns true if the output
+ * buffers are non-zero.
  */
 
-void synth_loop(struct synth *s)
+bool synth_loop(struct synth *s)
 {
 	struct module *m = s->root;
 	struct qevent q;
 
 	/* run the buffer processing */
-	m->info->process(m, s->bufs);
+	bool active = m->info->process(m, s->bufs);
 
 	/* process all queued events */
 	while (synth_event_rd(s, &q) == 0) {
 		event_out(q.m, q.idx, &q.e);
 	}
+
+	return active;
 }
 
 /*****************************************************************************/

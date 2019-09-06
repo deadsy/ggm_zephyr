@@ -83,7 +83,7 @@ struct synth *synth_new(void);
 void synth_del(struct synth *s);
 int synth_set_root(struct synth *s, struct module *m);
 bool synth_has_root(struct synth *s);
-void synth_loop(struct synth *s);
+bool synth_loop(struct synth *s);
 int synth_event_wr(struct synth *s, struct module *m, int idx, const struct event *e);
 
 int synth_set_midi_cfg(struct synth *s, const struct midi_cfg *cfg);

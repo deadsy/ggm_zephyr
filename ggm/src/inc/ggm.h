@@ -20,6 +20,7 @@
 #include "module.h"
 #include "event.h"
 #include "port.h"
+#include "config.h"
 #include "synth.h"
 
 /******************************************************************************

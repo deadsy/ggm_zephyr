@@ -169,15 +169,19 @@ static bool metro_process(struct module *m, float *bufs[])
 	struct metro *this = (struct metro *)m->priv;
 	struct module *seq = this->seq;
 	struct module *voice = this->voice;
-	struct module *pan = this->pan;
-	float *out0 = bufs[0];
-	float *out1 = bufs[1];
 	float tmp[AudioBufferSize];
 
 	seq->info->process(seq, NULL);
-	voice->info->process(voice, (float *[]){ tmp, });
-	pan->info->process(pan, (float *[]){ tmp, out0, out1, });
-	return true;
+
+	bool active = voice->info->process(voice, (float *[]){ tmp, });
+	if (active) {
+		struct module *pan = this->pan;
+		float *out0 = bufs[0];
+		float *out1 = bufs[1];
+		pan->info->process(pan, (float *[]){ tmp, out0, out1, });
+	}
+
+	return active;
 }
 
 /******************************************************************************

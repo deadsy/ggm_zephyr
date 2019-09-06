@@ -192,13 +192,17 @@ static int jack_process(jack_nframes_t nframes, void *arg)
 	}
 
 	/* run the synth loop */
-	synth_loop(s);
+	bool active = synth_loop(s);
 
 	/* write to the audio output buffers */
 	unsigned int ofs = j->n_audio_in;
 	for (i = 0; i < j->n_audio_out; i++) {
 		float *buf = (float *)jack_port_get_buffer(j->audio_out[i], nframes);
-		block_copy(buf, s->bufs[ofs + i]);
+		if (active) {
+			block_copy(buf, s->bufs[ofs + i]);
+		} else {
+			block_zero(buf);
+		}
 	}
 
 	/* write MIDI output events */

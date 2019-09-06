@@ -11,8 +11,8 @@
  * constants
  */
 
-#define MinBeatsPerMin (30.f)
-#define MaxBeatsPerMin (300.f)
+#define MinBeatsPerMin (35.f)
+#define MaxBeatsPerMin (350.f)
 
 /******************************************************************************
  * private state
