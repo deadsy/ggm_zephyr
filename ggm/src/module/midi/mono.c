@@ -39,8 +39,6 @@ static void mono_port_midi(struct module *m, const struct event *e)
 		uint8_t note = event_get_midi_note(e);
 		float vel = event_get_midi_velocity_float(e);
 		if (note != this->note) {
-			/* send a hard reset */
-			// event_in_bool(voice, "reset", true, NULL);
 			/* set the note */
 			event_in_float(voice, "note", (float)note + this->bend, NULL);
 			this->note = note;

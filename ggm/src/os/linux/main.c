@@ -206,7 +206,11 @@ static int jack_process(jack_nframes_t nframes, void *arg)
 	}
 
 	/* write MIDI output events */
-	/* TODO */
+	for (i = 0; i < j->n_midi_out; i++) {
+		void *buf = jack_port_get_buffer(j->midi_out[i], nframes);
+		jack_midi_clear_buffer(buf);
+		/* TODO */
+	}
 
 	return 0;
 }

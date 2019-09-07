@@ -69,7 +69,7 @@ struct event_queue {
 
 struct synth {
 	struct module *root;                            /* root patch */
-	struct event_queue eq;                          /* event queue */
+	struct event_queue eq;                          /* input event queue */
 	const struct midi_cfg *mcfg;                    /* MIDI configuration */
 	struct midi_map mmap[NUM_MIDI_MAP_SLOTS];       /* MIDI CC map */
 	float *bufs[NUM_AUDIO_PORTS];                   /* allocated audio buffers */

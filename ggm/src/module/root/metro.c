@@ -17,6 +17,10 @@
 #define MIDI_CH 0
 
 static const struct midi_cfg mcfg[] = {
+	{ "root.mono.voice.adsr:attack", MIDI_CH, 1 },
+	{ "root.mono.voice.adsr:decay", MIDI_CH, 2 },
+	{ "root.mono.voice.adsr:sustain", MIDI_CH, 3 },
+	{ "root.mono.voice.adsr:release", MIDI_CH, 4 },
 	{ "root.seq:bpm", MIDI_CH, 7 },
 	{ "root.pan:vol", MIDI_CH, 8 },
 	MIDI_CFG_EOL
