@@ -24,6 +24,7 @@ target_sources(app
 		src/module/delay/delay.c
 		src/module/env/adsr.c
 		src/module/filter/svf.c
+		src/module/midi/mono.c
 		src/module/midi/poly.c
 		src/module/mix/pan.c
 		src/module/osc/goom.c

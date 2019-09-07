@@ -23,7 +23,7 @@ struct voice {
 };
 
 struct poly {
-	uint8_t chan;                           /* MIDI channel we are using */
+	uint8_t ch;                             /* MIDI channel we are using */
 	struct voice voice[MAX_POLYPHONY];      /* voices*/
 	int idx;                                /* round robin voice index */
 	float bend;                             /* pitch bend value for all voices */
@@ -87,7 +87,7 @@ static void poly_port_midi(struct module *m, const struct event *e)
 {
 	struct poly *this = (struct poly *)m->priv;
 
-	if (!is_midi_ch(e, this->chan)) {
+	if (!is_midi_ch(e, this->ch)) {
 		/* it's not for this channel */
 		return;
 	}
@@ -153,7 +153,7 @@ static int poly_alloc(struct module *m, va_list vargs)
 	m->priv = (void *)this;
 
 	/* get the MIDI channel */
-	this->chan = va_arg(vargs, int);
+	this->ch = va_arg(vargs, int);
 
 	/* allocate the voices */
 	module_func new_voice = va_arg(vargs, module_func);

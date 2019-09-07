@@ -17,6 +17,7 @@ SRC = $(GGM)/src/core/block.c \
 	$(GGM)/src/module/delay/delay.c \
 	$(GGM)/src/module/env/adsr.c \
 	$(GGM)/src/module/filter/svf.c \
+	$(GGM)/src/module/midi/mono.c \
 	$(GGM)/src/module/midi/poly.c \
 	$(GGM)/src/module/mix/pan.c \
 	$(GGM)/src/module/osc/goom.c \

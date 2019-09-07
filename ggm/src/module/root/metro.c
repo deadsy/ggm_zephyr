@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: Apache-2.0
  *
  * This is the root patch for a metronome.
- *
  */
 
 #include "ggm.h"
@@ -46,7 +45,7 @@ static const uint8_t signature_4_4[] = {
 
 struct metro {
 	struct module *seq;     /* sequencer */
-	struct module *voice;   /* voice for audio output */
+	struct module *mono;    /* monophonic voice for audio output */
 	struct module *pan;     /* mix mono to stereo output */
 };
 
@@ -55,40 +54,19 @@ static struct module *voice_osc0(struct module *m, int id)
 	return module_new(m, "osc/sine", id);
 }
 
+static struct module *mono_voice0(struct module *m, int id)
+{
+	return module_new(m, "voice/osc", id, voice_osc0);
+}
+
 /******************************************************************************
  * module port functions
  */
 
 static void metro_port_midi(struct module *m, const struct event *e)
 {
-	struct metro *this = (struct metro *)m->priv;
-	bool consumed = synth_midi_cc(m->top, e);
-
-	/* did the synth level midi cc map dispatch the event? */
-	if (consumed) {
-		return;
-	}
-
-	if (!is_midi_ch(e, MIDI_CH)) {
-		return;
-	}
-
-	switch (event_get_midi_msg(e)) {
-
-	case MIDI_STATUS_NOTEON: {
-		uint8_t note = event_get_midi_note(e);
-		float vel = event_get_midi_velocity_float(e);
-		event_in_float(this->voice, "note", (float)note, NULL);
-		event_in_float(this->voice, "gate", vel, NULL);
-		break;
-	}
-
-	case MIDI_STATUS_NOTEOFF: {
-		event_in_float(this->voice, "gate", 0.f, NULL);
-		break;
-	}
-
-	}
+	/* consume external cc events */
+	synth_midi_cc(m->top, e);
 }
 
 /******************************************************************************
@@ -98,7 +76,7 @@ static void metro_port_midi(struct module *m, const struct event *e)
 static int metro_alloc(struct module *m, va_list vargs)
 {
 	struct module *seq = NULL;
-	struct module *voice = NULL;
+	struct module *mono = NULL;
 	struct module *pan = NULL;
 
 	/* allocate the private data */
@@ -124,12 +102,12 @@ static int metro_alloc(struct module *m, va_list vargs)
 	event_in_int(seq, "ctrl", SEQ_CTRL_START, NULL);
 	this->seq = seq;
 
-	/* voice */
-	voice = module_new(m, "voice/osc", -1, voice_osc0);
-	if (voice == NULL) {
+	/* mono */
+	mono = module_new(m, "midi/mono", -1, MIDI_CH, mono_voice0);
+	if (mono == NULL) {
 		goto error;
 	}
-	this->voice = voice;
+	this->mono = mono;
 
 	/* pan */
 	pan = module_new(m, "mix/pan", -1);
@@ -141,14 +119,14 @@ static int metro_alloc(struct module *m, va_list vargs)
 	/* forward the sequencer MIDI output to the MIDI output */
 	port_forward(seq, "midi", m, "midi");
 
-	/* connect the sequencer MIDI output to the MIDI input */
-	port_connect(seq, "midi", m, "midi");
+	/* connect the sequencer MIDI output to the mono MIDI input */
+	port_connect(seq, "midi", mono, "midi");
 
 	return 0;
 
 error:
 	module_del(seq);
-	module_del(voice);
+	module_del(mono);
 	module_del(pan);
 	ggm_free(this);
 	return -1;
@@ -159,7 +137,7 @@ static void metro_free(struct module *m)
 	struct metro *this = (struct metro *)m->priv;
 
 	module_del(this->seq);
-	module_del(this->voice);
+	module_del(this->mono);
 	module_del(this->pan);
 	ggm_free(this);
 }
@@ -168,12 +146,12 @@ static bool metro_process(struct module *m, float *bufs[])
 {
 	struct metro *this = (struct metro *)m->priv;
 	struct module *seq = this->seq;
-	struct module *voice = this->voice;
+	struct module *mono = this->mono;
 	float tmp[AudioBufferSize];
 
 	seq->info->process(seq, NULL);
 
-	bool active = voice->info->process(voice, (float *[]){ tmp, });
+	bool active = mono->info->process(mono, (float *[]){ tmp, });
 	if (active) {
 		struct module *pan = this->pan;
 		float *out0 = bufs[0];
