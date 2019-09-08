@@ -12,7 +12,28 @@
 #endif
 
 /******************************************************************************
- * Constants
+ * Root Module Port Number Limits.
+ */
+
+#define MAX_AUDIO_IN 2  /* max number of audio input ports */
+#define MAX_AUDIO_OUT 2 /* max number of audio output ports */
+#define MAX_MIDI_IN 1   /* max number of MIDI input ports */
+#define MAX_MIDI_OUT 1  /* max number of MIDI output ports */
+
+#define MAX_AUDIO_PORTS (MAX_AUDIO_IN + MAX_AUDIO_OUT)
+
+/******************************************************************************
+ * Audio Constants.
+ */
+
+/* AudioSampleFrequency is the sample frequency for audio (Hz) */
+#define AudioSampleFrequency (48000U)
+
+/* AudioBufferSize is the number of float samples per audio buffer */
+#define AudioBufferSize (128)
+
+/******************************************************************************
+ * Derived/Fundanmental Constants (don't modify).
  */
 
 /* Pi (3.14159...) */
@@ -21,14 +42,8 @@
 /* Tau (2 * Pi) */
 #define Tau (2.f * Pi)
 
-/* AudioSampleFrequency is the sample frequency for audio (Hz) */
-#define AudioSampleFrequency (48000U)
-
 /* AudioSamplePeriod is the sample period for audio (seconds) */
 #define AudioSamplePeriod (1.f / (float)AudioSampleFrequency)
-
-/* AudioBufferSize is the number of float samples per audio buffer */
-#define AudioBufferSize (128)
 
 /* SecsPerAudioBuffer is the audio duration for a single audio buffer */
 #define SecsPerAudioBuffer ((float)AudioBufferSize / (float)AudioSampleFrequency)

@@ -18,11 +18,6 @@
  * jack data
  */
 
-#define MAX_AUDIO_IN 4  /* maximum number of audio input ports */
-#define MAX_AUDIO_OUT 4 /* maximum number of audio output ports */
-#define MAX_MIDI_IN 4   /* maximum number of MIDI input ports */
-#define MAX_MIDI_OUT 4  /* maximum number of MIDI output ports */
-
 struct jack {
 	struct synth *synth;
 	jack_client_t *client;
@@ -34,6 +29,7 @@ struct jack {
 	jack_port_t *audio_out[MAX_AUDIO_OUT];  /* audio output jack ports */
 	jack_port_t *midi_in[MAX_MIDI_IN];      /* MIDI input jack ports */
 	jack_port_t *midi_out[MAX_MIDI_OUT];    /* MIDI output jack ports */
+	void *midi_out_buf[MAX_MIDI_OUT];       /* MIDI output buffers */
 	port_func midi_in_pf[MAX_MIDI_IN];      /* MIDI input port functions */
 };
 
@@ -185,6 +181,13 @@ static int jack_process(jack_nframes_t nframes, void *arg)
 		}
 	}
 
+	/* prepare the MIDI output buffers */
+	for (i = 0; i < j->n_midi_out; i++) {
+		void *buf = jack_port_get_buffer(j->midi_out[i], nframes);
+		jack_midi_clear_buffer(buf);
+		j->midi_out_buf[i] = buf;
+	}
+
 	/* read from the audio input buffers */
 	for (i = 0; i < j->n_audio_in; i++) {
 		float *buf = (float *)jack_port_get_buffer(j->audio_in[i], nframes);
@@ -205,13 +208,6 @@ static int jack_process(jack_nframes_t nframes, void *arg)
 		}
 	}
 
-	/* write MIDI output events */
-	for (i = 0; i < j->n_midi_out; i++) {
-		void *buf = jack_port_get_buffer(j->midi_out[i], nframes);
-		jack_midi_clear_buffer(buf);
-		/* TODO */
-	}
-
 	return 0;
 }
 
@@ -221,6 +217,20 @@ static void jack_shutdown(void *arg)
 {
 	LOG_INF("jackd stopped, exiting");
 	synth_running = false;
+}
+
+/******************************************************************************
+ * jack_midi_out is a called from the synth loop to send a MIDI
+ * message on a specific MIDI output port. It follows the midi_out_func
+ * prototype.
+ */
+
+static void jack_midi_out(void *arg, const struct event *e, int idx)
+{
+	struct jack *j = (struct jack *)arg;
+	void *buf = j->midi_out_buf[idx];
+
+	LOG_INF("midi out to %p", buf);
 }
 
 /******************************************************************************
@@ -263,8 +273,10 @@ static struct jack *jack_new(struct synth *s)
 		return NULL;
 	}
 
-	/* setup the synth link */
+	/* setup the synth/jack link */
 	j->synth = s;
+	s->driver = (void *)j;
+	s->mof = jack_midi_out;
 
 	/* count and check the in/out ports */
 	struct module *m = s->root;

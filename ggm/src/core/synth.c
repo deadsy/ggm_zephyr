@@ -104,10 +104,50 @@ void synth_del(struct synth *s)
  * will be the root module.
  */
 
-static void synth_midi_out(struct module *m, const struct event *e)
+#if MAX_MIDI_OUT >= 1
+static void synth_midi_out_0(struct module *m, const struct event *e)
 {
-	LOG_INF("TODO");
+	struct synth *s = m->top;
+
+	s->mof(s->driver, e, 0);
 }
+
+#elif MAX_MIDI_OUT >= 2
+static void synth_midi_out_1(struct module *m, const struct event *e)
+{
+	struct synth *s = m->top;
+
+	s->mof(s->driver, e, 1);
+}
+
+#elif MAX_MIDI_OUT >= 3
+static void synth_midi_out_2(struct module *m, const struct event *e)
+{
+	struct synth *s = m->top;
+
+	s->mof(s->driver, e, 2);
+}
+
+#elif MAX_MIDI_OUT >= 4
+static void synth_midi_out_3(struct module *m, const struct event *e)
+{
+	struct synth *s = m->top;
+
+	s->mof(s->driver, e, 3);
+}
+#endif
+
+static port_func synth_midi_out[MAX_MIDI_OUT] = {
+#if MAX_MIDI_OUT >= 1
+	synth_midi_out_0,
+#elif MAX_MIDI_OUT >= 2
+	synth_midi_out_1,
+#elif MAX_MIDI_OUT >= 3
+	synth_midi_out_2,
+#elif MAX_MIDI_OUT >= 4
+	synth_midi_out_3,
+#endif
+};
 
 /******************************************************************************
  * Incoming MIDI CC messages are sent directly to the sub-module(s) for which
@@ -289,13 +329,37 @@ bool synth_midi_cc(struct synth *s, const struct event *e)
 
 int synth_set_root(struct synth *s, struct module *m)
 {
+	int nports;
+
 	LOG_INF("%s", m->name);
+
+	/* TODO - test for unique input/output names */
+
+	/* check the number of MIDI input ports */
+	nports = port_count_by_type(m->info->in, PORT_TYPE_MIDI);
+	if (nports > MAX_MIDI_IN) {
+		LOG_ERR("number of MIDI input ports > MAX_MIDI_IN");
+		return -1;
+	}
+
+	/* check the number of MIDI output ports */
+	nports = port_count_by_type(m->info->out, PORT_TYPE_MIDI);
+	if (nports > MAX_MIDI_OUT) {
+		LOG_ERR("number of MIDI output ports > MAX_MIDI_OUT");
+		return -1;
+	}
+
+	/* hookup the MIDI output ports to the MIDI driver callback */
+	for (int i = 0; i < nports; i++) {
+		int idx = port_get_index_by_type(m->info->out, PORT_TYPE_MIDI, i);
+		port_add_dst(m, idx, m, synth_midi_out[i]);
+	}
 
 	/* how many audio buffers do we need? */
 	size_t nbufs = port_count_by_type(m->info->in, PORT_TYPE_AUDIO);
 	nbufs += port_count_by_type(m->info->out, PORT_TYPE_AUDIO);
-	if (nbufs > NUM_AUDIO_PORTS) {
-		LOG_ERR("number of audio input/output ports > NUM_AUDIO_PORTS");
+	if (nbufs > MAX_AUDIO_PORTS) {
+		LOG_ERR("number of audio input + output ports > MAX_AUDIO_PORTS");
 		return -1;
 	}
 
@@ -309,13 +373,6 @@ int synth_set_root(struct synth *s, struct module *m)
 	/* setup the audio buffer list */
 	for (size_t i = 0; i < nbufs; i++) {
 		s->bufs[i] = &buf[i * AudioBufferSize];
-	}
-
-	/* hookup up any MIDI output to the top-level callback */
-	/* TODO fix for n outputs */
-	int idx = port_get_index(m->info->out, "midi");
-	if (idx >= 0) {
-		port_add_dst(m, idx, m, synth_midi_out);
 	}
 
 	s->root = m;

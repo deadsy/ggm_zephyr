@@ -12,21 +12,8 @@
 #endif
 
 /******************************************************************************
- * MIDI control mapping
- * The MIDI map is a synth-level table that maps a MIDI channel/control-change
- * number onto a module:port path. A given ch/cc can map to mutiple
- * module ports, the MIDI message will be sent to all of them. The module:port
- * path can have wildcards (*,?) for cases where multiple sub-modules of the
- * same type have been created. E.g. polyphony.
+ * MIDI CC To Module Mapping
  */
-
-struct midi_cfg {
-	const char *path;       /* module:port path */
-	uint8_t ch;             /* MIDI channel */
-	uint8_t cc;             /* MIDI control number */
-};
-
-#define MIDI_CFG_EOL { NULL, 0, 0 }
 
 /* midi_map_entry records which module/port should have a MIDI cc message
  * sent to it.
@@ -51,8 +38,7 @@ struct midi_map {
  * top-level synth structure
  */
 
-#define NUM_EVENTS 16           /* must be a power of 2 */
-#define NUM_AUDIO_PORTS 8       /* max number of audio input/output ports for root patch */
+#define NUM_EVENTS 16 /* must be a power of 2 */
 
 struct qevent {
 	struct module *m;       /* source module */
@@ -71,8 +57,10 @@ struct synth {
 	struct module *root;                            /* root patch */
 	struct event_queue eq;                          /* input event queue */
 	const struct midi_cfg *mcfg;                    /* MIDI configuration */
+	midi_out_func mof;                              /* MIDI output callback */
+	void *driver;                                   /* pointer to audio/midi driver (E.g. jack) */
 	struct midi_map mmap[NUM_MIDI_MAP_SLOTS];       /* MIDI CC map */
-	float *bufs[NUM_AUDIO_PORTS];                   /* allocated audio buffers */
+	float *bufs[MAX_AUDIO_PORTS];                   /* allocated audio buffers */
 };
 
 /******************************************************************************

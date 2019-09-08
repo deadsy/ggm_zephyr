@@ -14,6 +14,23 @@
 #endif
 
 /******************************************************************************
+ * MIDI control mapping
+ * The MIDI map is a synth-level table that maps a MIDI channel/control-change
+ * number onto a module:port path. A given ch/cc can map to mutiple
+ * module ports, the MIDI message will be sent to all of them. The module:port
+ * path can have wildcards (*,?) for cases where multiple sub-modules of the
+ * same type have been created. E.g. polyphony.
+ */
+
+struct midi_cfg {
+	const char *path;       /* module:port path */
+	uint8_t ch;             /* MIDI channel */
+	uint8_t cc;             /* MIDI control number */
+};
+
+#define MIDI_CFG_EOL { NULL, 0, 0 }
+
+/******************************************************************************
  * Module Configuration
  */
 

@@ -43,6 +43,7 @@ struct event {
 
 typedef void (*port_func)(struct module *m, const struct event *e);
 typedef void (*midi_func)(struct event *dst, const struct event *src);
+typedef void (*midi_out_func)(void *arg, const struct event *e, int idx);
 
 void event_in(struct module *m, const char *name, const struct event *e, port_func *hdl);
 void event_out(struct module *m, int idx, const struct event *e);
