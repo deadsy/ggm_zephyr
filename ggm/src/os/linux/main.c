@@ -29,8 +29,8 @@ struct jack {
 	jack_port_t *audio_out[MAX_AUDIO_OUT];  /* audio output jack ports */
 	jack_port_t *midi_in[MAX_MIDI_IN];      /* MIDI input jack ports */
 	jack_port_t *midi_out[MAX_MIDI_OUT];    /* MIDI output jack ports */
-	void *midi_out_buf[MAX_MIDI_OUT];       /* MIDI output buffers */
 	port_func midi_in_pf[MAX_MIDI_IN];      /* MIDI input port functions */
+	void *midi_out_buf[MAX_MIDI_OUT];       /* MIDI output buffers */
 };
 
 /******************************************************************************
@@ -228,9 +228,15 @@ static void jack_shutdown(void *arg)
 static void jack_midi_out(void *arg, const struct event *e, int idx)
 {
 	struct jack *j = (struct jack *)arg;
-	void *buf = j->midi_out_buf[idx];
+	uint8_t *msg = jack_midi_event_reserve(j->midi_out_buf[idx], 0, 3);
 
-	LOG_INF("midi out to %p", buf);
+	if (msg) {
+		msg[0] = e->u.midi.status;
+		msg[1] = e->u.midi.arg0;
+		msg[2] = e->u.midi.arg1;
+	} else {
+		LOG_ERR("unable to output to midi_out_%d", idx);
+	}
 }
 
 /******************************************************************************
@@ -276,7 +282,7 @@ static struct jack *jack_new(struct synth *s)
 	/* setup the synth/jack link */
 	j->synth = s;
 	s->driver = (void *)j;
-	s->mof = jack_midi_out;
+	s->midi_out = jack_midi_out;
 
 	/* count and check the in/out ports */
 	struct module *m = s->root;

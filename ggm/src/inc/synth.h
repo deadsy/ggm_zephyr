@@ -57,7 +57,7 @@ struct synth {
 	struct module *root;                            /* root patch */
 	struct event_queue eq;                          /* input event queue */
 	const struct midi_cfg *mcfg;                    /* MIDI configuration */
-	midi_out_func mof;                              /* MIDI output callback */
+	midi_out_func midi_out;                         /* MIDI output callback */
 	void *driver;                                   /* pointer to audio/midi driver (E.g. jack) */
 	struct midi_map mmap[NUM_MIDI_MAP_SLOTS];       /* MIDI CC map */
 	float *bufs[MAX_AUDIO_PORTS];                   /* allocated audio buffers */

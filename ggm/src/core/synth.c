@@ -104,47 +104,53 @@ void synth_del(struct synth *s)
  * will be the root module.
  */
 
-#if MAX_MIDI_OUT >= 1
+#if MAX_MIDI_OUT > 0
 static void synth_midi_out_0(struct module *m, const struct event *e)
 {
 	struct synth *s = m->top;
 
-	s->mof(s->driver, e, 0);
+	s->midi_out(s->driver, e, 0);
 }
+#endif
 
-#elif MAX_MIDI_OUT >= 2
+#if MAX_MIDI_OUT > 1
 static void synth_midi_out_1(struct module *m, const struct event *e)
 {
 	struct synth *s = m->top;
 
-	s->mof(s->driver, e, 1);
+	s->midi_out(s->driver, e, 1);
 }
+#endif
 
-#elif MAX_MIDI_OUT >= 3
+#if MAX_MIDI_OUT > 2
 static void synth_midi_out_2(struct module *m, const struct event *e)
 {
 	struct synth *s = m->top;
 
-	s->mof(s->driver, e, 2);
+	s->midi_out(s->driver, e, 2);
 }
+#endif
 
-#elif MAX_MIDI_OUT >= 4
+#if MAX_MIDI_OUT > 3
 static void synth_midi_out_3(struct module *m, const struct event *e)
 {
 	struct synth *s = m->top;
 
-	s->mof(s->driver, e, 3);
+	s->midi_out(s->driver, e, 3);
 }
 #endif
 
 static port_func synth_midi_out[MAX_MIDI_OUT] = {
-#if MAX_MIDI_OUT >= 1
+#if MAX_MIDI_OUT > 0
 	synth_midi_out_0,
-#elif MAX_MIDI_OUT >= 2
+#endif
+#if MAX_MIDI_OUT > 1
 	synth_midi_out_1,
-#elif MAX_MIDI_OUT >= 3
+#endif
+#if MAX_MIDI_OUT > 2
 	synth_midi_out_2,
-#elif MAX_MIDI_OUT >= 4
+#endif
+#if MAX_MIDI_OUT > 3
 	synth_midi_out_3,
 #endif
 };
