@@ -108,7 +108,7 @@ static void osc_free(struct module *m)
 
 	module_del(this->osc);
 	module_del(this->adsr);
-	ggm_free(m->priv);
+	ggm_free(this);
 }
 
 static bool osc_process(struct module *m, float *buf[])

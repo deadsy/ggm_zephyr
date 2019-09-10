@@ -25,6 +25,7 @@ extern struct module_info pm_breath_module;
 extern struct module_info root_metro_module;
 extern struct module_info root_poly_module;
 extern struct module_info seq_seq_module;
+extern struct module_info voice_goom_module;
 extern struct module_info voice_osc_module;
 #if defined(__LINUX__)
 extern struct module_info view_plot_module;
@@ -47,6 +48,7 @@ static const struct module_info *module_list[] = {
 	&root_metro_module,
 	&root_poly_module,
 	&seq_seq_module,
+	&voice_goom_module,
 	&voice_osc_module,
 #if defined(__LINUX__)
 	&view_plot_module,
