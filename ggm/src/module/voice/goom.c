@@ -130,10 +130,10 @@ static bool goom_process(struct module *m, float *bufs[])
 	bool active = amp_env->info->process(amp_env, (float *[]){ env, });
 
 	if (active) {
-		//struct module *lpf_env = this->lpf_env;
-		//struct module *osc = this->osc;
-		//struct module *lpf = this->lpf;
-		//float *out = bufs[0];
+		// struct module *lpf_env = this->lpf_env;
+		// struct module *osc = this->osc;
+		// struct module *lpf = this->lpf;
+		// float *out = bufs[0];
 
 	}
 

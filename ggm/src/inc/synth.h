@@ -28,11 +28,9 @@ struct midi_map_entry {
 
 /* midi_map records the set of modules/ports mapped to a given ch/cc value */
 struct midi_map {
-	int id;                                                 /* MIDI channel/cc identifier */
+	int id;                                                 /* MIDI channel/cc id */
 	struct midi_map_entry mme[NUM_MIDI_MAP_ENTRIES];        /* map entries for this CC */
 };
-
-#define MIDI_MAP_ID(ch, cc) (((ch) << 16) | ((cc) << 8) | 255)
 
 /******************************************************************************
  * top-level synth structure
@@ -56,7 +54,7 @@ struct event_queue {
 struct synth {
 	struct module *root;                            /* root patch */
 	struct event_queue eq;                          /* input event queue */
-	const struct midi_cfg *mcfg;                    /* MIDI configuration */
+	const struct synth_cfg *cfg;                    /* module configuration */
 	midi_out_func midi_out;                         /* MIDI output callback */
 	void *driver;                                   /* pointer to audio/midi driver (E.g. jack) */
 	struct midi_map mmap[NUM_MIDI_MAP_SLOTS];       /* MIDI CC map */
@@ -74,7 +72,7 @@ bool synth_has_root(struct synth *s);
 bool synth_loop(struct synth *s);
 int synth_event_wr(struct synth *s, struct module *m, int idx, const struct event *e);
 
-int synth_set_midi_cfg(struct synth *s, const struct midi_cfg *cfg);
+int synth_set_cfg(struct synth *s, const struct synth_cfg *cfg);
 void synth_lookup_midi_cfg(struct synth *s, struct module *m, const struct port_info *pi);
 bool synth_midi_cc(struct synth *s, const struct event *e);
 

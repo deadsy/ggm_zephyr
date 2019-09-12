@@ -16,14 +16,20 @@
 
 #define MIDI_CH 0
 
-static const struct midi_cfg mcfg[] = {
-	{ "root.mono.voice.adsr:attack", MIDI_CH, 1 },
-	{ "root.mono.voice.adsr:decay", MIDI_CH, 2 },
-	{ "root.mono.voice.adsr:sustain", MIDI_CH, 3 },
-	{ "root.mono.voice.adsr:release", MIDI_CH, 4 },
-	{ "root.seq:bpm", MIDI_CH, 7 },
-	{ "root.pan:vol", MIDI_CH, 8 },
-	MIDI_CFG_EOL
+static const struct synth_cfg cfg[] = {
+	{ "root.mono.voice.adsr:attack",
+	  &(struct port_float_cfg){ .init = 0.2f, .id = MIDI_ID(MIDI_CH, 1), }, },
+	{ "root.mono.voice.adsr:decay",
+	  &(struct port_float_cfg){ .init = 0.1f, .id = MIDI_ID(MIDI_CH, 2), }, },
+	{ "root.mono.voice.adsr:sustain",
+	  &(struct port_float_cfg){ .init = 0.3f, .id = MIDI_ID(MIDI_CH, 3), }, },
+	{ "root.mono.voice.adsr:release",
+	  &(struct port_float_cfg){ .init = 0.3f, .id = MIDI_ID(MIDI_CH, 4), }, },
+	{ "root.seq:bpm",
+	  &(struct port_float_cfg){ .init = 60.f, .id = MIDI_ID(MIDI_CH, 7), }, },
+	{ "root.pan:vol",
+	  &(struct port_float_cfg){ .init = 0.8f, .id = MIDI_ID(MIDI_CH, 8), }, },
+	SYNTH_CFG_EOL
 };
 
 /******************************************************************************
@@ -91,8 +97,8 @@ static int metro_alloc(struct module *m, va_list vargs)
 	}
 	m->priv = (void *)this;
 
-	/* Set the synth MIDI map */
-	int err = synth_set_midi_cfg(m->top, mcfg);
+	/* set the synth configuration */
+	int err = synth_set_cfg(m->top, cfg);
 	if (err < 0) {
 		goto error;
 	}

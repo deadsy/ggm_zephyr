@@ -14,32 +14,15 @@
 #endif
 
 /******************************************************************************
- * MIDI control mapping
- * The MIDI map is a synth-level table that maps a MIDI channel/control-change
- * number onto a module:port path. A given ch/cc can map to mutiple
- * module ports, the MIDI message will be sent to all of them. The module:port
- * path can have wildcards (*,?) for cases where multiple sub-modules of the
- * same type have been created. E.g. polyphony.
- */
-
-struct midi_cfg {
-	const char *path;       /* module:port path */
-	uint8_t ch;             /* MIDI channel */
-	uint8_t cc;             /* MIDI control number */
-};
-
-#define MIDI_CFG_EOL { NULL, 0, 0 }
-
-/******************************************************************************
  * Module Configuration
  */
 
-struct module_cfg {
+struct synth_cfg {
 	const char *path;       /* path name to module or module:port */
 	const void *cfg;        /* pointer to item config structure */
 };
 
-#define MODULE_CFG_EOL { NULL, NULL }
+#define SYNTH_CFG_EOL { NULL, NULL }
 
 /******************************************************************************
  * Port Configuration
@@ -47,24 +30,26 @@ struct module_cfg {
 
 /* port_float_cfg defines the configuration for a port with float events */
 struct port_float_cfg {
-	float initial;  /* initial value */
-	int cc;         /* MIDI channel/cc config */
+	float init;     /* initial value */
+	int id;         /* MIDI channel/cc id */
 };
 
 struct port_int_cfg {
-	int initial;    /* initial value */
-	int cc;         /* MIDI channel/cc config */
+	int init;       /* initial value */
+	int id;         /* MIDI channel/cc id */
 };
 
 struct port_bool_cfg {
-	bool initial;   /* initial value */
-	int cc;         /* MIDI channel/cc config */
+	bool init;      /* initial value */
+	int id;         /* MIDI channel/cc id */
 };
 
 /* MIDI_CC encodes the MIDI channel and CC number as an integer.
  * A value of 0 means MIDI CC is not configured for the port.
  */
-#define MIDI_CC(ch, cc) (((ch) << 16) | ((cc) << 8) | 255)
+#define MIDI_ID(ch, cc) (((ch) << 16) | ((cc) << 8) | 255)
+#define MIDI_ID_CC(id) ((id >> 8) & 255)
+#define MIDI_ID_CH(id) ((id >> 16) & 255)
 
 /*****************************************************************************/
 

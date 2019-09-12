@@ -161,52 +161,49 @@ static port_func synth_midi_out[MAX_MIDI_OUT] = {
  * channel:cc numbers.
  */
 
-/* synth_midi_cfg sets the top-level synth MIDI map configuration */
-int synth_set_midi_cfg(struct synth *s, const struct midi_cfg *cfg)
+/* synth_module_cfg sets the top-level synth MIDI map configuration */
+int synth_set_cfg(struct synth *s, const struct synth_cfg *cfg)
 {
-	if (s == NULL) {
-		LOG_ERR("no top-level synth");
-		goto error;
-	}
-
 	if (cfg == NULL) {
-		LOG_ERR("midi cfg null");
-		goto error;
+		LOG_ERR("synth cfg null");
+		return -1;
 	}
-
-	if (s->mcfg != NULL) {
-		LOG_ERR("midi cfg already set");
-		goto error;
+	if (s->cfg != NULL) {
+		LOG_ERR("synth cfg already set");
+		return -1;
 	}
-
-	s->mcfg = cfg;
-
-	/* count the entries */
-	const struct midi_cfg *mc = s->mcfg;
-	int n = 0;
-	while (mc->path != NULL) {
-		n += 1;
-		mc++;
-	}
-	if (n == 0) {
-		LOG_ERR("midi cfg empty");
-		goto error;
-	}
-
+	s->cfg = cfg;
 	return 0;
-
-error:
-	s->mcfg = NULL;
-	return -1;
 }
+
+/* synth_lookup_cfg looks for a path match in the synth configuration.
+ * If a match is found it returns the configuration structure pointer.
+ */
+static const void *synth_lookup_cfg(struct synth *s, const char *path)
+{
+	const struct synth_cfg *sc = s->cfg;
+
+	while (sc->path != NULL) {
+		if (match(sc->path, path)) {
+			return sc->cfg;
+		}
+		sc++;
+	}
+	return NULL;
+}
+
+/******************************************************************************
+ * Incoming MIDI CC messages are sent directly to the sub-module(s) for which
+ * they are relevant. The map is between a module:port path and the MIDI
+ * channel:cc numbers.
+ */
 
 /* synth_lookup_midi_map looks for the given ch/cc values in the MIDI map.
  * If alloc is true it will return a pointer to a new slot (if available).
  */
-static struct midi_map *synth_lookup_midi_map(struct synth *s, uint8_t ch, uint8_t cc, bool alloc)
+static struct midi_map *synth_lookup_midi_map(struct synth *s, int id, bool alloc)
 {
 	struct midi_map *mm = &s->mmap[0];
-	int id = MIDI_MAP_ID(ch, cc);
 
 	for (int i = 0; i < NUM_MIDI_MAP_SLOTS; i++) {
 		/* does this slot match? */
@@ -241,7 +238,7 @@ static struct midi_map_entry *synth_alloc_midi_map_entry(struct midi_map *mm)
 	return NULL;
 }
 
-/* synth_lookup_midi_map looks for a given module:port name in the MIDI map.
+/* synth_lookup_midi_cfg looks for a given module:port name in the MIDI map.
  * If there is match the port and module information is cached in the top-level synth
  * so MIDI messages can be sent directly to the port.
  */
@@ -258,22 +255,31 @@ void synth_lookup_midi_cfg(struct synth *s, struct module *m, const struct port_
 	char path[128];
 	snprintf(path, sizeof(path), "%s:%s", m->name, pi->name);
 
-	/* look for a match in the MIDI configuration */
-	const struct midi_cfg *mc = s->mcfg;
-	while (mc->path != NULL) {
-		if (match(mc->path, path)) {
-			break;
-		}
-		mc++;
-	}
-
-	if (mc->path == NULL) {
+	/* look for a match in the synth configuration */
+	const void *cfg = synth_lookup_cfg(s, path);
+	if (cfg == NULL) {
 		// LOG_DBG("%s not found", path);
 		return;
 	}
 
+	int id;
+	switch (pi->type) {
+	case PORT_TYPE_FLOAT:
+		id = ((struct port_float_cfg *)cfg)->id;
+		break;
+	case PORT_TYPE_INT:
+		id = ((struct port_int_cfg *)cfg)->id;
+		break;
+	case PORT_TYPE_BOOL:
+		id = ((struct port_bool_cfg *)cfg)->id;
+		break;
+	default:
+		LOG_ERR("%s wrong port type for midi cc mapping", path);
+		return;
+	}
+
 	/* find the midi map entry slot */
-	struct midi_map *mm = synth_lookup_midi_map(s, mc->ch, mc->cc, true);
+	struct midi_map *mm = synth_lookup_midi_map(s, id, true);
 	if (mm == NULL) {
 		LOG_ERR("not enough midi map slots (NUM_MIDI_MAP_SLOTS)");
 		return;
@@ -289,7 +295,7 @@ void synth_lookup_midi_cfg(struct synth *s, struct module *m, const struct port_
 	/* fill in the midi map entry */
 	mme->m = m;
 	mme->pi = pi;
-	LOG_DBG("%s mapped to ch %d cc %d", path, mc->ch, mc->cc);
+	LOG_DBG("%s mapped to ch %d cc %d", path, MIDI_ID_CH(id), MIDI_ID_CC(id));
 }
 
 /* synth_midi_cc looks up the midi mapping table.
@@ -301,11 +307,11 @@ bool synth_midi_cc(struct synth *s, const struct event *e)
 	if (!is_midi_cc(e)) {
 		return false;
 	}
-	uint8_t ch = event_get_midi_channel(e);
-	uint8_t cc = event_get_midi_cc_num(e);
+
+	int id = MIDI_ID(event_get_midi_channel(e), event_get_midi_cc_num(e));
 
 	/* find the midi map entry slot */
-	struct midi_map *mm = synth_lookup_midi_map(s, ch, cc, false);
+	struct midi_map *mm = synth_lookup_midi_map(s, id, false);
 	if (mm == NULL) {
 		return false;
 	}

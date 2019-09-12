@@ -11,16 +11,22 @@
  * MIDI setup
  */
 
-#define MIDI_CHAN 0
+#define MIDI_CH 0
 
-static const struct midi_cfg mcfg[] = {
-	{ "root.poly.voice*.adsr:attack", MIDI_CHAN, 1 },
-	{ "root.poly.voice*.adsr:decay", MIDI_CHAN, 2 },
-	{ "root.poly.voice*.adsr:sustain", MIDI_CHAN, 3 },
-	{ "root.poly.voice*.adsr:release", MIDI_CHAN, 4 },
-	{ "root.pan:pan", MIDI_CHAN, 7 },
-	{ "root.pan:vol", MIDI_CHAN, 8 },
-	MIDI_CFG_EOL
+static const struct synth_cfg cfg[] = {
+	{ "root.poly.voice*.adsr:attack",
+	  &(struct port_float_cfg){ .init = 0.2f, .id = MIDI_ID(MIDI_CH, 1), }, },
+	{ "root.poly.voice*.adsr:decay",
+	  &(struct port_float_cfg){ .init = 0.1f, .id = MIDI_ID(MIDI_CH, 2), }, },
+	{ "root.poly.voice*.adsr:sustain",
+	  &(struct port_float_cfg){ .init = 0.3f, .id = MIDI_ID(MIDI_CH, 3), }, },
+	{ "root.poly.voice*.adsr:release",
+	  &(struct port_float_cfg){ .init = 0.3f, .id = MIDI_ID(MIDI_CH, 4), }, },
+	{ "root.pan:pan",
+	  &(struct port_float_cfg){ .init = 0.5f, .id = MIDI_ID(MIDI_CH, 7), }, },
+	{ "root.pan:vol",
+	  &(struct port_float_cfg){ .init = 0.8f, .id = MIDI_ID(MIDI_CH, 8), }, },
+	SYNTH_CFG_EOL
 };
 
 /******************************************************************************
@@ -93,14 +99,14 @@ static int poly_alloc(struct module *m, va_list vargs)
 	}
 	m->priv = (void *)this;
 
-	/* Set the synth MIDI map */
-	int err = synth_set_midi_cfg(m->top, mcfg);
+	/* set the synth configuration */
+	int err = synth_set_cfg(m->top, cfg);
 	if (err < 0) {
 		goto error;
 	}
 
 	/* polyphony */
-	poly = module_new(m, "midi/poly", -1, MIDI_CHAN, poly_voice0);
+	poly = module_new(m, "midi/poly", -1, MIDI_CH, poly_voice0);
 	if (poly == NULL) {
 		goto error;
 	}
