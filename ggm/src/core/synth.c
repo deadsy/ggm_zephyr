@@ -238,65 +238,6 @@ static struct midi_map_entry *synth_alloc_midi_map_entry(struct midi_map *mm)
 	return NULL;
 }
 
-/* synth_lookup_midi_cfg looks for a given module:port name in the MIDI map.
- * If there is match the port and module information is cached in the top-level synth
- * so MIDI messages can be sent directly to the port.
- */
-void synth_lookup_midi_cfg(struct synth *s, struct module *m, const struct port_info *pi)
-{
-	if (pi->mf == NULL) {
-		/* The port has no MIDI function to convert a MIDI event
-		 * into a port event, ignore it.
-		 */
-		return;
-	}
-
-	/* build the full module:port name*/
-	char path[128];
-	snprintf(path, sizeof(path), "%s:%s", m->name, pi->name);
-
-	/* look for a match in the synth configuration */
-	const void *cfg = synth_lookup_cfg(s, path);
-	if (cfg == NULL) {
-		// LOG_DBG("%s not found", path);
-		return;
-	}
-
-	int id;
-	switch (pi->type) {
-	case PORT_TYPE_FLOAT:
-		id = ((struct port_float_cfg *)cfg)->id;
-		break;
-	case PORT_TYPE_INT:
-		id = ((struct port_int_cfg *)cfg)->id;
-		break;
-	case PORT_TYPE_BOOL:
-		id = ((struct port_bool_cfg *)cfg)->id;
-		break;
-	default:
-		LOG_ERR("%s wrong port type for midi cc mapping", path);
-		return;
-	}
-
-	/* find the midi map entry slot */
-	struct midi_map *mm = synth_lookup_midi_map(s, id, true);
-	if (mm == NULL) {
-		LOG_ERR("not enough midi map slots (NUM_MIDI_MAP_SLOTS)");
-		return;
-	}
-
-	/* allocate a midi map entry */
-	struct midi_map_entry *mme = synth_alloc_midi_map_entry(mm);
-	if (mme == NULL) {
-		LOG_ERR("not enough midi map entries (NUM_MIDI_MAP_ENTRIES)");
-		return;
-	}
-
-	/* fill in the midi map entry */
-	mme->m = m;
-	mme->pi = pi;
-	LOG_DBG("%s mapped to ch %d cc %d", path, MIDI_ID_CH(id), MIDI_ID_CC(id));
-}
 
 /* synth_midi_cc looks up the midi mapping table.
  * If it finds a matching entry the event is dispatched
@@ -333,6 +274,86 @@ bool synth_midi_cc(struct synth *s, const struct event *e)
 	}
 
 	return true;
+}
+
+/******************************************************************************
+ * synth_input_cfg configures the input port of a module
+ */
+
+void synth_input_cfg(struct synth *s, struct module *m, const struct port_info *pi)
+{
+	/* build the full module:port name*/
+	char path[128];
+
+	snprintf(path, sizeof(path), "%s:%s", m->name, pi->name);
+
+	/* look for a match in the top-level synth configuration */
+	const void *ptr = synth_lookup_cfg(s, path);
+	if (ptr == NULL) {
+		// LOG_DBG("%s not found", path);
+		return;
+	}
+
+	/* send events for the initial configuration to the port */
+
+	int id = 0; /* MIDI ch/cc id */
+	switch (pi->type) {
+	case PORT_TYPE_FLOAT: {
+		struct port_float_cfg *cfg = (struct port_float_cfg *)ptr;
+		id = cfg->id;
+		event_in_float(m, pi->name, cfg->init, NULL);
+		break;
+	}
+	case PORT_TYPE_INT: {
+		struct port_int_cfg *cfg = (struct port_int_cfg *)ptr;
+		id = cfg->id;
+		event_in_int(m, pi->name, cfg->init, NULL);
+		break;
+	}
+	case PORT_TYPE_BOOL: {
+		struct port_bool_cfg *cfg = (struct port_bool_cfg *)ptr;
+		id = cfg->id;
+		event_in_bool(m, pi->name, cfg->init, NULL);
+		break;
+	}
+	default:
+		LOG_ERR("is this port configurable? %s", path);
+		return;
+	}
+
+	/* now setup the MIDI cc mapping */
+
+	if (id == 0) {
+		/* We're not using MIDI cc for this input port */
+		return;
+	}
+
+	if (pi->mf == NULL) {
+		/* The port has no MIDI function to convert a MIDI event
+		 * into a port event, ignore it.
+		 */
+		LOG_ERR("trying to use MIDI cc on port without a MIDI function");
+		return;
+	}
+
+	/* find the midi map entry slot */
+	struct midi_map *mm = synth_lookup_midi_map(s, id, true);
+	if (mm == NULL) {
+		LOG_ERR("not enough midi map slots (NUM_MIDI_MAP_SLOTS)");
+		return;
+	}
+
+	/* allocate a midi map entry */
+	struct midi_map_entry *mme = synth_alloc_midi_map_entry(mm);
+	if (mme == NULL) {
+		LOG_ERR("not enough midi map entries (NUM_MIDI_MAP_ENTRIES)");
+		return;
+	}
+
+	/* fill in the midi map entry */
+	mme->m = m;
+	mme->pi = pi;
+	LOG_DBG("%s mapped to ch %d cc %d", path, MIDI_ID_CH(id), MIDI_ID_CC(id));
 }
 
 /******************************************************************************

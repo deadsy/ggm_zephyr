@@ -18,13 +18,13 @@
 
 static const struct synth_cfg cfg[] = {
 	{ "root.mono.voice.adsr:attack",
-	  &(struct port_float_cfg){ .init = 0.2f, .id = MIDI_ID(MIDI_CH, 1), }, },
+	  &(struct port_float_cfg){ .init = 0.1f, .id = MIDI_ID(MIDI_CH, 1), }, },
 	{ "root.mono.voice.adsr:decay",
-	  &(struct port_float_cfg){ .init = 0.1f, .id = MIDI_ID(MIDI_CH, 2), }, },
+	  &(struct port_float_cfg){ .init = 0.5f, .id = MIDI_ID(MIDI_CH, 2), }, },
 	{ "root.mono.voice.adsr:sustain",
-	  &(struct port_float_cfg){ .init = 0.3f, .id = MIDI_ID(MIDI_CH, 3), }, },
+	  &(struct port_float_cfg){ .init = 0.8f, .id = MIDI_ID(MIDI_CH, 3), }, },
 	{ "root.mono.voice.adsr:release",
-	  &(struct port_float_cfg){ .init = 0.3f, .id = MIDI_ID(MIDI_CH, 4), }, },
+	  &(struct port_float_cfg){ .init = 1.f, .id = MIDI_ID(MIDI_CH, 4), }, },
 	{ "root.seq:bpm",
 	  &(struct port_float_cfg){ .init = 60.f, .id = MIDI_ID(MIDI_CH, 7), }, },
 	{ "root.pan:vol",

@@ -54,7 +54,7 @@ struct event_queue {
 struct synth {
 	struct module *root;                            /* root patch */
 	struct event_queue eq;                          /* input event queue */
-	const struct synth_cfg *cfg;                    /* module configuration */
+	const struct synth_cfg *cfg;                    /* top-level module configuration */
 	midi_out_func midi_out;                         /* MIDI output callback */
 	void *driver;                                   /* pointer to audio/midi driver (E.g. jack) */
 	struct midi_map mmap[NUM_MIDI_MAP_SLOTS];       /* MIDI CC map */
@@ -73,7 +73,7 @@ bool synth_loop(struct synth *s);
 int synth_event_wr(struct synth *s, struct module *m, int idx, const struct event *e);
 
 int synth_set_cfg(struct synth *s, const struct synth_cfg *cfg);
-void synth_lookup_midi_cfg(struct synth *s, struct module *m, const struct port_info *pi);
+void synth_input_cfg(struct synth *s, struct module *m, const struct port_info *pi);
 bool synth_midi_cc(struct synth *s, const struct event *e);
 
 /*****************************************************************************/
