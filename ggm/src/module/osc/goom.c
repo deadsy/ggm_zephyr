@@ -92,6 +92,22 @@ static void goom_set_frequency(struct module *m, float freq)
 }
 
 /******************************************************************************
+ * MIDI to port event conversion functions
+ */
+
+static void goom_midi_duty(struct event *dst, const struct event *src)
+{
+	/* 0..1 */
+	event_set_float(dst, event_get_midi_cc_float(src));
+}
+
+static void goom_midi_slope(struct event *dst, const struct event *src)
+{
+	/* 0..1 */
+	event_set_float(dst, event_get_midi_cc_float(src));
+}
+
+/******************************************************************************
  * module port functions
  */
 
@@ -196,8 +212,8 @@ static bool goom_process(struct module *m, float *bufs[])
 static const struct port_info in_ports[] = {
 	{ .name = "frequency", .type = PORT_TYPE_FLOAT, .pf = goom_port_frequency },
 	{ .name = "note", .type = PORT_TYPE_FLOAT, .pf = goom_port_note },
-	{ .name = "duty", .type = PORT_TYPE_FLOAT, .pf = goom_port_duty },
-	{ .name = "slope", .type = PORT_TYPE_FLOAT, .pf = goom_port_slope },
+	{ .name = "duty", .type = PORT_TYPE_FLOAT, .pf = goom_port_duty, .mf = goom_midi_duty },
+	{ .name = "slope", .type = PORT_TYPE_FLOAT, .pf = goom_port_slope, .mf = goom_midi_slope },
 	{ .name = "reset", .type = PORT_TYPE_BOOL, .pf = goom_port_reset },
 	PORT_EOL,
 };

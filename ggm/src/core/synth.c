@@ -332,7 +332,7 @@ void synth_input_cfg(struct synth *s, struct module *m, const struct port_info *
 		/* The port has no MIDI function to convert a MIDI event
 		 * into a port event, ignore it.
 		 */
-		LOG_ERR("trying to use MIDI cc on port without a MIDI function");
+		LOG_ERR("%s doesn't have a MIDI function", path);
 		return;
 	}
 
@@ -353,7 +353,7 @@ void synth_input_cfg(struct synth *s, struct module *m, const struct port_info *
 	/* fill in the midi map entry */
 	mme->m = m;
 	mme->pi = pi;
-	LOG_DBG("%s mapped to ch %d cc %d", path, MIDI_ID_CH(id), MIDI_ID_CC(id));
+	LOG_DBG("%s mapped to cc %d/%d", path, MIDI_ID_CH(id), MIDI_ID_CC(id));
 }
 
 /******************************************************************************

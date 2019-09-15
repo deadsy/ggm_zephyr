@@ -97,6 +97,19 @@ static void ks_zero_buffer(struct module *m)
 }
 
 /******************************************************************************
+ * MIDI to port event conversion functions
+ */
+
+static void ks_midi_attenuation(struct event *dst, const struct event *src)
+{
+	/* 0.75 to 1.0 */
+	float x = event_get_midi_cc_float(src);
+
+	x = map_lin(x, 0.75f, 1.f);
+	event_set_float(dst, x);
+}
+
+/******************************************************************************
  * module port functions
  */
 
@@ -135,8 +148,8 @@ static void ks_port_attenuation(struct module *m, const struct event *e)
 	struct ks *this = (struct ks *)m->priv;
 	float attenuation = clampf(event_get_float(e), 0.f, 1.f);
 
-	LOG_DBG("%s atennuation %f", m->name, attenuation);
-	this->kval[KS_STATE_PLUCKED] = 0.5f * attenuation;
+	LOG_DBG("%s attenuation %f", m->name, attenuation);
+	this->kval[KS_STATE_PLUCKED] = 0.5 * attenuation;
 }
 
 static void ks_port_frequency(struct module *m, const struct event *e)
@@ -221,7 +234,7 @@ static const struct port_info in_ports[] = {
 	{ .name = "gate", .type = PORT_TYPE_FLOAT, .pf = ks_port_gate },
 	{ .name = "note", .type = PORT_TYPE_FLOAT, .pf = ks_port_note },
 	{ .name = "frequency", .type = PORT_TYPE_FLOAT, .pf = ks_port_frequency },
-	{ .name = "attenuation", .type = PORT_TYPE_FLOAT, .pf = ks_port_attenuation },
+	{ .name = "attenuation", .type = PORT_TYPE_FLOAT, .pf = ks_port_attenuation, .mf = ks_midi_attenuation, },
 	PORT_EOL,
 };
 

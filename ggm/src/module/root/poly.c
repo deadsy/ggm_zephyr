@@ -13,6 +13,50 @@
 
 #define MIDI_CH 0
 
+#define SYNTH_SIMPLE_GOOM
+
+/******************************************************************************
+ * polyphonic synth with envelope on goom wave oscillator
+ */
+
+#if defined(SYNTH_SIMPLE_GOOM)
+
+static const struct synth_cfg cfg[] = {
+	{ "root.poly.voice*.adsr:attack",
+	  &(struct port_float_cfg){ .init = 0.2f, .id = MIDI_ID(MIDI_CH, 1), }, },
+	{ "root.poly.voice*.adsr:decay",
+	  &(struct port_float_cfg){ .init = 0.1f, .id = MIDI_ID(MIDI_CH, 2), }, },
+	{ "root.poly.voice*.adsr:sustain",
+	  &(struct port_float_cfg){ .init = 0.3f, .id = MIDI_ID(MIDI_CH, 3), }, },
+	{ "root.poly.voice*.adsr:release",
+	  &(struct port_float_cfg){ .init = 0.3f, .id = MIDI_ID(MIDI_CH, 4), }, },
+	{ "root.poly.voice*.goom:duty",
+	  &(struct port_float_cfg){ .init = 0.5f, .id = MIDI_ID(MIDI_CH, 5), }, },
+	{ "root.poly.voice*.goom:slope",
+	  &(struct port_float_cfg){ .init = 0.5f, .id = MIDI_ID(MIDI_CH, 6), }, },
+	{ "root.pan:pan",
+	  &(struct port_float_cfg){ .init = 0.5f, .id = MIDI_ID(MIDI_CH, 7), }, },
+	{ "root.pan:vol",
+	  &(struct port_float_cfg){ .init = 0.8f, .id = MIDI_ID(MIDI_CH, 8), }, },
+	SYNTH_CFG_EOL
+};
+
+static struct module *voice_osc(struct module *m, int id)
+{
+	return module_new(m, "osc/goom", id);
+}
+
+static struct module *poly_voice(struct module *m, int id)
+{
+	return module_new(m, "voice/osc", id, voice_osc);
+}
+
+/******************************************************************************
+ * polyphonic synth with envelope on sine wave oscillator
+ */
+
+#elif defined(SYNTH_SIMPLE_SINE)
+
 static const struct synth_cfg cfg[] = {
 	{ "root.poly.voice*.adsr:attack",
 	  &(struct port_float_cfg){ .init = 0.2f, .id = MIDI_ID(MIDI_CH, 1), }, },
@@ -29,6 +73,41 @@ static const struct synth_cfg cfg[] = {
 	SYNTH_CFG_EOL
 };
 
+static struct module *voice_osc(struct module *m, int id)
+{
+	return module_new(m, "osc/sine", id);
+}
+
+static struct module *poly_voice(struct module *m, int id)
+{
+	return module_new(m, "voice/osc", id, voice_osc);
+}
+
+/******************************************************************************
+ * polyphonic synth with karplus-strong voices
+ */
+
+#elif defined(SYNTH_KS)
+
+static const struct synth_cfg cfg[] = {
+	{ "root.poly.ks*:attenuation",
+	  &(struct port_float_cfg){ .init = 1.f, .id = MIDI_ID(MIDI_CH, 1), }, },
+	{ "root.pan:pan",
+	  &(struct port_float_cfg){ .init = 0.5f, .id = MIDI_ID(MIDI_CH, 7), }, },
+	{ "root.pan:vol",
+	  &(struct port_float_cfg){ .init = 0.8f, .id = MIDI_ID(MIDI_CH, 8), }, },
+	SYNTH_CFG_EOL
+};
+
+static struct module *poly_voice(struct module *m, int id)
+{
+	return module_new(m, "osc/ks", id);
+}
+
+#else
+#error "please define a synth configuration"
+#endif
+
 /******************************************************************************
  * private state
  */
@@ -37,30 +116,6 @@ struct poly {
 	struct module *poly;    /* polyphonic control */
 	struct module *pan;     /* ouput left/right panning */
 };
-
-/******************************************************************************
- * polyphonic voice (module_func signature)
- */
-
-struct module *voice_osc0(struct module *m, int id)
-{
-	return module_new(m, "osc/goom", id);
-}
-
-struct module *voice_osc1(struct module *m, int id)
-{
-	return module_new(m, "osc/noise", id, NOISE_TYPE_BROWN);
-}
-
-struct module *poly_voice0(struct module *m, int id)
-{
-	return module_new(m, "voice/osc", id, voice_osc0);
-}
-
-struct module *poly_voice1(struct module *m, int id)
-{
-	return module_new(m, "osc/ks", id);
-}
 
 /******************************************************************************
  * module port functions
@@ -106,7 +161,7 @@ static int poly_alloc(struct module *m, va_list vargs)
 	}
 
 	/* polyphony */
-	poly = module_new(m, "midi/poly", -1, MIDI_CH, poly_voice0);
+	poly = module_new(m, "midi/poly", -1, MIDI_CH, poly_voice);
 	if (poly == NULL) {
 		goto error;
 	}

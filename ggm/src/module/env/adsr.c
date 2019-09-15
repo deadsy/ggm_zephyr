@@ -75,14 +75,14 @@ static void adsr_midi_decay(struct event *dst, const struct event *src)
 
 static void adsr_midi_sustain(struct event *dst, const struct event *src)
 {
-	/* 0..1 */
+	/* 0..1 level*/
 	event_set_float(dst, event_get_midi_cc_float(src));
 }
 
 static void adsr_midi_release(struct event *dst, const struct event *src)
 {
-	/* 0..5 secs */
-	event_set_float(dst, 5.f * event_get_midi_cc_float(src));
+	/* 0..1 secs */
+	event_set_float(dst, event_get_midi_cc_float(src));
 }
 
 /******************************************************************************

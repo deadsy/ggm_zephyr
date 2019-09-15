@@ -131,9 +131,21 @@ static bool goom_process(struct module *m, float *bufs[])
 
 	if (active) {
 		// struct module *lpf_env = this->lpf_env;
-		// struct module *osc = this->osc;
-		// struct module *lpf = this->lpf;
-		// float *out = bufs[0];
+		struct module *osc = this->osc;
+		struct module *lpf = this->lpf;
+		float *out = bufs[0];
+
+		float buf[AudioBufferSize];
+
+		// get the oscillator output
+		osc->info->process(osc, (float *[]){ buf, });
+
+		// feed it to the LPF
+		lpf->info->process(lpf, (float *[]){ buf, out, });
+
+		// apply the amplitude envelope
+		block_mul(out, env);
+
 
 	}
 
