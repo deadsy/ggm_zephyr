@@ -23,6 +23,7 @@ target_sources(app
 		src/module/template.c
 		src/module/delay/delay.c
 		src/module/env/adsr.c
+		src/module/filter/biquad.c
 		src/module/filter/svf.c
 		src/module/midi/mono.c
 		src/module/midi/poly.c
