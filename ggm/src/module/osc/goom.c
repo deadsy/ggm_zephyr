@@ -80,7 +80,7 @@ static void goom_set_shape(struct module *m, float duty, float slope)
 	/* scaling constant for s1, map the slope to the LUT. */
 	this->k1 = 1.f / ((float)(FullCycle - 1 - this->tp) * slope);
 	/* this phase reset value gives zero output */
-	this->xreset = 0; /* TODO */
+	this->xreset = (uint32_t)((float)(this->tp) * slope * 0.5f);
 }
 
 static void goom_set_frequency(struct module *m, float freq)
@@ -177,7 +177,7 @@ static int goom_alloc(struct module *m, va_list vargs)
 	m->priv = (void *)this;
 
 	/* set initial shape values */
-	goom_set_shape(m, 0.f, 0.f);
+	goom_set_shape(m, 0.5f, 0.5f);
 	/* start at a phase that gives a zero output */
 	this->x = this->xreset;
 	return 0;

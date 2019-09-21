@@ -40,6 +40,13 @@ struct adsr {
  */
 #define SOFT_RESET_TIME 30e-3f
 
+/* Set a minimum value for the attack/decay/release times.
+ * We want to avoid clicks/poppiness in the output caused by abrupt change.
+ */
+#define MIN_ATTACK_TIME 2e-3f
+#define MIN_DECAY_TIME 4e-3f
+#define MIN_RELEASE_TIME 4e-3f
+
 /******************************************************************************
  * We can't reach the target level with the asymptotic rise/fall of exponentials.
  * We will change state when we are within LEVEL_EPSILON of the target level.
@@ -63,14 +70,20 @@ static float get_k(float t, int rate)
 
 static void adsr_midi_attack(struct event *dst, const struct event *src)
 {
-	/* 0..1 secs */
-	event_set_float(dst, event_get_midi_cc_float(src));
+	/* MIN_ATTACK_TIME..1 secs */
+	float x = event_get_midi_cc_float(src);
+
+	x = map_lin(x, MIN_ATTACK_TIME, 1.f);
+	event_set_float(dst, x);
 }
 
 static void adsr_midi_decay(struct event *dst, const struct event *src)
 {
-	/* 0..2 secs */
-	event_set_float(dst, 2.f * event_get_midi_cc_float(src));
+	/* MIN_DECAY_TIME..2 secs */
+	float x = event_get_midi_cc_float(src);
+
+	x = map_lin(x, MIN_DECAY_TIME, 2.f);
+	event_set_float(dst, x);
 }
 
 static void adsr_midi_sustain(struct event *dst, const struct event *src)
@@ -81,8 +94,11 @@ static void adsr_midi_sustain(struct event *dst, const struct event *src)
 
 static void adsr_midi_release(struct event *dst, const struct event *src)
 {
-	/* 0..1 secs */
-	event_set_float(dst, event_get_midi_cc_float(src));
+	/* MIN_RELEASE_TIME..1 secs */
+	float x = event_get_midi_cc_float(src);
+
+	x = map_lin(x, MIN_RELEASE_TIME, 1.f);
+	event_set_float(dst, x);
 }
 
 /******************************************************************************
@@ -143,7 +159,7 @@ static void adsr_port_gate(struct module *m, const struct event *e)
 static void adsr_port_attack(struct module *m, const struct event *e)
 {
 	struct adsr *this = (struct adsr *)m->priv;
-	float attack = clampf_lo(event_get_float(e), 0.f);
+	float attack = clampf_lo(event_get_float(e), MIN_ATTACK_TIME);
 
 	LOG_DBG("%s:attack %f secs", m->name, attack);
 	this->ka = get_k(attack, AudioSampleFrequency);
@@ -153,7 +169,7 @@ static void adsr_port_attack(struct module *m, const struct event *e)
 static void adsr_port_decay(struct module *m, const struct event *e)
 {
 	struct adsr *this = (struct adsr *)m->priv;
-	float decay = clampf_lo(event_get_float(e), 0.f);
+	float decay = clampf_lo(event_get_float(e), MIN_DECAY_TIME);
 
 	LOG_DBG("%s:decay %f secs", m->name, decay);
 	this->kd = get_k(decay, AudioSampleFrequency);
@@ -176,7 +192,7 @@ static void adsr_port_sustain(struct module *m, const struct event *e)
 static void adsr_port_release(struct module *m, const struct event *e)
 {
 	struct adsr *this = (struct adsr *)m->priv;
-	float release = clampf_lo(event_get_float(e), 0.f);
+	float release = clampf_lo(event_get_float(e), MIN_RELEASE_TIME);
 
 	LOG_DBG("%s:release %f secs", m->name, release);
 	this->kr = get_k(release, AudioSampleFrequency);
