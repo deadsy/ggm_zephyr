@@ -37,6 +37,7 @@ target_sources(app
 		src/module/root/metro.c
 		src/module/root/poly.c
 		src/module/seq/seq.c
+		src/module/seq/smf.c
 		src/module/voice/goom.c
 		src/module/voice/osc.c
 		src/os/zephyr/zephyr.c

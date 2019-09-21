@@ -8,6 +8,13 @@
 #define GGM_SRC_MODULE_SEQ_SEQ_H
 
 /******************************************************************************
+ * constants
+ */
+
+#define MinBeatsPerMin (35.f)
+#define MaxBeatsPerMin (350.f)
+
+/******************************************************************************
  * sequencer op codes
  */
 

@@ -30,6 +30,7 @@ SRC = $(GGM)/src/core/block.c \
 	$(GGM)/src/module/root/metro.c \
 	$(GGM)/src/module/root/poly.c \
 	$(GGM)/src/module/seq/seq.c \
+	$(GGM)/src/module/seq/smf.c \
 	$(GGM)/src/module/view/plot.c \
 	$(GGM)/src/module/voice/goom.c \
 	$(GGM)/src/module/voice/osc.c \
